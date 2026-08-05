@@ -1,0 +1,31 @@
+name: dndist-checks
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  #v6.0.2
+    - name: Install Nix
+      uses: cachix/install-nix-action@1ca7d21a94afc7c957383a2d217460d980de4934  # v31.10.1
+    - name: Check formatting
+      run: nix fmt -- --ci
+    - name: Run checks
+      run: nix flake check -Lv --no-update-lock-file

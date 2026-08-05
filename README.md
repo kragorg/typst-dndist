@@ -166,6 +166,9 @@ A few authoring rules worth knowing up front:
 - **Gear declared as a feature is equipped** and its effects are live (it lists under EQUIPPED).
   `carried(item.…)` puts a modelled item in the pack instead: inert, listed under INVENTORY.
   `equipment:` is for unmodelled kit only.
+- **A Versatile weapon is wielded in one hand** unless you say otherwise.
+  `two-handed(weapon.longsword)` rolls its bigger die instead; either way the attack line
+  states what the other grip would deal.
 - **Languages are a character-creation choice** in 2024 — Common plus two chosen. Species and
   standard backgrounds grant none.
 

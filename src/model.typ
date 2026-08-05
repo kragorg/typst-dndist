@@ -156,6 +156,8 @@
 // - When the character knows True Strike, `resolve-attacks` adds a second attack line for each eligible proficient weapon.
 // - `shillelagh: true` marks a weapon the Shillelagh cantrip can imbue; the spell names only the Club and the Quarterstaff.
 // - When the character knows Shillelagh, `resolve-attacks` adds a second attack line for each such weapon.
+// - `versatile`: the damage die a Versatile weapon deals in two hands ("1d10" for a Longsword). Weapon data: every Versatile weapon carries it, whatever grip a character uses.
+// - `two-handed`: the grip this character wields the weapon in, set by `two-handed()` (weapons.typ). It picks which of the two dice the attack line rolls.
 #let eff-weapon(
   name,
   category: "simple",
@@ -170,6 +172,8 @@
   base-name: auto,
   true-strike: true,
   shillelagh: false,
+  versatile: none,
+  two-handed: false,
 ) = (
   effect: "weapon",
   name: name,
@@ -185,6 +189,8 @@
   bonus: bonus,
   true-strike: true-strike,
   shillelagh: shillelagh,
+  versatile: versatile,
+  two-handed: two-handed,
 )
 
 // Weapon mastery training: the weapon names (bare strings) a character mastered.

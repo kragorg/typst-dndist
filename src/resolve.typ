@@ -390,14 +390,17 @@
   str(int(m.captures.at(0)) + reach) + " ft"
 }
 
+// One damage string: the dice with the signed ability modifier and magic bonus. A net +0 does not show.
+// - Shared by `_attack-line` and the Versatile alternative grip, which shows the same arithmetic for the die the character is not rolling.
+#let _damage-string(damage-dice, ability, scores, magic-bonus) = (
+  damage-dice + _signed(modifier(scores.at(ability)) + magic-bonus)
+)
+
 // Build one computed attack line, shared by the unarmed strike and every weapon.
 // - Attack bonus = ability modifier + magic bonus, plus PB when proficient.
-// - The damage string holds the dice with the signed ability modifier and magic bonus.
-// - A net +0 does not show.
 #let _attack-line(name, ability, damage-dice, damage-type, range, properties, proficient, scores, pb, magic-bonus: 0, kind: "melee", thrown-range: none) = {
   let amod = modifier(scores.at(ability))
-  let eff-mod = amod + magic-bonus
-  let dmg = damage-dice + _signed(eff-mod)
+  let dmg = _damage-string(damage-dice, ability, scores, magic-bonus)
   (
     name: name,
     ability: ability,
@@ -417,10 +420,11 @@
 // - The cantrip attacks with the weapon, but uses the caster's spellcasting `ability` for attack and damage, and deals Radiant damage.
 // - Proficiency is necessary; the attack bonus is PB + that ability modifier + the magic bonus.
 // - Extra Radiant dice scale with level: +1d6 at 5, +2d6 at 11, +3d6 at 17.
-#let _true-strike-line(e, ability, scores, pb, level, properties) = {
+// - `dice` is the weapon's damage die in the grip the character wields it in (see `resolve-attacks`), since the cantrip attacks with that weapon.
+#let _true-strike-line(e, ability, scores, pb, level, properties, dice) = {
   // Always proficient, thus `_attack-line` adds PB; the damage type is the cantrip's own.
   let line = _attack-line(
-    e.name, ability, e.damage, "Radiant", e.range, properties, true, scores, pb,
+    e.name, ability, dice, "Radiant", e.range, properties, true, scores, pb,
     magic-bonus: e.at("bonus", default: 0), kind: e.kind, thrown-range: e.thrown-range,
   )
   let extra = if level >= 17 { "3d6" } else if level >= 11 { "2d6" } else if level >= 5 { "1d6" } else { none }
@@ -483,21 +487,35 @@
     let proficient = (pact
       or weapon-profs.contains(e.category)
       or weapon-profs.map(lower).contains(base-name))
+    // Versatile: the weapon deals its `versatile` die in two hands, its own `damage` die in one.
+    // - `two-handed` is the declared grip, so it picks the die every line for this weapon rolls; the True Strike and Booming Blade lines attack with the same weapon.
+    let versatile = e.at("versatile", default: none)
+    let two-handed = e.at("two-handed", default: false)
+    let dice = if two-handed { versatile } else { e.damage }
+    let magic = e.at("bonus", default: 0)
     // Show a weapon's mastery property only when the character has trained mastery with that weapon; then keep it in its own `mastery` field as a plain string.
     // - Keep the mastery out of `properties`, so display can set it apart from the ordinary properties.
     // - Drop the mastery fully when the character is untrained with the weapon.
-    let props = e.properties.filter(p => not weapon-mastery-names.contains(p))
+    // - Versatile leaves `properties` too, for the same reason: what it says depends on the character. It comes back as `versatile-damage`, the full damage of the grip the character is not using, and `versatile-grip`, naming that grip. The Damage column gives the grip in use; the Notes cell gives the other one, modifier included.
+    let props = e.properties.filter(p => not weapon-mastery-names.contains(p) and p != "Versatile")
     let mastery = if mastered.contains(base-name) {
       e.properties.find(p => weapon-mastery-names.contains(p))
     } else { none }
+    // The alternative damage takes the ability the line attacks with: True Strike swings the same weapon off the caster's spellcasting ability, so its line shows a Wis- or Cha-based alternative like its own damage.
+    let versatile-fields = a => if versatile == none { (:) } else {
+      (
+        versatile-damage: _damage-string(if two-handed { e.damage } else { versatile }, a, scores, magic),
+        versatile-grip: if two-handed { "one-handed" } else { "two-handed" },
+      )
+    }
     // A melee attack gets the reach bonus (Bugbear Long-Limbed); a ranged attack, and a Thrown weapon's throw range, do not.
     let rng = if e.kind == "melee" { _apply-reach(e.range, reach) } else { e.range }
-    let wline = (.._attack-line(e.name, abil, e.damage, e.damage-type, rng, props, proficient, scores, pb, magic-bonus: e.at("bonus", default: 0), kind: e.kind, thrown-range: e.thrown-range), mastery: mastery)
+    let wline = (.._attack-line(e.name, abil, dice, e.damage-type, rng, props, proficient, scores, pb, magic-bonus: magic, kind: e.kind, thrown-range: e.thrown-range), mastery: mastery, ..versatile-fields(abil))
     lines.push(wline)
     // True Strike works only with a proficient weapon worth at least 1 CP; the weapon carries that eligibility.
     // - The line is still an attack with that weapon, so its mastery property applies and shows the same.
     if ts-ability != none and proficient and e.at("true-strike", default: true) {
-      lines.push((.._true-strike-line(e, ts-ability, scores, pb, level, props), mastery: mastery))
+      lines.push((.._true-strike-line(e, ts-ability, scores, pb, level, props, dice), mastery: mastery, ..versatile-fields(ts-ability)))
     }
     // Booming Blade: a normal melee weapon attack, with the same hit and damage as `wline`.
     // - Put the booming rider in the Notes cell.

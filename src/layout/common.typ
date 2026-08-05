@@ -607,9 +607,14 @@
     [#fmt-dice(a.damage)#if a.damage-type != none [ #a.damage-type]],
     {
       // An explicit `note` (a Booming Blade rider line) fills the whole cell; otherwise the Notes column is the weapon's properties, with any trained mastery property (its own resolved field) italicized at the end so it reads apart from the ordinary properties.
+      // A Versatile weapon's entry (also a resolved field, for the same reason) gives the damage of the grip the character is not using — "Versatile (1d10+4 two-handed)" beside a one-handed 1d8+4 in the Damage column. It carries the ability modifier already, so a player switching grips mid-fight reads the number off the sheet.
       let n = a.at("note", default: none)
       if n != none { n } else {
-        let notes = a.properties
+        let vd = a.at("versatile-damage", default: none)
+        let notes = a.properties.map(p => [#p])
+        if vd != none {
+          notes.push[Versatile (#fmt-dice(vd) #a.versatile-grip)]
+        }
         let m = a.at("mastery", default: none)
         if notes.len() == 0 and m == none [—]
         else if m == none { notes.join(", ") }

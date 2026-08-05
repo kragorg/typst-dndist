@@ -427,7 +427,10 @@
 #assert.eq(staff.bonus, 1)
 #assert.eq(staff.damage, "1d6-1")
 // Goro (a druid) has no Weapon Mastery, so a weapon's mastery property is dropped from the displayed properties, and `mastery` stays none. (A trained mastery rides as its own `mastery` field, separate from `properties`.)
-#assert(staff.properties.contains("Versatile"))
+// Versatile leaves `properties` the same way; it rides as `versatile-damage` (the other grip's full damage) and `versatile-grip`. Goro wields the staff one-handed, so the alternative is its 1d8 two-handed die, at his same -1 Strength.
+#assert(not staff.properties.contains("Versatile"))
+#assert.eq(staff.versatile-damage, "1d8-1")
+#assert.eq(staff.versatile-grip, "two-handed")
 #assert(not staff.properties.contains("Topple"))
 #assert(not bow.properties.contains("Slow"))
 #assert.eq(staff.mastery, none)
@@ -447,7 +450,7 @@
 #assert.eq(m-dagger.mastery, "Nick")
 #assert(not m-dagger.properties.contains("Nick"))
 #assert.eq(m-staff.mastery, none)
-#assert(m-staff.properties.contains("Versatile"))
+#assert.eq(m-staff.versatile-damage, "1d8+2")
 // The `mastery:` choice also surfaces as a named class feature listing the
 // chosen weapons (it carries the eff-weapon-mastery effect).
 #assert(master.traits.any(t => t.name == "Weapon Mastery" and t.at("kind", default: none) == "class-feature"))
@@ -457,6 +460,41 @@
 #assert.eq(claws.damage, "1d6-1")
 #assert.eq(claws.damage-type, "Slashing")
 #assert.eq(rg.attacks.filter(a => a.name == "Unarmed Strike").len(), 1)
+
+// --- two-handed(): the Versatile grip ---------------------------------------
+// A Versatile weapon wielded in two hands rolls its second die. The grip holds
+// for every line that attacks with that weapon, True Strike's included, and
+// each line carries what the other grip deals — computed off the ability that
+// line attacks with, so the True Strike line's alternative is Wisdom-based like
+// its own damage. Str 16 (+3), Wis 18 (+4), PB +2, martial proficiency.
+#let gripper = resolve(character(
+  abilities: (str: 16, dex: 10, con: 12, int: 10, wis: 18, cha: 10),
+  features: (
+    class.fighter(level: 1, skills: (skill.athletics,)),
+    feat.magic-initiate(
+      "Wizard", casting-ability: ability.wis,
+      cantrips: (spell.true-strike, spell.mind-sliver), spell: spell.shield,
+    ),
+    two-handed(weapon.longsword),
+    weapon.battleaxe,
+  ),
+))
+#let two-hand = attack-lines(gripper, "Longsword").first()
+#assert.eq(two-hand.bonus, 5)
+#assert.eq(two-hand.damage, "1d10+3")
+#assert.eq(two-hand.versatile-damage, "1d8+3")
+#assert.eq(two-hand.versatile-grip, "one-handed")
+#assert(not two-hand.properties.contains("Versatile"))
+// The Battleaxe beside it keeps the default grip, so its alternative is the two-handed die.
+#let one-hand = attack-lines(gripper, "Battleaxe").first()
+#assert.eq(one-hand.damage, "1d8+3")
+#assert.eq(one-hand.versatile-damage, "1d10+3")
+#assert.eq(one-hand.versatile-grip, "two-handed")
+// True Strike swings the same sword: the grip's die, the cantrip's Radiant damage, and a Wisdom-based alternative.
+#let ts-two-hand = attack-lines(gripper, "Longsword", via: "True Strike").first()
+#assert.eq(ts-two-hand.damage, "1d10+4")
+#assert.eq(ts-two-hand.damage-type, "Radiant")
+#assert.eq(ts-two-hand.versatile-damage, "1d8+4")
 
 // --- Horgra: Bugbear Rogue 4 (Phantom), Criminal, Alert + Crossbow Expert ----
 // Exercises by-name martial-weapon proficiency, Weapon Mastery, Expertise, the
@@ -1422,11 +1460,11 @@
 #assert(idioms.proficiencies.tool.contains("cartographers-tools"))
 // magic-weapon: default "+N" name, flat bonus on attack and damage; the base
 // weapon's category/properties survive (Sap is Longsword mastery — stripped
-// from properties as always; Versatile remains). Fighter is martial-proficient.
+// from properties as always, as is Versatile). Fighter is martial-proficient.
 #let ls = idioms.attacks.find(a => a.name == "Longsword +1")
 #assert.eq(ls.bonus, 3)
 #assert.eq(ls.damage, "1d8+1")
-#assert(ls.properties.contains("Versatile"))
+#assert.eq(ls.versatile-damage, "1d10+1")
 #assert(not ls.properties.contains("Sap"))
 // A flavored name overrides; Finesse still picks the better of Str/Dex.
 #let fang = idioms.attacks.find(a => a.name == "Fang of the North")

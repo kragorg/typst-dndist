@@ -44,7 +44,7 @@
 #import "src/features/backgrounds.typ" as background
 #import "src/features/items.typ" as item
 #import "src/features/weapons.typ" as weapon
-#import "src/features/weapons.typ": magic-weapon
+#import "src/features/weapons.typ": magic-weapon, two-handed
 #import "src/features/spells.typ" as spell
 #import "src/features/feats.typ" as feat
 

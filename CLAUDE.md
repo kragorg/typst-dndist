@@ -550,7 +550,22 @@ Effects are tagged dicts the resolver folds (all `eff-*`):
   line as its own plain-string `mastery` field (the attack table renders
   it *italicized* after the ordinary properties --- typographic
   emphasis, not a new marker glyph); untrained, it is dropped entirely
-  (see below).
+  (see below). The **Versatile** property leaves `properties` the same
+  way, for the same reason --- what it says depends on the character.
+  Two fields carry it: `versatile`, the damage die the weapon deals in
+  two hands (weapon data --- every Versatile weapon in the catalog
+  declares it, and `_weapon` asserts the die and the property come
+  together), and `two-handed`, the grip *this* character wields it in,
+  set by `two-handed()` (see the weapons catalog note). The grip picks
+  the die every line for that weapon rolls --- the True Strike and
+  Booming Blade lines attack with the same weapon --- and the resolver
+  puts the other grip's **full damage**, modifier included, on the line
+  as `versatile-damage`, with `versatile-grip` naming that grip. The
+  attack table's Notes cell reads `Versatile (1d10+4 two-handed)` beside
+  a one-handed `1d8+4` in DAMAGE, so a player who switches grips
+  mid-fight reads the new damage off the sheet. Shillelagh's line
+  carries neither field: that cantrip sets the damage die itself, and
+  the grip does not change it.
 - `eff-weapon-mastery(..weapons)` --- the weapon names (bare strings,
   matched case-insensitively) a character has mastered. Emitted by the
   martial classes' `mastery:` param
@@ -705,11 +720,14 @@ visible), `proficiencies`
 --- `modifier` is the casting ability's own mod, carried because
 `attack`/`save-dc` may include `eff-spellcasting-bonus` item bonuses, so
 display never re-derives it as attack − PB), `attacks` (per weapon:
-`bonus`/`damage`/`damage-type`/`range`/`thrown-range`/`properties`/`mastery`
+`bonus`/`damage`/`damage-type`/`range`/`thrown-range`/`properties`/`mastery`,
+plus `versatile-damage`/`versatile-grip` on a Versatile weapon
 --- `range` is the reach or projectile range with any `eff-reach` bonus
 already folded in and `thrown-range` the separate throw range (see
 `eff-weapon`); the trained mastery property as its own plain string, or
-`none`; never merged into `properties`), `size`, `creature-type`, the display-only
+`none`; never merged into `properties`; `damage` is the damage of the
+grip the character wields the weapon in and `versatile-damage` the other
+grip's, both with the modifier folded in), `size`, `creature-type`, the display-only
 gear pair `equipped`/`equipment` --- **two lists with different
 meanings; never merge them**: `equipped` is the gear whose effects are
 **live** on the sheet (every top-level weapon/armor/shield/magic-item
@@ -810,7 +828,9 @@ ability, `mod (+ PB if proficient)` plus any flat `eff-save-bonus`
 `DC = 8 + PB + ability mod`, `attack = PB + ability mod`, each plus any
 matching `eff-spellcasting-bonus`. **Attacks**: per weapon,
 `bonus = ability mod (+ PB if proficient with the category)`, damage =
-dice + signed ability mod. A weapon's attack ability defaults to Str
+dice + signed ability mod (`_damage-string`, which the Versatile
+alternative grip runs through too, so both dice read the same
+arithmetic). A weapon's attack ability defaults to Str
 (melee) / Dex (ranged), but a **Finesse** weapon (with no explicit
 `ability`) uses the **better of Str/Dex** --- so
 `weapon.dagger`/`weapon.shortsword` swing off Dex for a Dex build and
@@ -1185,6 +1205,16 @@ Thrown weapon: `range: "5 ft"` (its reach) plus
 `shillelagh: true` --- the cantrip names exactly those two weapons, so
 eligibility is weapon data, mirroring `true-strike: false` (see the
 weapon-attack-cantrip note above).
+Every Versatile weapon (quarterstaff 1d8; longsword, battleaxe,
+warhammer 1d10) declares its two-handed die as `versatile:`; `_weapon`
+asserts that die and the property are declared together.
+`two-handed(base)` (exported top-level beside `magic-weapon`, and
+composing with it in either order) rewrites the base feature's
+`eff-weapon` with the grip: `two-handed(magic-weapon(weapon.longsword,   bonus: 1))` is Kragor's sword, rolling 1d10 instead of 1d8. It panics on
+a weapon with no versatile die, since only a Versatile weapon has a
+second one. A Shield leaves no hand free for the second grip, and the
+resolver still gives that character the shield's AC, so declaring both
+sheets two fighting styles for one character.
 `magic-weapon(base, bonus:, name:)` (exported top-level, mirroring
 `item.magic-armor`) builds a **`+N` version of a catalog weapon** by
 rewriting the base *feature object's* `eff-weapon` --- flat `bonus` on

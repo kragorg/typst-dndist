@@ -13,6 +13,10 @@
 //   `range` is its reach — 5 ft, or 10 ft with the Reach property; a ranged weapon's
 //   `range` is the range on its Ammunition property; `thrown-range` is the range on
 //   the Thrown property, which a melee weapon carries alongside its reach.
+// - `versatile` is the damage die the weapon deals in two hands — the value the
+//   weapon table prints in parentheses after the Versatile property. The
+//   assertion catches a weapon that declares one without the other: without the
+//   die, a character wielding it two-handed would roll the one-handed damage.
 #let _weapon(
   name,
   category: "simple",
@@ -25,24 +29,32 @@
   properties: (),
   true-strike: true,
   shillelagh: false,
-) = feature(
-  name,
-  kind: "weapon",
-  source: "Weapon",
-  effects: (eff-weapon(
+  versatile: none,
+) = {
+  assert.eq(
+    properties.contains("Versatile"), versatile != none,
+    message: name + ": a Versatile weapon declares its two-handed damage die, and only a Versatile weapon may declare one",
+  )
+  feature(
     name,
-    category: category,
-    kind: kind,
-    ability: ability,
-    damage: damage,
-    damage-type: damage-type,
-    range: range,
-    thrown-range: thrown-range,
-    properties: properties,
-    true-strike: true-strike,
-    shillelagh: shillelagh,
-  ),),
-)
+    kind: "weapon",
+    source: "Weapon",
+    effects: (eff-weapon(
+      name,
+      category: category,
+      kind: kind,
+      ability: ability,
+      damage: damage,
+      damage-type: damage-type,
+      range: range,
+      thrown-range: thrown-range,
+      properties: properties,
+      true-strike: true-strike,
+      shillelagh: shillelagh,
+      versatile: versatile,
+    ),),
+  )
+}
 
 // - Build a +N version of a catalog weapon, for example
 //   `magic-weapon(weapon.longsword, bonus: 1)`.
@@ -60,6 +72,30 @@
     kind: "weapon",
     source: base.source,
     effects: (e + (name: label, bonus: bonus),),
+  )
+}
+
+// - Wield a Versatile weapon in two hands, for example
+//   `two-handed(magic-weapon(weapon.longsword, bonus: 1))`.
+// - Rewrite the base feature's `eff-weapon` with the grip. The resolver rolls
+//   the weapon's `versatile` die instead of its one-handed die, and the attack
+//   line states the other grip's damage.
+// - A character holding a Shield has no hand free for the second grip. The
+//   resolver still gives that character the shield's AC, so declaring both is
+//   a way to sheet two fighting styles at once.
+// - Composes with `magic-weapon` in either order: both rewrite fields of the
+//   same effect, and only `magic-weapon` touches the display name.
+#let two-handed(base) = {
+  let e = base.effects.first()
+  assert(
+    e.at("versatile", default: none) != none,
+    message: e.name + " is not Versatile; only a Versatile weapon deals a second damage die in two hands",
+  )
+  feature(
+    base.name,
+    kind: "weapon",
+    source: base.source,
+    effects: (e + (two-handed: true),),
   )
 }
 
@@ -83,7 +119,7 @@
   "Quarterstaff",
   category: "simple", kind: "melee", ability: ability.str,
   damage: "1d6", damage-type: "Bludgeoning", range: "5 ft",
-  properties: ("Versatile", "Topple"),
+  properties: ("Versatile", "Topple"), versatile: "1d8",
   shillelagh: true,
 )
 
@@ -105,7 +141,7 @@
   "Longsword",
   category: "martial", kind: "melee", ability: ability.str,
   damage: "1d8", damage-type: "Slashing", range: "5 ft",
-  properties: ("Versatile", "Sap"),
+  properties: ("Versatile", "Sap"), versatile: "1d10",
 )
 
 #let dagger = _weapon(
@@ -119,14 +155,14 @@
   "Battleaxe",
   category: "martial", kind: "melee", ability: ability.str,
   damage: "1d8", damage-type: "Slashing", range: "5 ft",
-  properties: ("Versatile", "Topple"),
+  properties: ("Versatile", "Topple"), versatile: "1d10",
 )
 
 #let warhammer = _weapon(
   "Warhammer",
   category: "martial", kind: "melee", ability: ability.str,
   damage: "1d8", damage-type: "Bludgeoning", range: "5 ft",
-  properties: ("Versatile", "Push"),
+  properties: ("Versatile", "Push"), versatile: "1d10",
 )
 
 // Give a Finesse weapon no explicit ability: the resolver picks the better of

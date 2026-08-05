@@ -1,0 +1,77 @@
+# NOTICE
+
+Two different things live in this repository, under two different licenses.
+
+## 1. The software — MIT
+
+All code — the Typst package (the resolution engine, the layout renderers, the
+effect/feature model), the Nix flake, the build tooling, the test fixtures, and the
+documentation — is Copyright (c) 2026 Kragor Grimstride and licensed under the MIT
+License. See `LICENSE`.
+
+## 2. The game content — SRD 5.2.1, CC-BY-4.0
+
+The feature catalogs under `src/features/` and the reference data under `src/data/`
+describe game rules. Where those rules come from the System Reference Document, the
+following attribution applies, as the SRD requires:
+
+> This work includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”)
+> by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The
+> SRD 5.2.1 is licensed under the Creative Commons Attribution 4.0 International
+> License, available at https://creativecommons.org/licenses/by/4.0/legalcode.
+
+dndist is compatible with fifth edition.
+
+**A rendered sheet carries this attribution requirement too.** The renderers do not print
+an attribution line, so if you share or distribute a PDF produced with dndist, include the
+notice above yourself. See the README's License section.
+
+## 3. Content that is *not* in the SRD
+
+The catalogs also cover material that is **not** part of SRD 5.2.1 — entries restated from
+the 2024 rulebooks and from setting sourcebooks. That material is not ours and never was.
+The MIT license in `LICENSE` covers the code that *describes* these rules; it grants no
+rights in the underlying game content, because there are none of ours to grant. The
+restatements are unofficial and fan-made.
+
+- **Species** — Tortle, Fairy, Bugbear, Aasimar.
+  (SRD 5.2.1 species are Dragonborn, Dwarf, Elf, Gnome, Goliath, Halfling, Human,
+  Orc, and Tiefling.)
+- **Subclasses** — College of Glamour (Bard), Light Domain (Cleric), Circle of the Moon
+  (Druid), Assassin (Rogue), Phantom (Rogue), Great Old One Patron (Warlock).
+  (SRD 5.2.1 carries exactly one subclass per class: Path of the Berserker, College of
+  Lore, Life Domain, Circle of the Land, Champion, Warrior of the Open Hand, Oath of
+  Devotion, Hunter, Thief, Draconic Sorcery, Fiend Patron, and Evoker.)
+- **Class features** — Cunning Strike and its rider options.
+- **Backgrounds** — Entertainer, Farmer, Genie Touched, Marked Wanderer, and the one-off
+  backgrounds declared via `background.custom` in the example characters. (SRD 5.2.1
+  backgrounds are Acolyte, Criminal, Sage, and Soldier.)
+- **Campaign-setting content** — `background.marked-wanderer` is an Exandria background
+  (Critical Role, *Explorer's Guide to Wildemount*). `spell.spellfire-flare` is a Forgotten
+  Realms spell, from *Forgotten Realms: Heroes of Faerûn*. Neither setting's material is
+  covered by the CC-BY-4.0 grant above.
+- Assorted spells, feats, magic items, and Eldritch Invocations beyond the SRD lists —
+  among the magic items, `item.sentinel-shield` restates a Dungeon Master's Guide entry.
+- **Homebrew** — `item.ring-of-comprehension` restates no published item. It is the Helm
+  of Comprehending Languages reworked as a charged ring, for one campaign.
+
+If you intend to redistribute this project or build on it commercially, review these
+entries first: the MIT grant on the code carries no rights in the rules they describe.
+
+## 4. Third-party software and fonts
+
+Nothing in this section is vendored into the repository or the published package.
+
+- **`@preview/cuti`** is a compile-time dependency (`src/layout/common.typ`), used for its
+  synthesized bold and small-caps helpers. It is resolved from the Typst package registry
+  and is licensed under the MIT License.
+- **ETBembo** (MIT), **Montserrat** (OFL 1.1), and **Euler Math** (OFL 1.1) are the three
+  fonts the layout is calibrated to. The Nix flake takes them from nixpkgs; a non-Nix build
+  resolves them from the host. No font file is distributed with this package.
+
+## 5. Not affiliated with Wizards of the Coast
+
+dndist is an unofficial, fan-made project. It is not approved, endorsed, sponsored, or
+affiliated with Wizards of the Coast LLC or with Critical Role. No claim of ownership is
+made over any trademark, and no Wizards of the Coast trademark is used to identify this
+project.

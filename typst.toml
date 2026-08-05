@@ -1,0 +1,39 @@
+[package]
+name = "dndist"
+version = "1.0.0"
+entrypoint = "dndist.typ"
+authors = ["Kragor Grimstride <kragor@grimstride.org>"]
+license = "MIT"
+description = "Define and render printable D&D 5.5e character sheets in Typst, with auto-computed AC, skills, saves, and passives. (Unofficial)"
+repository = "https://github.com/kragorg/typst-dndist"
+categories = ["layout", "fun"]
+keywords = ["dnd", "dungeons-and-dragons", "5e", "character-sheet", "rpg", "ttrpg"]
+compiler = "0.14.0"
+
+# The package root and the repo root are the same directory, so the repo's own tooling
+# sits alongside what ships and has to be named. This list is load-bearing only for a
+# direct Universe upload from this directory: `buildTypstPackage` ignores `exclude`
+# entirely (it is a plain `cp -r` of its `src`), so the enforced control is the
+# `packageFileset` allow-list in flake.nix. The `package-contents` check compares the
+# built package against that allow-list exactly, so it does not read this list — keep
+# this one current by hand for the manual-upload path.
+exclude = [
+    "tests",
+    "docs",
+    ".github",
+    "flake.nix",
+    "flake.lock",
+    "typst-strict.pl",
+    "docs-images.pl",
+    "fonts.pl",
+    "fonts",
+    "packages",
+    "CLAUDE.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    ".gitignore",
+]
+
+[template]
+path = "template"
+entrypoint = "main.typ"

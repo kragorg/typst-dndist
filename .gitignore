@@ -1,0 +1,17 @@
+result
+result-*
+.claude/settings.local.json
+
+# `fonts.pl` downloads the three font families here on demand. The fonts are
+# not vendored: they are third-party binaries with their own upstream, and the
+# pinned hashes in fonts.pl are what makes a download reproducible instead.
+/fonts/
+
+# Personal working notes, deliberately untracked. This list is specific rather
+# than a blanket `*.md`: that pattern silently swallowed LICENSE.md,
+# CONTRIBUTING.md, and CHANGELOG.md, and since a Nix flake only ever sees
+# git-tracked files, the failure mode was a confusing "not tracked by Git"
+# eval error rather than a missing-file warning.
+TODO.md
+coding-rules.md
+response-rules-reminder.md

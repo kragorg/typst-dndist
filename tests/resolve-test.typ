@@ -1915,5 +1915,70 @@
 #assert.eq(therin.passives.insight, 16)
 #assert.eq(therin.passives.investigation, 9)
 
+// --- Catalog: PHB Weapons ----------------------------------------------------
+#let all-weapons-char = resolve(character(
+  name: "Test Armorer",
+  species: species.human(skill: skill.athletics, origin-feat: feat.alert),
+  features: (
+    class.fighter(level: 1, mastery: ("Glaive", "Greatsword")),
+    weapon.club, weapon.dagger, weapon.greatclub, weapon.handaxe, weapon.javelin,
+    weapon.light-hammer, weapon.mace, weapon.quarterstaff, weapon.sickle, weapon.spear,
+    weapon.dart, weapon.crossbow-light, weapon.light-crossbow, weapon.shortbow, weapon.sling,
+    weapon.battleaxe, weapon.flail, weapon.glaive, weapon.greataxe, weapon.greatsword,
+    weapon.halberd, weapon.lance, weapon.longsword, weapon.maul, weapon.morningstar,
+    weapon.pike, weapon.rapier, weapon.scimitar, weapon.shortsword, weapon.trident,
+    weapon.warhammer, weapon.war-pick, weapon.whip, weapon.blowgun, weapon.hand-crossbow,
+    weapon.crossbow-heavy, weapon.heavy-crossbow, weapon.longbow, weapon.musket, weapon.pistol,
+  ),
+))
+
+#let get-eff(w-name) = {
+  let f = all-weapons-char.traits.find(t => t.name == w-name)
+  f.effects.first()
+}
+
+// Simple Melee
+#assert.eq(get-eff("Club").category, "simple")
+#assert.eq(get-eff("Club").kind, "melee")
+#assert.eq(get-eff("Dagger").category, "simple")
+#assert.eq(get-eff("Dagger").kind, "melee")
+#assert.eq(get-eff("Dagger").thrown-range, "20/60 ft")
+#assert.eq(get-eff("Greatclub").category, "simple")
+#assert.eq(get-eff("Spear").category, "simple")
+#assert.eq(get-eff("Spear").versatile, "1d8")
+
+// Simple Ranged
+#assert.eq(get-eff("Dart").category, "simple")
+#assert.eq(get-eff("Dart").kind, "ranged")
+#assert.eq(get-eff("Light Crossbow").category, "simple")
+#assert.eq(get-eff("Light Crossbow").kind, "ranged")
+#assert.eq(get-eff("Sling").category, "simple")
+#assert.eq(get-eff("Sling").kind, "ranged")
+
+// Martial Melee
+#assert.eq(get-eff("Glaive").category, "martial")
+#assert.eq(get-eff("Glaive").kind, "melee")
+#assert.eq(get-eff("Glaive").range, "10 ft")
+#assert.eq(get-eff("Greatsword").category, "martial")
+#assert.eq(get-eff("Greatsword").kind, "melee")
+#assert.eq(get-eff("Greatsword").damage, "2d6")
+#assert.eq(get-eff("Whip").category, "martial")
+#assert.eq(get-eff("Whip").kind, "melee")
+#assert.eq(get-eff("Whip").range, "10 ft")
+#assert.eq(get-eff("War Pick").category, "martial")
+#assert.eq(get-eff("Trident").category, "martial")
+#assert.eq(get-eff("Trident").versatile, "1d10")
+
+// Martial Ranged
+#assert.eq(get-eff("Blowgun").category, "martial")
+#assert.eq(get-eff("Blowgun").kind, "ranged")
+#assert.eq(get-eff("Blowgun").damage, "1")
+#assert.eq(get-eff("Heavy Crossbow").category, "martial")
+#assert.eq(get-eff("Heavy Crossbow").kind, "ranged")
+#assert.eq(get-eff("Musket").category, "martial")
+#assert.eq(get-eff("Musket").kind, "ranged")
+#assert.eq(get-eff("Pistol").category, "martial")
+#assert.eq(get-eff("Pistol").kind, "ranged")
+
 #set page(width: auto, height: auto, margin: 12pt)
 All resolve-engine assertions passed.

@@ -1192,22 +1192,15 @@ ring --- casts `spell.comprehend-languages`. That is the whole of it --- **neith
 nor the `notes` of an item may restate a number that belongs to its
 spell.** Both wands' prose is the published item text about charges;
 every dart, die and range on the sheet is read from the spell catalog. - `weapon.*` (values) --- `_weapon`; each emits an
-`eff-weapon`. crossbow-light, quarterstaff, club, mace (simple, 1d6
-Bludgeoning, Sap), sickle, longsword, dagger,
-shortsword, scimitar, shortbow (simple ranged, 1d6, Vex), hand-crossbow
-("Hand Crossbow"), battleaxe (martial, 1d8 Slashing, Versatile/Topple),
-warhammer (martial, 1d8 Bludgeoning, Versatile/Push), rapier (martial,
-1d8 Piercing, Finesse/Vex) --- dagger/shortsword/scimitar/rapier Finesse
-(see the Attacks note above); scimitar (Nick) & hand-crossbow (Vex) are
-martial, proficient by name for Rogues. `dagger` is the catalog's one
-Thrown weapon: `range: "5 ft"` (its reach) plus
-`thrown-range: "20/60 ft"` (see `eff-weapon`). `club` and `quarterstaff` carry
-`shillelagh: true` --- the cantrip names exactly those two weapons, so
-eligibility is weapon data, mirroring `true-strike: false` (see the
-weapon-attack-cantrip note above).
-Every Versatile weapon (quarterstaff 1d8; longsword, battleaxe,
-warhammer 1d10) declares its two-handed die as `versatile:`; `_weapon`
-asserts that die and the property are declared together.
+`eff-weapon`. Full 2024 PHB weapon catalog (38 weapons across simple/martial and melee/ranged):
+simple melee (`club`, `dagger`, `greatclub`, `handaxe`, `javelin`, `light-hammer`, `mace`, `quarterstaff`, `sickle`, `spear`),
+simple ranged (`dart`, `crossbow-light`/`light-crossbow`, `shortbow`, `sling`),
+martial melee (`battleaxe`, `flail`, `glaive`, `greataxe`, `greatsword`, `halberd`, `lance`, `longsword`, `maul`, `morningstar`, `pike`, `rapier`, `scimitar`, `shortsword`, `trident`, `warhammer`, `war-pick`, `whip`),
+martial ranged (`blowgun`, `hand-crossbow`, `crossbow-heavy`/`heavy-crossbow`, `longbow`, `musket`, `pistol`).
+Finesse weapons (`dagger`, `dart`, `rapier`, `scimitar`, `shortsword`, `whip`) specify no explicit `ability:` so the resolver picks the better of Str/Dex.
+Thrown weapons (`dagger`, `handaxe`, `javelin`, `light-hammer`, `spear`, `dart`, `trident`) carry `thrown-range:` (e.g. `"20/60 ft"`).
+`club` and `quarterstaff` carry `shillelagh: true` (the cantrip names exactly those two weapons).
+Every Versatile weapon (`quarterstaff`, `spear`, `battleaxe`, `longsword`, `trident`, `warhammer`, `war-pick`) declares its two-handed die as `versatile:`; `_weapon` asserts that die and the property are declared together.
 `two-handed(base)` (exported top-level beside `magic-weapon`, and
 composing with it in either order) rewrites the base feature's
 `eff-weapon` with the grip: `two-handed(magic-weapon(weapon.longsword,   bonus: 1))` is Kragor's sword, rolling 1d10 instead of 1d8. It panics on

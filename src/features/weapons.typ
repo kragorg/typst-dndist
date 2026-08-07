@@ -4,7 +4,7 @@
 //   `weapon.quarterstaff`.
 // - Each weapon carries its mastery property among its `properties`. The
 //   resolver shows the mastery only for a weapon the character has mastered.
-// - Source: SRD 5.2.1 §Equipment — Weapons.
+// - Source: 2024 Player's Handbook, Chapter 6 §Weapons / SRD 5.2.1 §Equipment — Weapons.
 
 #import "../model.typ": feature, eff-weapon
 #import "../data/abilities.typ": ability
@@ -99,12 +99,7 @@
   )
 }
 
-#let crossbow-light = _weapon(
-  "Light Crossbow",
-  category: "simple", kind: "ranged", ability: ability.dex,
-  damage: "1d8", damage-type: "Piercing", range: "80/320 ft",
-  properties: ("Ammunition", "Loading", "Two-Handed", "Slow"),
-)
+// --- Simple Melee Weapons ----------------------------------------------------
 
 // The Shillelagh cantrip names the Club and the Quarterstaff, thus both carry the flag.
 #let club = _weapon(
@@ -115,12 +110,39 @@
   shillelagh: true,
 )
 
-#let quarterstaff = _weapon(
-  "Quarterstaff",
+#let dagger = _weapon(
+  "Dagger",
+  category: "simple", kind: "melee",
+  damage: "1d4", damage-type: "Piercing", range: "5 ft", thrown-range: "20/60 ft",
+  properties: ("Finesse", "Light", "Thrown", "Nick"),
+)
+
+#let greatclub = _weapon(
+  "Greatclub",
   category: "simple", kind: "melee", ability: ability.str,
-  damage: "1d6", damage-type: "Bludgeoning", range: "5 ft",
-  properties: ("Versatile", "Topple"), versatile: "1d8",
-  shillelagh: true,
+  damage: "1d8", damage-type: "Bludgeoning", range: "5 ft",
+  properties: ("Two-Handed", "Push"),
+)
+
+#let handaxe = _weapon(
+  "Handaxe",
+  category: "simple", kind: "melee", ability: ability.str,
+  damage: "1d6", damage-type: "Slashing", range: "5 ft", thrown-range: "20/60 ft",
+  properties: ("Light", "Thrown", "Vex"),
+)
+
+#let javelin = _weapon(
+  "Javelin",
+  category: "simple", kind: "melee", ability: ability.str,
+  damage: "1d6", damage-type: "Piercing", range: "5 ft", thrown-range: "30/120 ft",
+  properties: ("Thrown", "Slow"),
+)
+
+#let light-hammer = _weapon(
+  "Light Hammer",
+  category: "simple", kind: "melee", ability: ability.str,
+  damage: "1d4", damage-type: "Bludgeoning", range: "5 ft", thrown-range: "20/60 ft",
+  properties: ("Light", "Thrown", "Nick"),
 )
 
 #let mace = _weapon(
@@ -130,11 +152,108 @@
   properties: ("Sap",),
 )
 
+#let quarterstaff = _weapon(
+  "Quarterstaff",
+  category: "simple", kind: "melee", ability: ability.str,
+  damage: "1d6", damage-type: "Bludgeoning", range: "5 ft",
+  properties: ("Versatile", "Topple"), versatile: "1d8",
+  shillelagh: true,
+)
+
 #let sickle = _weapon(
   "Sickle",
   category: "simple", kind: "melee", ability: ability.str,
   damage: "1d4", damage-type: "Slashing", range: "5 ft",
   properties: ("Light", "Nick"),
+)
+
+#let spear = _weapon(
+  "Spear",
+  category: "simple", kind: "melee", ability: ability.str,
+  damage: "1d6", damage-type: "Piercing", range: "5 ft", thrown-range: "20/60 ft",
+  properties: ("Thrown", "Versatile", "Sap"), versatile: "1d8",
+)
+
+// --- Simple Ranged Weapons ---------------------------------------------------
+
+#let dart = _weapon(
+  "Dart",
+  category: "simple", kind: "ranged",
+  damage: "1d4", damage-type: "Piercing", range: "20/60 ft", thrown-range: "20/60 ft",
+  properties: ("Finesse", "Thrown", "Vex"),
+)
+
+#let crossbow-light = _weapon(
+  "Light Crossbow",
+  category: "simple", kind: "ranged", ability: ability.dex,
+  damage: "1d8", damage-type: "Piercing", range: "80/320 ft",
+  properties: ("Ammunition", "Loading", "Two-Handed", "Slow"),
+)
+#let light-crossbow = crossbow-light
+
+#let shortbow = _weapon(
+  "Shortbow",
+  category: "simple", kind: "ranged", ability: ability.dex,
+  damage: "1d6", damage-type: "Piercing", range: "80/320 ft",
+  properties: ("Ammunition", "Two-Handed", "Vex"),
+)
+
+#let sling = _weapon(
+  "Sling",
+  category: "simple", kind: "ranged", ability: ability.dex,
+  damage: "1d4", damage-type: "Bludgeoning", range: "30/120 ft",
+  properties: ("Ammunition", "Slow"),
+)
+
+// --- Martial Melee Weapons ---------------------------------------------------
+
+#let battleaxe = _weapon(
+  "Battleaxe",
+  category: "martial", kind: "melee", ability: ability.str,
+  damage: "1d8", damage-type: "Slashing", range: "5 ft",
+  properties: ("Versatile", "Topple"), versatile: "1d10",
+)
+
+#let flail = _weapon(
+  "Flail",
+  category: "martial", kind: "melee", ability: ability.str,
+  damage: "1d8", damage-type: "Bludgeoning", range: "5 ft",
+  properties: ("Sap",),
+)
+
+#let glaive = _weapon(
+  "Glaive",
+  category: "martial", kind: "melee", ability: ability.str,
+  damage: "1d10", damage-type: "Slashing", range: "10 ft",
+  properties: ("Heavy", "Reach", "Two-Handed", "Graze"),
+)
+
+#let greataxe = _weapon(
+  "Greataxe",
+  category: "martial", kind: "melee", ability: ability.str,
+  damage: "1d12", damage-type: "Slashing", range: "5 ft",
+  properties: ("Heavy", "Two-Handed", "Cleave"),
+)
+
+#let greatsword = _weapon(
+  "Greatsword",
+  category: "martial", kind: "melee", ability: ability.str,
+  damage: "2d6", damage-type: "Slashing", range: "5 ft",
+  properties: ("Heavy", "Two-Handed", "Graze"),
+)
+
+#let halberd = _weapon(
+  "Halberd",
+  category: "martial", kind: "melee", ability: ability.str,
+  damage: "1d10", damage-type: "Slashing", range: "10 ft",
+  properties: ("Heavy", "Reach", "Two-Handed", "Cleave"),
+)
+
+#let lance = _weapon(
+  "Lance",
+  category: "martial", kind: "melee", ability: ability.str,
+  damage: "1d10", damage-type: "Piercing", range: "10 ft",
+  properties: ("Heavy", "Reach", "Two-Handed", "Topple"),
 )
 
 #let longsword = _weapon(
@@ -144,25 +263,25 @@
   properties: ("Versatile", "Sap"), versatile: "1d10",
 )
 
-#let dagger = _weapon(
-  "Dagger",
-  category: "simple", kind: "melee",
-  damage: "1d4", damage-type: "Piercing", range: "5 ft", thrown-range: "20/60 ft",
-  properties: ("Finesse", "Light", "Thrown", "Nick"),
+#let maul = _weapon(
+  "Maul",
+  category: "martial", kind: "melee", ability: ability.str,
+  damage: "2d6", damage-type: "Bludgeoning", range: "5 ft",
+  properties: ("Heavy", "Two-Handed", "Topple"),
 )
 
-#let battleaxe = _weapon(
-  "Battleaxe",
+#let morningstar = _weapon(
+  "Morningstar",
   category: "martial", kind: "melee", ability: ability.str,
-  damage: "1d8", damage-type: "Slashing", range: "5 ft",
-  properties: ("Versatile", "Topple"), versatile: "1d10",
+  damage: "1d8", damage-type: "Piercing", range: "5 ft",
+  properties: ("Sap",),
 )
 
-#let warhammer = _weapon(
-  "Warhammer",
+#let pike = _weapon(
+  "Pike",
   category: "martial", kind: "melee", ability: ability.str,
-  damage: "1d8", damage-type: "Bludgeoning", range: "5 ft",
-  properties: ("Versatile", "Push"), versatile: "1d10",
+  damage: "1d10", damage-type: "Piercing", range: "10 ft",
+  properties: ("Heavy", "Reach", "Two-Handed", "Push"),
 )
 
 // Give a Finesse weapon no explicit ability: the resolver picks the better of
@@ -174,13 +293,6 @@
   properties: ("Finesse", "Vex"),
 )
 
-#let shortsword = _weapon(
-  "Shortsword",
-  category: "martial", kind: "melee",
-  damage: "1d6", damage-type: "Piercing", range: "5 ft",
-  properties: ("Finesse", "Light", "Vex"),
-)
-
 // A Rogue is proficient with this martial weapon by name. The resolver matches
 // weapon proficiency by category or by name (see resolve-attacks).
 #let scimitar = _weapon(
@@ -190,11 +302,48 @@
   properties: ("Finesse", "Light", "Nick"),
 )
 
-#let shortbow = _weapon(
-  "Shortbow",
-  category: "simple", kind: "ranged", ability: ability.dex,
-  damage: "1d6", damage-type: "Piercing", range: "80/320 ft",
-  properties: ("Ammunition", "Two-Handed", "Vex"),
+#let shortsword = _weapon(
+  "Shortsword",
+  category: "martial", kind: "melee",
+  damage: "1d6", damage-type: "Piercing", range: "5 ft",
+  properties: ("Finesse", "Light", "Vex"),
+)
+
+#let trident = _weapon(
+  "Trident",
+  category: "martial", kind: "melee", ability: ability.str,
+  damage: "1d8", damage-type: "Piercing", range: "5 ft", thrown-range: "20/60 ft",
+  properties: ("Thrown", "Versatile", "Topple"), versatile: "1d10",
+)
+
+#let warhammer = _weapon(
+  "Warhammer",
+  category: "martial", kind: "melee", ability: ability.str,
+  damage: "1d8", damage-type: "Bludgeoning", range: "5 ft",
+  properties: ("Versatile", "Push"), versatile: "1d10",
+)
+
+#let war-pick = _weapon(
+  "War Pick",
+  category: "martial", kind: "melee", ability: ability.str,
+  damage: "1d8", damage-type: "Piercing", range: "5 ft",
+  properties: ("Versatile", "Sap"), versatile: "1d10",
+)
+
+#let whip = _weapon(
+  "Whip",
+  category: "martial", kind: "melee",
+  damage: "1d4", damage-type: "Slashing", range: "10 ft",
+  properties: ("Finesse", "Reach", "Slow"),
+)
+
+// --- Martial Ranged Weapons --------------------------------------------------
+
+#let blowgun = _weapon(
+  "Blowgun",
+  category: "martial", kind: "ranged", ability: ability.dex,
+  damage: "1", damage-type: "Piercing", range: "25/100 ft",
+  properties: ("Ammunition", "Loading", "Vex"),
 )
 
 #let hand-crossbow = _weapon(
@@ -202,4 +351,33 @@
   category: "martial", kind: "ranged", ability: ability.dex,
   damage: "1d6", damage-type: "Piercing", range: "30/120 ft",
   properties: ("Ammunition", "Light", "Loading", "Vex"),
+)
+
+#let crossbow-heavy = _weapon(
+  "Heavy Crossbow",
+  category: "martial", kind: "ranged", ability: ability.dex,
+  damage: "1d10", damage-type: "Piercing", range: "100/400 ft",
+  properties: ("Ammunition", "Heavy", "Loading", "Two-Handed", "Push"),
+)
+#let heavy-crossbow = crossbow-heavy
+
+#let longbow = _weapon(
+  "Longbow",
+  category: "martial", kind: "ranged", ability: ability.dex,
+  damage: "1d8", damage-type: "Piercing", range: "150/600 ft",
+  properties: ("Ammunition", "Heavy", "Two-Handed", "Slow"),
+)
+
+#let musket = _weapon(
+  "Musket",
+  category: "martial", kind: "ranged", ability: ability.dex,
+  damage: "1d12", damage-type: "Piercing", range: "40/120 ft",
+  properties: ("Ammunition", "Loading", "Two-Handed", "Slow"),
+)
+
+#let pistol = _weapon(
+  "Pistol",
+  category: "martial", kind: "ranged", ability: ability.dex,
+  damage: "1d10", damage-type: "Piercing", range: "30/90 ft",
+  properties: ("Ammunition", "Loading", "Vex"),
 )

@@ -52,10 +52,23 @@
 }
 
 // Collect the effects of every feature, sub-features included, plus the character-level ad-hoc effects.
+// - Annotate `spellcasting` and `spell-any-slot` effects with the feature's
+//   `class-source` so the resolver can inherit a class's item bonuses when a
+//   feat-granted spell comes from a class feature (e.g., Magic Initiate via
+//   Lessons of the First Ones → Warlock spells that inherit the Rod of the
+//   Pact Keeper bonus). Background/origin feats have no class-source → no
+//   item-bonus inheritance.
 #let collect-effects(char) = {
   let effects = ()
   for f in flatten-features(char.features) {
-    effects += f.at("effects", default: ())
+    let cs = f.at("class-source", default: none)
+    for e in f.at("effects", default: ()) {
+      if cs != none and (e.effect == "spell-any-slot" or e.effect == "spellcasting") {
+        effects.push(e + (class-source: cs))
+      } else {
+        effects.push(e)
+      }
+    }
   }
   effects += char.at("effects", default: ())
   effects
@@ -329,6 +342,23 @@
   let sources = effects.filter(e => e.effect == "spellcasting").map(e => {
     let amod = mods.at(e.ability)
     let (dc, attack: atk) = source-stats(e.source, amod)
+    // If this spellcasting source came from a class feature (class-source set),
+    // also include item bonuses scoped to that class.  E.g., Magic Initiate
+    // via Lessons of the First Ones is a Warlock spell — the Rod of the Pact
+    // Keeper applies to its own free cast as well.
+    // - Skip when cs == e.source: the class's own spellcasting source already
+    //   matched via source-stats (source-name == "Warlock" filters the same
+    //   bonus), so adding it again would double-count.
+    let cs = e.at("class-source", default: none)
+    if cs != none and cs != e.source {
+      let class-bonus = effects.filter(x =>
+        x.effect == "spellcasting-bonus"
+        and x.source-name != none
+        and x.source-name == cs
+      )
+      dc += class-bonus.map(x => x.dc).sum(default: 0)
+      atk += class-bonus.map(x => x.attack).sum(default: 0)
+    }
     // Source-level default slot, such as the warlock pact slot level.
     // - A spell entry can override it with (spell: s, slot: N).
     // - A bare entry uses this default, or the spell's own base level when there is none.
@@ -364,7 +394,11 @@
   // - Project such a spell into every other spellcasting source that has slots.
   // - Resolve it as a bare spell entry of that source: the source's `default-slot`, or the spell's own base level for a multi-level caster.
   // - Take the DC and attack from the granting feat's own ability; a borrowed slot keeps the spell's owner.
-  // - Apply only an item bonus scoped to the feat's own source name (skip the host's).
+  // - Inherit the host source's item bonuses (e.g., Rod of the Pact Keeper +2 for
+  //   Warlock) only when the granting feature came from that class (class-source
+  //   matches the host source's name — e.g., Magic Initiate via Lessons of the
+  //   First Ones). Background/origin-feat spells have no class-source and keep
+  //   the feat's own numbers.
   let any-slot = effects.filter(e => e.effect == "spell-any-slot")
   if any-slot.len() == 0 { sources } else {
     sources.map(src => {
@@ -372,8 +406,22 @@
       let extra = any-slot.filter(e => e.source != src.source).map(e => {
         let amod = mods.at(e.ability)
         let (dc, attack: atk) = source-stats(e.source, amod)
+        // Inherit item bonuses scoped to the host source when the spell
+        // originated from a feature of that class (e.g., Warlock invocation).
+        let host-dc = 0
+        let host-atk = 0
+        if e.at("class-source", default: none) == src.source {
+          let host-bonus = effects.filter(x =>
+            x.effect == "spellcasting-bonus"
+            and x.source-name != none
+            and x.source-name == src.source
+          )
+          host-dc = host-bonus.map(x => x.dc).sum(default: 0)
+          host-atk = host-bonus.map(x => x.attack).sum(default: 0)
+        }
         let slot = if src.default-slot != none { src.default-slot } else { e.spell.at("level", default: 1) }
-        _spell-detail(e.spell, e.source, dc, atk, level, spell-bonuses,
+        _spell-detail(e.spell, e.source, dc + host-dc,
+          atk + host-atk, level, spell-bonuses,
           slot: slot, fixed-slot: src.default-slot != none, cast-mod: amod)
       })
       src + (spells-detail: src.spells-detail + extra)

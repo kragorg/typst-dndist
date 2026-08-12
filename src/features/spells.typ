@@ -829,3 +829,16 @@
   duration: "1 hour",
   notes: [See creatures and objects that have the Invisible condition as if they were visible, and see into the Ethereal Plane, where they appear ghostly.],
 )
+
+// --- 4th-level spells ------------------------------------------------------
+#let raulothims-psychic-lance = _spell(
+  "Raulothim's Psychic Lance", 4, school: "Enchantment",
+  casting-time: "Action", range: "120 ft", components: "V",
+  duration: "Instantaneous", save: "INT",
+  slot-damage: (
+    (4, 7, "d6", "Psychic"), (5, 8, "d6", "Psychic"), (6, 9, "d6", "Psychic"),
+    (7, 10, "d6", "Psychic"), (8, 11, "d6", "Psychic"), (9, 12, "d6", "Psychic"),
+  ),
+  notes: [On fail: Incapacitated until SoYNT. On save: half damage, no condition. You may utter a creature's name; if it's in range it becomes the target even if unseen. If the named target isn't in range, the lance dissipates.],
+  scaling: [$+1d 6$/slot above 4th.],
+)

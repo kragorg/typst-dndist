@@ -226,16 +226,13 @@
     column-gutter: 12pt,
     align: top,
 
-    // Left: spellcasting stats, spell slots, then the spells table.
+    // Left: spellcasting stats, then the spells table.
     {
       if c.spellcasting.len() > 0 {
         // - The card's own header, at the letter's size: one row per distinct set of numbers, sources sharing a row joined by "/".
         framed-box("Spellcasting", spellcasting-head(
           c.spellcasting, size: 9pt, source-label: "Source",
         ))
-        v(letter-section-gap)
-
-        framed-box("Spell Slots", slots-grid(merge-slots(c.spellcasting)))
         v(letter-section-gap)
 
         framed-box(
@@ -300,11 +297,16 @@
         )
       }),
       framed-box("Coins", coins-box(coins: _parse-currency(c.currency))),
-      // - Show a diamond tracker for each limited-use resource pool (Innate Sorcery, Lucky, Wails from the Grave, ...).
+      // - Show a diamond tracker for each limited-use resource pool (Innate Sorcery, Lucky, Wails from the Grave, ...), plus spell slot levels.
+      // - Include a spell-slot line per level even when there are no limited-use pools.
       // - Keep the box on this page with the other tracking boxes (attunement, coins): the ability rail fixes the height of page 1's grid, which has no reliable slack.
-      // - Render it only when the character has a pool.
-      if c.limited-uses.len() > 0 {
-        framed-box("Resources", limited-use-lines(c.limited-uses, size: 8.5pt, single-column: true))
+      {
+        let resources = if c.spellcasting.len() > 0 {
+          slot-resource-items(merge-slots(c.spellcasting)) + c.limited-uses
+        } else { c.limited-uses }
+        if resources.len() > 0 {
+          framed-box("Resources", limited-use-lines(resources, size: 8.5pt, single-column: true))
+        }
       },
     ),
   )

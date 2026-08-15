@@ -282,7 +282,7 @@
   spellcasting-head(c.spellcasting)
   v(section-gap)
   spell-table(
-    c.spellcasting, slots: merge-slots(c.spellcasting), size: 7.5pt, keep-groups: true,
+    c.spellcasting, size: 7.5pt, keep-groups: true,
     atomic-rows: true, school-notes: spell-school-notes(c.traits),
   )
 }
@@ -366,7 +366,8 @@
     // - The Gear card holds the EQUIPPED and INVENTORY lists.
     has-actions: (c.attacks, actions, bonus-actions, reactions,
       c.cunning-strikes, spell-attacks, spell-bonus-items,
-      spell-reaction-items, masteries, other, c.limited-uses).any(l => l.len() > 0),
+      spell-reaction-items, masteries, other, c.limited-uses).any(l => l.len() > 0)
+      or c.spellcasting.any(s => s.slots.values().any(v => v > 0)),
     has-features: (traits, feats).any(l => l.len() > 0),
     has-gear: c.equipped.len() > 0 or c.equipment.len() > 0 or c.currency != none,
   )
@@ -389,6 +390,10 @@
   // - Each table lists the features first, then the spells.
   let bonus-all = b.bonus-actions + b.spell-bonus-items
   let reaction-all = b.reactions + b.spell-reaction-items
+  // - Spell slots (one row per level) join the Long Rest column, before the other pools.
+  let _all-resources = if c.spellcasting.len() > 0 {
+    slot-resource-items(merge-slots(c.spellcasting)) + c.limited-uses
+  } else { c.limited-uses }
   _card-sections((
     (c.attacks.len() > 0 or b.spell-attacks.len() > 0, attack-table(c.attacks, attacks-per-action: c.attacks-per-action, spells: b.spell-attacks, size: 7.5pt)),
     (b.masteries.len() > 0, activation-table("Mastery", b.masteries, size: 7.5pt)),
@@ -400,7 +405,7 @@
     // - Limited-use resource pools form the tail: two side-by-side tables of diamonds, Short Rest and Long Rest.
     // - The pair travels together, so neither bucket orphans at a card break.
     // - A character with resources but no actions still emits this card, titled "Actions": `has-actions` above includes `c.limited-uses`.
-    (c.limited-uses.len() > 0, resource-tables(c.limited-uses, size: 7.5pt)),
+    (_all-resources.len() > 0, resource-tables(_all-resources, size: 7.5pt)),
   ))
 }
 

@@ -851,6 +851,22 @@
   slots
 }
 
+// Convert merged spell slots (level→count dict) into resource-like items
+// that can be passed to `resource-tables` or `limited-use-lines`.
+// Spell slots recharge on a long rest; one line per level with non-zero slots.
+#let slot-resource-items(slots) = {
+  slots.pairs()
+    .filter(p => p.at(1) > 0)
+    .sorted(key: p => int(p.at(0)))
+    .map(p => (
+      name: ordinal(int(p.at(0))) + " Level Spells",
+      uses: p.at(1),
+      recharge: "long",
+      uses-label: none,
+      spell: false,
+    ))
+}
+
 // --- The spell table's cells, one helper per column ------------------------
 
 // SPELL name: grows the `auto` column to fit, but capped — past a max width the name wraps instead of pushing the other columns over. Cap is em-relative (scales with `size`); `measure` here inherits the cell's size, so the test is width-in-em: `Dissonant Whispers` (~8em) stays one line, `Tasha's Hideous Laughter` (~10.4em) breaks. The name cell is measured before the school-synergy marker (below) is appended, so the marker stays out of the wrap decision.
@@ -939,7 +955,7 @@
 // - `keep-groups` (set by the fixed-size card deck) wraps each level-group in `keep-together`, so a group bumps intact to the next card rather than orphaning a couple of rows; the page-flow letter leaves it off (splitting is fine there).
 //
 // `school-notes` (see `spell-school-notes`) marks any spell whose school matches — a Great Old One warlock's Enchantment/Illusion spells reading "*Psychic Spells", say — with a symbol drawn from Typst's own footnote sequence (*, †, ‡, ...), assigned once per table so the same note always carries the same symbol; the note text itself is rendered by the page template's true bottom-of-page footer (`school-notes-footer`), separate from here — see `_spell-name-cell` for why.
-#let spell-table(sources, slots: (:), size: 8pt, keep-groups: false, atomic-rows: false, school-notes: ()) = {
+#let spell-table(sources, size: 8pt, keep-groups: false, atomic-rows: false, school-notes: ()) = {
   let all = all-spells(sources)
   if all.len() == 0 { return }
   let levels = all.map(s => s.cast-level).dedup().sorted()
@@ -949,17 +965,7 @@
   // One level group: its heading stacked directly onto its own table with a small, exact gap.
   let level-group(lv) = {
     let rows = all.filter(s => s.cast-level == lv)
-    let head = section-head(if lv == 0 { "Cantrips" } else { ordinal(lv) + " Level" })
-    // Slot diamonds for this level, right-justified across from its heading.
-    let n = slots.at(str(lv), default: 0)
-    let heading = if n > 0 {
-      grid(
-        columns: (auto, 1fr),
-        align: (left + horizon, right + horizon),
-        head,
-        box[#for i in range(n) [#h(if i > 0 { 3pt } else { 0pt })#checkbox()]],
-      )
-    } else { head }
+    let heading = section-head(if lv == 0 { "Cantrips" } else { ordinal(lv) + " Level" })
     // `sticky-head` binds the heading to its table so it stays off a card/page foot when a too-tall group splits (see `sticky-head`).
     let group = sticky-head(
       heading,

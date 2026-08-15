@@ -291,7 +291,8 @@
 // - `activation` ("Action" / "Bonus Action" / "Reaction" / none) moves an activated ability out of the passive lists into an action-economy table, whatever its `kind`.
 // - A `magic-item` follows the same trait-kind path: activated goes to an action table, passive to the Traits list.
 // - Actionable spells route into the same tables, keyed off casting time. Every spell declares one — `_spell` asserts it.
-// - An Action spell that makes an attack roll, or does damage and forces a save, joins the ATTACK table with the weapons.
+// - Only cantrips (level-0 spells) join the action-economy tables. A leveled spell lives on the Spells card alone, keeping the action tables tight.
+// - A cantrip Action spell that makes an attack roll, or does damage and forces a save, joins the ATTACK table with the weapons.
 // - Every Bonus Action / Reaction spell joins its table as a name+notes pseudo-item, the shape `activation-table` renders.
 // - A utility Action spell (no attack, no damage+save) shows on the Spells card only.
 // - Spells sort by level, then name.
@@ -339,12 +340,13 @@
   let spells-all = all-spells(c.spellcasting)
   let spell-key = s => str(s.level) + s.name
   let spell-attacks = spells-all.filter(s =>
-    s.casting-time == "Action"
+    s.level == 0
+    and s.casting-time == "Action"
     and (s.at("attack", default: false)
       or (s.at("damage", default: none) != none and s.save != none))).sorted(key: spell-key)
   let as-item = s => (name: spell-name-cell(s), notes: spell-action-note(s, include-damage: true))
-  let spell-bonus-items = spells-all.filter(s => s.casting-time == "Bonus Action").sorted(key: spell-key).map(as-item)
-  let spell-reaction-items = spells-all.filter(s => s.casting-time == "Reaction").sorted(key: spell-key).map(as-item)
+  let spell-bonus-items = spells-all.filter(s => s.level == 0 and s.casting-time == "Bonus Action").sorted(key: spell-key).map(as-item)
+  let spell-reaction-items = spells-all.filter(s => s.level == 0 and s.casting-time == "Reaction").sorted(key: spell-key).map(as-item)
 
   (
     // - Passive traits and feats, partitioned into source groups: species, each class, invocations, Feats, magic items (`trait-groups`, common.typ).

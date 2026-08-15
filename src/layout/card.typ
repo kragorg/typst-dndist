@@ -312,7 +312,8 @@
   // - Features & Traits shows the same feature with its full `desc`. The duplication is deliberate: quick combat lookup vs. reference.
   let other = c.traits.filter(t =>
     (is-trait-kind(t) or is-feat-kind(t)) and activation-of(t) == none
-    and t.at("notes", default: none) != none)
+    and t.at("notes", default: none) != none
+    and t.at("via-name", default: none) != "Metamagic")
 
   // - MASTERY table: one row per distinct trained mastery property among the resolved attack lines. An attack carries `mastery` only when the weapon is mastered (see resolve.typ).
   // - The rider's effect prose comes from `weapon-mastery-descriptions`.
@@ -365,7 +366,7 @@
     // - The Features & Traits card holds the grouped passive list.
     // - The Gear card holds the EQUIPPED and INVENTORY lists.
     has-actions: (c.attacks, actions, bonus-actions, reactions,
-      c.cunning-strikes, spell-attacks, spell-bonus-items,
+      c.cunning-strikes, c.metamagic, spell-attacks, spell-bonus-items,
       spell-reaction-items, masteries, other, c.limited-uses).any(l => l.len() > 0)
       or c.spellcasting.any(s => s.slots.values().any(v => v > 0)),
     has-features: (traits, feats).any(l => l.len() > 0),
@@ -402,6 +403,7 @@
     (bonus-all.len() > 0, activation-table("Bonus Action", bonus-all, size: 7.5pt)),
     (reaction-all.len() > 0, activation-table("Reaction", reaction-all, size: 7.5pt)),
     (b.other.len() > 0, activation-table("Other", b.other, size: 7.5pt)),
+    (c.metamagic.len() > 0, metamagic-table(c.metamagic, size: 7.5pt)),
     // - Limited-use resource pools form the tail: two side-by-side tables of diamonds, Short Rest and Long Rest.
     // - The pair travels together, so neither bucket orphans at a card break.
     // - A character with resources but no actions still emits this card, titled "Actions": `has-actions` above includes `c.limited-uses`.

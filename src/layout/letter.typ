@@ -201,6 +201,10 @@
           v(letter-section-gap)
           cunning-strike-table(c.cunning-strikes, size: 8pt)
         }
+        if c.metamagic.len() > 0 {
+          v(letter-section-gap)
+          metamagic-table(c.metamagic, size: 8pt)
+        }
       })
       v(letter-section-gap)
 

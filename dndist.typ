@@ -41,6 +41,7 @@
 #import "src/features/classes.typ" as class
 #import "src/features/subclasses.typ" as subclass
 #import "src/features/invocations.typ" as invocation
+#import "src/features/metamagic.typ" as metamagic
 #import "src/features/backgrounds.typ" as background
 #import "src/features/items.typ" as item
 #import "src/features/weapons.typ" as weapon

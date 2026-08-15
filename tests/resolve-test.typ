@@ -1089,7 +1089,7 @@
     class.sorcerer(level: 5, skills: (skill.arcana, skill.persuasion)),
   ),
 ))
-#assert.eq(lu.limited-uses.len(), 3)
+#assert.eq(lu.limited-uses.len(), 4)
 #let lu-ar = lu.limited-uses.find(r => r.name == "Adrenaline Rush")
 #assert.eq(lu-ar.uses, 3)
 #assert.eq(lu-ar.uses-label, "PB")
@@ -1113,6 +1113,39 @@
 // than an interpolated one, so `assert.eq` would spuriously fail otherwise.
 #let pb3 = 3
 #assert.eq(lu.traits.find(t => t.name == "Adrenaline Rush").notes, [Take the Dash action; gain #pb3 THP.])
+
+// --- Metamagic (Sorcerer 2) --------------------------------------------------
+// Font of Magic grants the Sorcery Points pool (level uses, Long Rest); the
+// Metamagic parent nests the two chosen options, which flatten into traits.
+#let mm = resolve(character(
+  abilities: (str: 8, dex: 16, con: 14, int: 8, wis: 10, cha: 17),
+  features: (
+    class.sorcerer(
+      level: 2,
+      skills: (skill.arcana, skill.persuasion),
+      cantrips: (spell.sorcerous-burst,),
+      spells: (spell.chromatic-orb,),
+      metamagic: (metamagic.empowered-spell, metamagic.seeking-spell),
+    ),
+  ),
+))
+#assert(mm.traits.any(t => t.name == "Font of Magic"))
+#let mm-sp = mm.limited-uses.find(r => r.name == "Sorcery Points")
+#assert.eq(mm-sp.uses, 2)
+#assert.eq(mm-sp.recharge, "long")
+#assert(mm.traits.any(t => t.name == "Metamagic"))
+#let mm-emp = mm.traits.find(t => t.name == "Empowered Spell")
+#assert(mm-emp.at("notes", default: none) != none)
+#let mm-seek = mm.traits.find(t => t.name == "Seeking Spell")
+#assert.eq(mm.metamagic.len(), 2)
+#assert(mm.metamagic.any(m => m.name == "Empowered Spell"))
+#assert(mm.metamagic.any(m => m.name == "Seeking Spell"))
+#assert.eq(mm.metamagic.find(m => m.name == "Empowered Spell").at("cost", default: none), "1 SP")
+
+// The level-5 Orc Sorcerer above also gains Sorcery Points from Font of Magic.
+#let lu-sp = lu.limited-uses.find(r => r.name == "Sorcery Points")
+#assert.eq(lu-sp.uses, 5)
+#assert.eq(lu-sp.recharge, "long")
 
 // A character with no limited-use feature yields an empty list.
 #let lu-none = resolve(character(

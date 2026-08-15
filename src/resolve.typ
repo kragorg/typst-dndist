@@ -858,6 +858,7 @@
     senses: resolve-senses(effects),
     limited-uses: resolve-limited-uses(effects, ctx),
     cunning-strikes: resolve-cunning-strikes(effects, pb, mods),
+    metamagic: traits.filter(t => t.at("via-name", default: none) == "Metamagic"),
     raw: char,
   )
 }

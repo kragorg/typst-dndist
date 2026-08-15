@@ -180,6 +180,12 @@
   components: "V, S", duration: "10 min", concentration: true, ritual: true,
   notes: [Sense magic within 30 ft. _Magic Action_ to see auras and learn spell school. Blocked by 1 ft stone/dirt/wood, 1 in metal, or lead.],
 )
+#let expeditious-retreat = _spell(
+  "Expeditious Retreat", 1, school: "Transmutation",
+  casting-time: "Bonus Action", range: "Self", components: "V, S",
+  duration: "10 min", concentration: true,
+  notes: [You can take the Dash action on that turn. For the duration, you can take the Dash action as a Bonus Action.],
+)
 #let magic-missile = _spell(
   "Magic Missile", 1, school: "Evocation",
   casting-time: "Action", range: "120 ft", components: "V, S",

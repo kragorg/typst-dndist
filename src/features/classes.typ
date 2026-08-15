@@ -186,21 +186,74 @@
 )
 
 // Sorcerer: a Charisma full caster.
-#let sorcerer(level: 1, subclass: none, skills: (), cantrips: (), spells: ()) = _class(
-  "Sorcerer", level, subclass: subclass, hit-die: "d6",
-  saves: ("con", "cha"), weapons: ("simple",), skills: skills,
+#let _metamagic-known(level) = if level >= 2 { 2 } else { 0 }
+
+// - Font of Magic grants the Sorcery Points pool (a Long Rest resource) and the
+//   ability to convert between spell slots and Sorcery Points. All three pieces
+//   fold under the Font of Magic parent in the Features & Traits list.
+// - Sorcery Points count equals the Sorcerer level.
+#let _font-of-magic(level) = feature(
+  "Font of Magic",
+  kind: "class-feature",
+  source: "Sorcerer",
+  desc: [You tap into a wellspring of magic within yourself, represented by Sorcery Points. You have #level Sorcery Points and regain all expended points when you finish a Long Rest. You can also convert between spell slots and Sorcery Points.],
   features: (
-    _full-caster-feature("Sorcerer", ability.cha, level, subclass, cantrips: cantrips, spells: spells),
     limited-use-feature(
-      "Innate Sorcery", 2,
+      "Sorcery Points", level,
+      recharge: "long",
+      kind: "class-feature",
+      source: "Sorcerer",
+      desc: [You have #level Sorcery Points. You regain all expended Sorcery Points when you finish a Long Rest.],
+    ),
+    feature(
+      "Convert Spell Slots",
+      kind: "class-feature",
+      source: "Sorcerer",
+      notes: [Expend a spell slot, gain SP equal to its level. No action.],
+      desc: [Expend a spell slot to gain a number of Sorcery Points equal to the slot's level. No action required.],
+    ),
+    feature(
+      "Create Spell Slot",
       kind: "class-feature",
       source: "Sorcerer",
       activation: "Bonus Action",
-      desc: [Twice per Long Rest, as a Bonus Action, unleash your innate magic for 1 minute: your spell save DC increases by $1$ and you have Advantage on the attack rolls of your Sorcerer spells.],
-      notes: [$+1$ to spell save DC; Advantage on Sorcerer spell attack rolls. 1 minute.],
+      notes: [Transform 2 SP into a 1st-level spell slot; vanishes on Long Rest.],
+      desc: [As a Bonus Action, transform unexpended Sorcery Points into a spell slot. The slot vanishes when you finish a Long Rest.],
     ),
   ),
 )
+
+#let sorcerer(level: 1, subclass: none, skills: (), cantrips: (), spells: (), metamagic: ()) = {
+  let meta-known = _metamagic-known(level)
+  assert(
+    metamagic.len() == 0 or metamagic.len() == meta-known,
+    message: "Sorcerer level " + str(level) + " knows " + str(meta-known)
+      + " Metamagic option(s); got " + str(metamagic.len()),
+  )
+  _class(
+    "Sorcerer", level, subclass: subclass, hit-die: "d6",
+    saves: ("con", "cha"), weapons: ("simple",), skills: skills,
+    features: (
+      _full-caster-feature("Sorcerer", ability.cha, level, subclass, cantrips: cantrips, spells: spells),
+      limited-use-feature(
+        "Innate Sorcery", 2,
+        kind: "class-feature",
+        source: "Sorcerer",
+        activation: "Bonus Action",
+        desc: [Twice per Long Rest, as a Bonus Action, unleash your innate magic for 1 minute: your spell save DC increases by $1$ and you have Advantage on the attack rolls of your Sorcerer spells.],
+        notes: [$+1$ to spell save DC; Advantage on Sorcerer spell attack rolls. 1 minute.],
+      ),
+    ) + if level >= 2 {
+      (_font-of-magic(level), feature(
+        "Metamagic",
+        kind: "class-feature",
+        source: "Sorcerer",
+        desc: [You know #meta-known Metamagic options, which can be used to temporarily modify spells you cast.],
+        features: metamagic,
+      ),)
+    } else { () },
+  )
+}
 
 // - Warlock Pact Magic slot table.
 // - All slots have the same level: half the character level, rounded up, with a maximum of 5th.

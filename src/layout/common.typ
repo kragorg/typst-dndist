@@ -657,6 +657,25 @@
   )
 }
 
+// Metamagic table (2024 Sorcerer, level 2): the options a Sorcerer knows to
+// temporarily modify spells as they cast them. Mirrors cunning-strike-table's
+// shape and empty-list guard — renders nothing for a character without the
+// feature. Cost is Sorcery Points ("1 SP"), not dice, so the Cost column is
+// plain text rather than `fmt-dice`.
+#let metamagic-table(metamagic, size: 8pt) = if metamagic.len() > 0 {
+  sheet-table(
+    (auto, auto, 1fr),
+    ("Metamagic", "Cost", "Effect"),
+    metamagic.map(m => (
+      [#m.name],
+      [#m.at("cost", default: "1 SP")],
+      [#m.at("notes", default: none)],
+    )),
+    align: (left + top, center + top, left + top),
+    size: size,
+  )
+}
+
 // The Notes cell of an activated feature: its own `notes` prose, led by the spell it casts when it declares one (a wand's Magic Action — `casts:`, resolved to `cast` in resolve.typ).
 // - The cast line names the spell, its beam count and its range, then the damage: the numbers come from the spell catalog, so an item's prose never restates them.
 // - The spell's name is italic, the one mark these tables use for a spell (`spell-name-cell`): here the row is the item, so the italic is what says a spell is involved at all.

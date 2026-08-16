@@ -148,7 +148,7 @@
             typst compile --root "$src" tests/resolve-test.typ "$out/resolve-test.pdf"
           '';
 
-          # - This check compiles every fixture in both layouts.
+          # - This check compiles every fixture in the four layouts.
           # - The fixtures have no assertions, but they must compile.
           # - A compile failure shows a layout fault that resolve-test cannot find.
           render = typstCheck "render-fixtures" typst-strict ''
@@ -157,7 +157,7 @@
               # AND-list exemption; `case` states the skip outright.
               case "$f" in tests/resolve-test.typ) continue ;; esac
               name="$(basename "$f" .typ)"
-              for layout in card letter; do
+              for layout in card card-lg card-5x8 letter; do
                 echo "rendering $name ($layout)"
                 typst-strict --root "$src" --input "layout=$layout" \
                   "$f" "$out/$name-$layout.pdf"
@@ -167,7 +167,7 @@
 
           # This check compiles the template in place, with the font guard.
           template = typstCheck "template" typst-strict ''
-            for layout in card letter; do
+            for layout in card card-lg card-5x8 letter; do
               typst-strict --root "$src/template" --input "layout=$layout" \
                 template/main.typ "$out/template-$layout.pdf"
             done
@@ -186,7 +186,7 @@
             typst init @preview/${pname}:${version} mychar
             cd mychar
             mkdir -p "$out"
-            for layout in card letter; do
+            for layout in card card-lg card-5x8 letter; do
               echo "compiling the scaffolded project ($layout)"
               typst compile --input "layout=$layout" \
                 ${templateEntrypoint} "$out/init-$layout.pdf"

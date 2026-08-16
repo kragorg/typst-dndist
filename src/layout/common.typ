@@ -7,6 +7,30 @@
 #import "../data/skills.typ": skill-list
 #import "../data/constants.typ": alignment-names
 #import "../data/tools.typ": tool
+#import "layouts.typ": layouts, active-layout
+
+// The design unit. Every absolute length in a layout is authored as a multiple
+// of `u` rather than in raw `pt`, so one scalar rescales a whole sheet — type,
+// rules, insets and gaps together, in step. It is fixed for the compile by
+// `--input layout=…`, because a document renders exactly one layout.
+#let scale = layouts.at(active-layout, default: layouts.card).at("scale", default: 1.0)
+#let u = 1pt * scale
+
+// Render `body` at `factor` times the deck's unit.
+// - The card is laid out in a region `1/factor` the real size, so `1fr` columns
+//   and every wrap decision resolve exactly as they do at that unit, then the
+//   result is scaled back to fill the real card. Type, rules, insets and gaps
+//   all land together at `factor * u`.
+// - Used by the deck's two fixed compositions (placard, core card), which are
+//   tuned to fill a card exactly and only grow when the card itself does.
+// - `std.scale` (the builtin) rather than `scale`: the module-level `scale`
+//   above shadows the builtin, and the shadow is a float.
+#let at-scale(factor, body) = if factor == 1.0 { body } else {
+  layout(region => std.scale(
+    x: factor * 100%, y: factor * 100%, origin: top + left, reflow: true,
+    box(width: region.width / factor, body),
+  ))
+}
 
 // Kind and activation predicates over resolved trait dicts.
 // - Both layouts filter `c.traits` with them.
@@ -194,8 +218,8 @@
 }
 
 // A small uppercase Montserrat label.
-#let label(body, size: 6pt, color: ink) = text(
-  font: label-font, size: size, weight: "medium", tracking: 0.5pt, fill: color,
+#let label(body, size: 6 * u, color: ink) = text(
+  font: label-font, size: size, weight: "medium", tracking: 0.5 * u, fill: color,
   upper(body),
 )
 
@@ -203,7 +227,7 @@
 // - Used by the card footer heads, the proficiency-line labels, the spellcasting source names, and the resource tracker's headers and derivation labels.
 // - Each site keeps its own size, weight, and tracking: those three carry the tier distinctions.
 // - This helper names only the shared font, accent, and uppercase.
-#let eyebrow(body, size: 6pt, weight: "regular", tracking: 0pt) = text(
+#let eyebrow(body, size: 6 * u, weight: "regular", tracking: 0 * u) = text(
   font: label-font, size: size, weight: weight, fill: accent, tracking: tracking,
 )[#upper(body)]
 
@@ -211,10 +235,10 @@
 // - Chrome text: it inherits `ink`, separate from `accent`.
 // - Avoid `align(bottom, …)` inside a `height: 100%` box: the footer region always spans to the page's physical bottom edge, and only its top moves with `footer-descent`. Bottom alignment pins the text to that edge, and a borderless print clips it.
 // - Plain text sits `footer-descent` below the body, inboard of the printer's edge clip. The call site tunes `footer-descent`.
-#let page-number-footer(n, m, size: 7pt) = align(right, text(font: label-font, size: size, weight: "medium")[#(str(n) + "/" + str(m))])
+#let page-number-footer(n, m, size: 7 * u) = align(right, text(font: label-font, size: size, weight: "medium")[#(str(n) + "/" + str(m))])
 
 // The card's headline stat size: AC, HP, and each ability modifier read at one size, so the top of the core card has a single tier of prominent numbers.
-#let card-stat-size = 13pt
+#let card-stat-size = 13 * u
 
 // A boxed value with a label underneath: the building block for the stats strip.
 // - `height: 100%` stretches the box to the tallest cell in its grid row, so the whole strip reads at one height.
@@ -222,21 +246,21 @@
 // - Mirrors the letter layout's `stat-box`.
 #let stat-cell(value, name, width: auto, big: false) = box(
   width: width, height: 100%,
-  inset: (x: 3pt, y: 3pt),
-  stroke: 0.5pt + rule-color,
-  radius: 2pt,
+  inset: (x: 3 * u, y: 3 * u),
+  stroke: 0.5 * u + rule-color,
+  radius: 2 * u,
 )[
   #set align(center + horizon)
-  #text(font: body-font, size: if big { card-stat-size } else { 11pt }, weight: "bold")[#num-value(value)]
+  #text(font: body-font, size: if big { card-stat-size } else { 11 * u }, weight: "bold")[#num-value(value)]
   #linebreak()
-  #label(name, size: 5pt)
+  #label(name, size: 5 * u)
 ]
 
 // Proficiency icons, all drawn at one size, so the hierarchy reads correctly.
 // - Levels: empty (none), half-filled 45° split (Jack of All Trades), filled (proficient), filled ring (expertise).
 // - `prof-mark-size` is that one size: every save, skill, and armor circle draws at it, so they read as one control.
-#let prof-mark-size = 6pt
-#let mark-empty(size) = circle(radius: size / 2, fill: none, stroke: 0.6pt + accent)
+#let prof-mark-size = 6 * u
+#let mark-empty(size) = circle(radius: size / 2, fill: none, stroke: 0.6 * u + accent)
 #let mark-full(size) = circle(radius: size / 2, fill: accent, stroke: none)
 
 #let mark-expertise(size) = box(width: size, height: size)[
@@ -247,8 +271,8 @@
 #let mark-half(size) = box(width: size, height: size)[
   #place(circle(radius: size / 2, fill: accent, stroke: none))
   // White out the upper-right triangle, leaving the lower-left half filled.
-  #place(polygon(fill: white, stroke: none, (0pt, 0pt), (size, 0pt), (size, size)))
-  #place(circle(radius: size / 2, fill: none, stroke: 0.6pt + accent))
+  #place(polygon(fill: white, stroke: none, (0 * u, 0 * u), (size, 0 * u), (size, size)))
+  #place(circle(radius: size / 2, fill: none, stroke: 0.6 * u + accent))
 ]
 
 #let prof-mark(data, size: prof-mark-size) = {
@@ -263,11 +287,11 @@
 // - Flat-top (top/bottom edges horizontal) so it is wide enough to hold the letter.
 // - Two sites: the save-advantage footnote (`character-notes`) and a `skill-row` with `eff-check-advantage`.
 // - A save advantage stays off the save boxes: it rarely covers all of an ability's saves. A check advantage covers one whole skill, which is one row.
-#let adv-badge(size: 9.5pt) = box(baseline: 0.2em, width: size, height: size)[
+#let adv-badge(size: 9.5 * u) = box(baseline: 0.2em, width: size, height: size)[
   #place(polygon(
-    fill: none, stroke: 0.6pt + accent,
-    (size * 0.25, 0pt), (size * 0.75, 0pt), (size, size * 0.5),
-    (size * 0.75, size), (size * 0.25, size), (0pt, size * 0.5),
+    fill: none, stroke: 0.6 * u + accent,
+    (size * 0.25, 0 * u), (size * 0.75, 0 * u), (size, size * 0.5),
+    (size * 0.75, size), (size * 0.25, size), (0 * u, size * 0.5),
   ))
   #place(center + horizon, text(
     font: label-font, size: size * 0.6, weight: "bold", fill: accent,
@@ -279,25 +303,25 @@
 // - The two need no SCORE/MOD labels (the letter's rail carries them): the modifier always shows its sign, the score never does.
 #let ability-cell(id, score, mod, save) = box(
   width: 100%,
-  inset: (x: 2pt, y: 3pt),
-  stroke: 0.5pt + rule-color,
-  radius: 2pt,
+  inset: (x: 2 * u, y: 3 * u),
+  stroke: 0.5 * u + rule-color,
+  radius: 2 * u,
 )[
   #set align(center)
   // Full ability name (label uppercases it), e.g. INTELLIGENCE — the card cell is wide enough to spell it out rather than the three-letter abbreviation.
-  #label(ability-names.at(id), size: 5.5pt, color: accent)
+  #label(ability-names.at(id), size: 5.5 * u, color: accent)
   #linebreak()
   #big-num(score, card-stat-size)
   #linebreak()
-  #text(font: body-font, size: 9pt)[#fmt-mod(mod)]
+  #text(font: body-font, size: 9 * u)[#fmt-mod(mod)]
   #linebreak()
-  #v(1pt)
+  #v(1 * u)
   // Same proficiency mark as the skill rows, so save and skill circles read as one consistent control (see `prof-mark`).
-  #box(baseline: 1.5pt, if save.proficient { mark-full(prof-mark-size) } else { mark-empty(prof-mark-size) })
-  #h(1.5pt)
-  #text(font: label-font, size: 5pt, fill: ink)[SAVE ]
+  #box(baseline: 1.5 * u, if save.proficient { mark-full(prof-mark-size) } else { mark-empty(prof-mark-size) })
+  #h(1.5 * u)
+  #text(font: label-font, size: 5 * u, fill: ink)[SAVE ]
   #text(
-    font: body-font, size: 7pt,
+    font: body-font, size: 7 * u,
     weight: if save.proficient { "bold" } else { "regular" },
   )[#fmt-mod(save.bonus)]
 ]
@@ -307,11 +331,11 @@
 // - The badge sits inside the 1fr name cell, thus it cannot widen the card's skills grid.
 #let skill-row(sk, data) = {
   let weight = if data.level != none { "bold" } else { "regular" }
-  let size = 7.5pt
+  let size = 7.5 * u
   grid(
-    columns: (8pt, 1fr, auto),
+    columns: (8 * u, 1fr, auto),
     align: (center + horizon, left + horizon, right + horizon),
-    gutter: 2pt,
+    gutter: 2 * u,
     prof-mark(data),
     text(font: body-font, size: size, weight: weight)[
       #sk.name#if data.at("advantage", default: false) [ #adv-badge(size: size * 0.85)]
@@ -360,15 +384,15 @@
 // - `head-gap`: a section heading to its own content (tight, so they bind).
 // - `section-gap`: between stacked sections on a card (looser than head-gap).
 // The two section gaps stay clearly different: a heading hugs the content below it, and the air goes above the next section, separate from beneath its heading.
-#let rule-gap = 4pt
-#let head-gap = 2.5pt
-#let section-gap = 16pt
+#let rule-gap = 4 * u
+#let head-gap = 2.5 * u
+#let section-gap = 16 * u
 
 // Mirrors `section-gap`'s role, for the letter sheet: the gap between one top-level framed-box/section and the next, on either page. One unified value, so every letter transition from one block's end to the next block's start — including a heading, and including a table-to-table gap like attack-table -> Cunning Strike table — routes through this one token instead of a repeated literal `v(8pt)`.
-#let letter-section-gap = 8pt
+#let letter-section-gap = 8 * u
 
 // The standard gutter between side-by-side columns (the card masthead/skills/footer grids, the letter's two macro-columns, the identity meta row, the armor-training marks) — one token instead of a repeated literal 8pt. Tighter intra-box grids (5pt) and the wide N-up list gutter (14pt) stay separate from this.
-#let grid-gutter = 8pt
+#let grid-gutter = 8 * u
 
 // Tabular rhythm, defined here once and shared by every table and stacked list (via `sheet-table` / `stacked-lines` below) — the reason those builders exist.
 // - Invariant: the gap between rows/items must exceed the leading between wrapped lines within a row/item, or a cell whose content wraps reads with looser spacing than the rows themselves (structure inverted).
@@ -388,13 +412,13 @@
 // - `atomic-rows` (both the letter's page-spanning spell table AND the card deck's spell table) marks every body cell `breakable: false`, so a row skips a mid-cell split across a page/card break — it bumps whole to the next region instead. On the cards it pairs with `keep-groups`: a level-group bumps intact when it fits a card, and a group taller than a card splits between rows rather than mid-cell.
 // - The returned table is wrapped in a zero-spacing block (mirroring `feature-box`/`keep-together`'s own `block(spacing: 0pt, …)`): a bare `table()` placed in flow otherwise carries Typst's default block spacing on top of whatever explicit gap a caller places around it (`v(section-gap)`, `v(head-gap)`, …), silently doubling that gap wherever two such tables are adjacent (e.g. attack-table -> Cunning Strike table) while a spot already wrapped in a zero-spacing block (a `feature-box` heading) reads correctly — a real, visible inconsistency. Zeroing it here, once, makes every explicit gap around a sheet-table exact by construction.
 // - `width: 100%` avoids the auto-width block collapsing a `1fr` column to near-zero (the same trap `keep-together`'s `measure` guards against).
-#let sheet-table(columns, headers, rows, align: left + top, size: 8pt, atomic-rows: false) = {
+#let sheet-table(columns, headers, rows, align: left + top, size: 8 * u, atomic-rows: false) = {
   set par(leading: dense-leading)
   set text(font: body-font, size: size)
   let cell = if atomic-rows { c => table.cell(breakable: false, c) } else { c => c }
   // `rows.len()` — the row count (each element is one row's cells) — separate from `rows.flatten().len()` (the flattened cell count, used below to pass cells to `table()`): with >1 column the cell count always exceeds the real last-row index, so comparing against it below would miss every actual row and silently leave the last row's bottom inset un-zeroed.
   let last-row = rows.len()
-  block(width: 100%, spacing: 0pt, table(
+  block(width: 100%, spacing: 0 * u, table(
     columns: columns,
     // The header's own top inset and the last row's own bottom inset are
     // zeroed: without this, a table's rendered edge sits `row-inset` further
@@ -404,13 +428,13 @@
     // heading even though both call sites pass the identical token. Every
     // *interior* row keeps the normal row-inset on both sides.
     inset: (x, y) => (
-      left: 4pt, right: 4pt,
-      top: if y == 0 { 0pt } else { row-inset },
-      bottom: if y == last-row { 0pt } else { row-inset },
+      left: 4 * u, right: 4 * u,
+      top: if y == 0 { 0 * u } else { row-inset },
+      bottom: if y == last-row { 0 * u } else { row-inset },
     ),
-    stroke: (x, y) => if y == 0 { (bottom: 0.6pt + rule-color) } else { none },
+    stroke: (x, y) => if y == 0 { (bottom: 0.6 * u + rule-color) } else { none },
     align: align,
-    table.header(..headers.map(h => label(h, size: 5.5pt))),
+    table.header(..headers.map(h => label(h, size: 5.5 * u))),
     ..rows.flatten().map(cell),
   ))
 }
@@ -419,10 +443,10 @@
 // - Drives the card deck's overflow policy: a unit (e.g. a spell level-group) bumps intact to a fresh card when it does not fit the space left, and only splits when a single unit exceeds a whole card.
 // - `region.height` is the full page body height (what `layout` reports in the top-level flow), so the test reads "bigger than a card", separate from "bigger than the space remaining".
 // - The outer `block(spacing: 0pt, …)` zeroes the gap around a unit: the `context`/`layout` wrapper is itself a block with default spacing, so setting `spacing: 0pt` only on the inner block leaves that outer gap in place (it stacks on top of the caller's `v(…)` and inflates the list). Callers place the exact gaps between units themselves (`v(section-gap)` / `v(row-gap)`).
-#let keep-together(body) = block(spacing: 0pt, context layout(region => {
+#let keep-together(body) = block(spacing: 0 * u, context layout(region => {
   // Measure at the real content width (`box(width: region.width, …)`): a bare `measure` lays the body out unconstrained, which collapses a `1fr` table column to near-zero width and reports a wildly inflated height.
   let need = measure(box(width: region.width, body)).height
-  block(breakable: need > region.height, spacing: 0pt, body)
+  block(breakable: need > region.height, spacing: 0 * u, body)
 }))
 
 // The one stacked-list constructor for wrapping items (feature "name — desc" lines, bullet inventories, proficiency lines). Same invariant as `sheet-table`: intra-item wrapped lines use `dense-leading`; the between-item gap is `row-gap`, which is larger. `items` is an array of content.
@@ -434,7 +458,7 @@
 // A `stacked-lines` list partitioned into N side-by-side columns of roughly equal item count (the Gear card's Inventory) — mirrors the skills-grid slice pattern (card.typ `_core-card`).
 // - Items are sliced by count up front, separate from flow/balance, so each column is a plain `stacked-lines` in its own grid cell — a real N-up grid, avoiding a snake that dumps a short tail list into a single lopsided column.
 // - `columns` is clamped to `items.len()` (and a too-short list falls back to one `stacked-lines` column) so a handful of items leaves no empty grid cells.
-#let stacked-lines-columns(items, columns: 2, column-gutter: 14pt) = {
+#let stacked-lines-columns(items, columns: 2, column-gutter: 14 * u) = {
   let n = calc.max(1, calc.min(columns, items.len()))
   if n <= 1 { return stacked-lines(items) }
   let rows-per-col = calc.ceil(items.len() / n)
@@ -445,14 +469,14 @@
 }
 
 // A bulleted inventory list: one "• item" line per entry, as a single `stacked-lines` column or an N-up grid. Shared by the Gear card's Inventory (2 columns) and the letter's Equipment box (1 column).
-#let bullet-lines(items, size: 8pt, columns: 1) = stacked-lines-columns(
+#let bullet-lines(items, size: 8 * u, columns: 1) = stacked-lines-columns(
   items.map(e => text(font: body-font, size: size)[• #e]),
   columns: columns,
 )
 
 // The one section-heading style, shared by card section heads, spell-level heads, and (matching) the letter's framed-box titles: Montserrat, bold, accent, uppercase, letter-spaced to read as small-caps labels. `top-edge`/`bottom-edge` clamp the line box to the glyphs so head-gap/section-gap are the visible gaps — otherwise the font's leading floats the caps high in their box, stealing space above and adding phantom space below.
-#let section-head(title, size: 7.5pt) = text(
-  font: label-font, size: size, weight: "bold", fill: accent, tracking: 0.6pt,
+#let section-head(title, size: 7.5 * u) = text(
+  font: label-font, size: size, weight: "bold", fill: accent, tracking: 0.6 * u,
   top-edge: "cap-height", bottom-edge: "baseline",
 )[#upper(title)]
 
@@ -461,14 +485,14 @@
 // - A `stack(spacing: head-gap, heading, body)` cannot do this: a stack skips flow layout, so it ignores stickiness and lets a break land between the heading and the body.
 // - `below: gap` reproduces the exact heading→body gap (bodies here — `sheet-table`, `limited-use-lines` — carry zero surrounding spacing), and `above: 0pt` leaves the caller's leading gap (`v(section-gap)`) as the only space above the heading.
 #let sticky-head(heading, body, gap: head-gap) = {
-  block(sticky: true, above: 0pt, below: gap, breakable: false, heading)
+  block(sticky: true, above: 0 * u, below: gap, breakable: false, heading)
   body
 }
 
 // The Spellcasting header: a table (only when there are sources) whose first column labels the sources and whose columns give the casting ability, its modifier, attack bonus, and save DC. The modifier is the source's own resolver-carried `modifier` — display reads this field directly, since `attack` may include item bonuses (Rod of the Pact Keeper).
 // Sources whose four displayed values all match share one row, their names joined by "/": a character with a species cantrip, two feat grants and a caster class (Elara) casts everything off one Charisma at one attack bonus and one DC, and four rows of identical numbers say that once each. Sources still differ where the numbers do — a Rod of the Pact Keeper scoped to "Warlock" splits attack and DC away from a feat's own, so those keep their own rows.
 // The merge is display-only. `c.spellcasting` stays per-source everywhere else: `spell-table` groups by it, `merge-slots` reads each source's slots, and `resolve-spellcasting` projects `eff-spell-any-slot` between sources.
-#let spellcasting-head(sources, size: 8pt, source-label: "Spellcasting") = if sources.len() > 0 {
+#let spellcasting-head(sources, size: 8 * u, source-label: "Spellcasting") = if sources.len() > 0 {
   // Group on the four displayed values, in first-occurrence order (`group-by`, shared with `trait-groups`).
   let rows = group-by(sources, s => (s.ability, s.modifier, s.attack, s.save-dc))
     .map(g => (names: g.items.map(s => s.source), stats: g.items.first()))
@@ -478,7 +502,7 @@
     rows.map(r => (
       // One `eyebrow` for the whole joined label: the separator carries the same accent and tracking as the names, so the cell reads as one label rather than several styled runs.
       // Each name is boxed, so the only breakable points are the separators: the letter's Source column is narrow enough that a long merged label wraps, and it must break between two sources rather than through the middle of "Magic Initiate (Druid)".
-      eyebrow(r.names.map(n => box(n)).join(" / "), size: size - 1.5pt),
+      eyebrow(r.names.map(n => box(n)).join(" / "), size: size - 1.5 * u),
       [#ability-names.at(r.stats.ability)],
       [#fmt-mod(r.stats.modifier)],
       [#fmt-mod(r.stats.attack)],
@@ -534,7 +558,7 @@
 
 // Area-of-effect glyphs, drawn (the sheet's ETBembo/Montserrat fonts lack unicode glyphs) so they render and scale with the surrounding text. Each is a small line-art icon in an `s`-square box: square/circle are the flat footprints; cube/sphere/cylinder add a 3-D cue (an isometric edge set, an equator, a capped body); line is a bar; cone a triangle emanating from a point. Used in the RANGE column as "«icon» 20 ft" beside a spell's range.
 #let _aoe-icon(shape, s) = {
-  let sw = 0.6pt + ink
+  let sw = 0.6 * u + ink
   box(baseline: 0.15em, width: s, height: s)[
     #if shape == "square" {
       place(rect(width: s, height: s, stroke: sw))
@@ -547,20 +571,20 @@
       let o = s * 0.32
       // Outer silhouette hexagon, then the three near-corner edges that read as a cube.
       place(polygon(stroke: sw, fill: none,
-        (o, 0pt), (s, 0pt), (s, s - o), (s - o, s), (0pt, s), (0pt, o)))
-      place(line(start: (0pt, o), end: (s - o, o), stroke: sw))
-      place(line(start: (s - o, o), end: (s, 0pt), stroke: sw))
+        (o, 0 * u), (s, 0 * u), (s, s - o), (s - o, s), (0 * u, s), (0 * u, o)))
+      place(line(start: (0 * u, o), end: (s - o, o), stroke: sw))
+      place(line(start: (s - o, o), end: (s, 0 * u), stroke: sw))
       place(line(start: (s - o, o), end: (s - o, s), stroke: sw))
     } else if shape == "cylinder" {
       let h = s * 0.34
       place(top, ellipse(width: s, height: h, stroke: sw))
       place(bottom, ellipse(width: s, height: h, stroke: sw))
-      place(line(start: (0pt, h / 2), end: (0pt, s - h / 2), stroke: sw))
+      place(line(start: (0 * u, h / 2), end: (0 * u, s - h / 2), stroke: sw))
       place(line(start: (s, h / 2), end: (s, s - h / 2), stroke: sw))
     } else if shape == "line" {
       place(horizon, rect(width: s, height: s * 0.24, fill: ink, stroke: none))
     } else if shape == "cone" {
-      place(polygon(stroke: sw, fill: none, (0pt, s / 2), (s, 0pt), (s, s)))
+      place(polygon(stroke: sw, fill: none, (0 * u, s / 2), (s, 0 * u), (s, s)))
     }
   ]
 }
@@ -571,7 +595,7 @@
   let range-cell = if range == none { [—] } else { [#range] }
   let area = s.at("area", default: none)
   if area != none {
-    range-cell = [#range-cell (#_aoe-icon(area.shape, isize)#h(2pt)#area.size)]
+    range-cell = [#range-cell (#_aoe-icon(area.shape, isize)#h(2 * u)#area.size)]
   }
   range-cell
 }
@@ -594,7 +618,7 @@
 }
 
 // Attack table: Name / Range / Hit / Damage & Type / Notes. Weapons first (from `attacks`), then any actionable spells (from `spells` — resolved spells-detail dicts, routed here by casting time + attack/save in card.typ). A spell's Hit cell is its attack bonus ("+5") or its save ("INT 14"), mirroring the spell table's HIT/SAVE column; its Notes cell is `spell-action-note` (damage lives in the Damage column, so it drops from the note).
-#let attack-table(attacks, attacks-per-action: 1, spells: (), size: 8pt) = if attacks.len() > 0 or spells.len() > 0 {
+#let attack-table(attacks, attacks-per-action: 1, spells: (), size: 8 * u) = if attacks.len() > 0 or spells.len() > 0 {
   let weapon-rows = attacks.map(a => (
     {
       // A weapon-attack cantrip's line (True Strike / Booming Blade / Shillelagh) names the weapon, then the cantrip it is cast through — italic, the same mark a whole spell row wears, because casting that cantrip is what this row does.
@@ -642,7 +666,7 @@
 }
 
 // Cunning Strike table (2024 Rogue, level 5): the non-damage riders a Rogue can add to a Sneak Attack hit. Mirrors attack-table's shape and empty-list guard — renders nothing for a character without the feature. SAVE shows "DC <n> <ABBR>" (mathified like the spell table's HIT/SAVE cell) or an em-dash for a no-save option.
-#let cunning-strike-table(cunning-strikes, size: 8pt) = if cunning-strikes.len() > 0 {
+#let cunning-strike-table(cunning-strikes, size: 8 * u) = if cunning-strikes.len() > 0 {
   sheet-table(
     (auto, auto, auto, 1fr),
     ("Cunning Strike", "Cost", "Save", "Effect"),
@@ -662,7 +686,7 @@
 // shape and empty-list guard — renders nothing for a character without the
 // feature. Cost is Sorcery Points ("1 SP"), not dice, so the Cost column is
 // plain text rather than `fmt-dice`.
-#let metamagic-table(metamagic, size: 8pt) = if metamagic.len() > 0 {
+#let metamagic-table(metamagic, size: 8 * u) = if metamagic.len() > 0 {
   sheet-table(
     (auto, auto, 1fr),
     ("Metamagic", "Cost", "Effect"),
@@ -691,7 +715,7 @@
 }
 
 // The ACTION / BONUS ACTION / REACTION tables (card deck's Actions/Feats/Traits card): a feature/trait/feat's name plus its `notes` prose. All three tables share this one shape — only the title and item list differ — so one helper is called three times instead of three near-identical functions. Mirrors attack-table/cunning-strike-table's empty-list guard.
-#let activation-table(title, items, size: 8pt) = if items.len() > 0 {
+#let activation-table(title, items, size: 8 * u) = if items.len() > 0 {
   sheet-table(
     (auto, 1fr),
     (title, "Notes"),
@@ -703,16 +727,16 @@
 
 // A small clock face — circle plus hour/minute hands — drawn to match the AoE glyphs. Prefixes a spell's duration in the DAMAGE/EFFECT column.
 #let _clock-icon(s) = box(baseline: 0.15em, width: s, height: s)[
-  #place(circle(radius: s / 2, stroke: 0.6pt + ink))
-  #place(line(start: (s / 2, s / 2), end: (s / 2, s * 0.22), stroke: 0.6pt + ink))
-  #place(line(start: (s / 2, s / 2), end: (s * 0.74, s / 2), stroke: 0.6pt + ink))
+  #place(circle(radius: s / 2, stroke: 0.6 * u + ink))
+  #place(line(start: (s / 2, s / 2), end: (s / 2, s * 0.22), stroke: 0.6 * u + ink))
+  #place(line(start: (s / 2, s / 2), end: (s * 0.74, s / 2), stroke: 0.6 * u + ink))
 ]
 
 // A small diamond checkbox — empty (printable) or filled. Diamonds mark resource tracking: the shield flag, death saves, heroic inspiration, magic-item attunement, and expended spell slots. (Proficiency/training uses circle marks instead — see `mark-*` and `armor-training`.)
-#let checkbox(filled: false, size: 7pt) = box(baseline: 0.15em, polygon(
+#let checkbox(filled: false, size: 7 * u) = box(baseline: 0.15em, polygon(
   fill: if filled { accent } else { white },
-  stroke: 0.6pt + accent,
-  (size / 2, 0pt), (size, size / 2), (size / 2, size), (0pt, size / 2),
+  stroke: 0.6 * u + accent,
+  (size / 2, 0 * u), (size, size / 2), (size / 2, size), (0 * u, size / 2),
 ))
 
 // Recharge kinds whose rest column cannot state the whole rule, each with its own fixed footnote symbol and note.
@@ -756,17 +780,17 @@
   let kinds = query(<recharge-marker>).filter(m => m.location().page() == cur).map(m => m.value)
   let present = _recharge-notes.pairs().filter(((k, n)) => kinds.contains(k))
   if present.len() == 0 { return none }
-  text(font: body-font, size: size, present.map(((k, n)) => [#super[#n.symbol] #n.note]).join(h(6pt)))
+  text(font: body-font, size: size, present.map(((k, n)) => [#super[#n.symbol] #n.note]).join(h(6 * u)))
 }
 // The resource tables' Uses cell (`resource-tables`, card): a row of empty diamonds to check off in play (the resource-tracking marker), with the derivation label ("PB", "DEX mod") as a tiny eyebrow inline-left of the diamonds when the count is derived — smaller than the diamonds so its presence keeps the row height identical (rows with and without a label stay the same height).
 #let _uses-cell(item, size) = {
-  let diamonds = box[#for i in range(item.uses) [#h(if i > 0 { 3pt } else { 0pt })#checkbox(size: size * 0.82)]]
+  let diamonds = box[#for i in range(item.uses) [#h(if i > 0 { 3 * u } else { 0 * u })#checkbox(size: size * 0.82)]]
   if item.uses-label != none {
     grid(
       columns: (auto, auto),
       align: horizon,
-      column-gutter: 4pt,
-      eyebrow(item.uses-label, size: size * 0.58, tracking: 0.4pt),
+      column-gutter: 4 * u,
+      eyebrow(item.uses-label, size: size * 0.58, tracking: 0.4 * u),
       diamonds,
     )
   } else { diamonds }
@@ -789,7 +813,7 @@
 // - Items arrive pre-sorted (short-rest recoverable first, then scarcest-first, then alphabetical — see resolve.typ `resolve-limited-uses`), so each bucket keeps that order. Empty → nothing.
 //
 // A pool whose recharge the column cannot fully state (`long-short-regain`, `dawn`) sits in the Long Rest column and gets a superscript marker on its row — see `_recharge-mark` — with the note rendered by the page's own footer (`recharge-footer`), a metadata anchor instead of a real Typst footnote (unsafe inside this `keep-together` — see that function's note).
-#let resource-tables(items, size: 8pt) = if items.len() > 0 {
+#let resource-tables(items, size: 8 * u) = if items.len() > 0 {
   let (short, long) = recharge-buckets(items)
   let _table(bucket, title) = if bucket.len() > 0 {
     sheet-table(
@@ -806,7 +830,7 @@
   let s = _table(short, "Short Rest")
   let l = _table(long, "Long Rest")
   let body = if s != none and l != none {
-    grid(columns: (1fr, 1fr), column-gutter: 28pt, align: top, s, l)
+    grid(columns: (1fr, 1fr), column-gutter: 28 * u, align: top, s, l)
   } else if s != none { s }
   else { l }
   keep-together(body)
@@ -974,7 +998,7 @@
 // - `keep-groups` (set by the fixed-size card deck) wraps each level-group in `keep-together`, so a group bumps intact to the next card rather than orphaning a couple of rows; the page-flow letter leaves it off (splitting is fine there).
 //
 // `school-notes` (see `spell-school-notes`) marks any spell whose school matches — a Great Old One warlock's Enchantment/Illusion spells reading "*Psychic Spells", say — with a symbol drawn from Typst's own footnote sequence (*, †, ‡, ...), assigned once per table so the same note always carries the same symbol; the note text itself is rendered by the page template's true bottom-of-page footer (`school-notes-footer`), separate from here — see `_spell-name-cell` for why.
-#let spell-table(sources, size: 8pt, keep-groups: false, atomic-rows: false, school-notes: ()) = {
+#let spell-table(sources, size: 8 * u, keep-groups: false, atomic-rows: false, school-notes: ()) = {
   let all = all-spells(sources)
   if all.len() == 0 { return }
   let levels = all.map(s => s.cast-level).dedup().sorted()
@@ -1022,12 +1046,12 @@
 // The title bar of a framed box: full-width, centred uppercase Montserrat on a pale accent fill, closed off by a bottom rule. When `continued` it appends a "(continued)" tag so a box that spilled onto a later page reads as a carry-over rather than a new section.
 #let _framed-title(title, continued: false) = block(
   width: 100%,
-  inset: (x: 4pt, y: 3pt),
-  stroke: (bottom: 0.6pt + rule-color),
+  inset: (x: 4 * u, y: 3 * u),
+  stroke: (bottom: 0.6 * u + rule-color),
   fill: accent.lighten(90%),
 )[
   #set align(center)
-  #text(font: label-font, size: 7.5pt, weight: "bold", fill: accent, tracking: 0.6pt)[
+  #text(font: label-font, size: 7.5 * u, weight: "bold", fill: accent, tracking: 0.6 * u)[
     #upper(title)#if continued [#text(weight: "regular", style: "italic")[ (continued)]]
   ]
 ]
@@ -1038,12 +1062,12 @@
 // - Typst repeats only a `table.header`, and re-realises it per page, so the box body is wrapped in a single-column table whose header is the title bar, and a `context` inside it compares `here().page()` against the box's start page (recovered by querying a marker dropped at the top of the body) to decide the "(continued)" tag.
 // - The marker's label is derived from the title, so each repeat-header box scopes its own start-page lookup (give two such boxes distinct titles).
 // - `min-height` is meaningless when a box is meant to break, so this mode ignores it.
-#let framed-box(title, body, body-inset: 6pt, min-height: auto, repeat-header: false) = block(
+#let framed-box(title, body, body-inset: 6 * u, min-height: auto, repeat-header: false) = block(
   width: 100%,
   breakable: true,
-  stroke: 0.6pt + rule-color,
-  radius: 2pt,
-  inset: 0pt,
+  stroke: 0.6 * u + rule-color,
+  radius: 2 * u,
+  inset: 0 * u,
 )[
   #if repeat-header {
     // `std.label`, separate from this module's `label` text helper (which shadows the built-in label constructor).
@@ -1051,17 +1075,17 @@
     table(
       columns: (1fr,),
       stroke: none,
-      inset: 0pt,
+      inset: 0 * u,
       table.header(context {
         let hits = query(key)
         let start = if hits.len() > 0 { hits.first().location().page() } else { here().page() }
         _framed-title(title, continued: here().page() > start)
       }),
-      block(width: 100%, inset: body-inset, above: 0pt)[#[#metadata(none)#key]#body],
+      block(width: 100%, inset: body-inset, above: 0 * u)[#[#metadata(none)#key]#body],
     )
   } else {
     _framed-title(title)
-    let inner = block(width: 100%, inset: body-inset, above: 0pt)[#body]
+    let inner = block(width: 100%, inset: body-inset, above: 0 * u)[#body]
     // `min-height` is a genuine minimum, separate from a fixed height: an empty printable box reserves the space, but real content taller than it grows the box instead of overflowing the border into the box below. Measured at the actual region width (a bare `measure` lays out at ~zero width and inflates the height — the same trap as `keep-together`).
     if min-height == auto {
       inner
@@ -1075,25 +1099,25 @@
 ]
 
 // A short underline for hand-filled blanks.
-#let blank-line(width) = box(width: width, height: 8pt, stroke: (bottom: 0.5pt + rule-color))
+#let blank-line(width) = box(width: width, height: 8 * u, stroke: (bottom: 0.5 * u + rule-color))
 
 // Shared size for the standalone flag diamonds — Shield, Death Saves, Heroic Inspiration — so they all read as the same control at a glance.
-#let flag-size = 8pt
+#let flag-size = 8 * u
 
 // A bordered cell shell. `height: 100%` stretches it to a fixed grid-row height (header row); the default `auto` sizes to content (safe inside an unconstrained stack — otherwise 100% resolves to the whole page).
-#let _cell(body, height: auto, inset: (x: 5pt, y: 4pt)) = box(
-  width: 100%, height: height, inset: inset, stroke: 0.6pt + rule-color, radius: 2pt,
+#let _cell(body, height: auto, inset: (x: 5 * u, y: 4 * u)) = box(
+  width: 100%, height: height, inset: inset, stroke: 0.6 * u + rule-color, radius: 2 * u,
 )[#body]
 
 // A value sitting above a small uppercase label (left-aligned). When the value is absent (`none`) the field becomes a blank baseline rule to hand-fill; when a value is given it prints plainly, with no fill-in line.
-#let labeled-field(name, value, value-size: 9pt) = stack(
-  spacing: 4pt,
+#let labeled-field(name, value, value-size: 9 * u) = stack(
+  spacing: 4 * u,
   box(
     width: 100%,
-    stroke: if value == none { (bottom: 0.5pt + rule-color) } else { none },
-    inset: (bottom: 1pt),
+    stroke: if value == none { (bottom: 0.5 * u + rule-color) } else { none },
+    inset: (bottom: 1 * u),
   )[#text(font: body-font, size: value-size)[#if value == none { hide[0] } else { value }]],
-  eyebrow(name, size: 5pt, tracking: 0.3pt),
+  eyebrow(name, size: 5 * u, tracking: 0.3 * u),
 )
 
 // One class line for the identity box: "Fighter 1", or "Warlock 9 · Fiend" when the class has a subclass. Pairs name + level + subclass on a single line so a multiclass character reads unambiguously (one line per class).
@@ -1104,33 +1128,33 @@
 }
 
 // Identity box: character name on top, then Background | Species | Type, then the classes — one line per class, so a multiclass build (e.g. Fighter 1 / Warlock 9 · Fiend) keeps each class's level and subclass together. The LEVEL box (separate) shows the summed total. A flexible gap before and after the meta rows absorbs the cell's slack.
-#let identity-box(name, background, species, creature-type, classes) = _cell(height: 100%, inset: (x: 6pt, y: 5pt))[
-  #labeled-field("Character Name", text(size: 11.5pt, weight: "bold", fill: accent)[#name], value-size: 11.5pt)
+#let identity-box(name, background, species, creature-type, classes) = _cell(height: 100%, inset: (x: 6 * u, y: 5 * u))[
+  #labeled-field("Character Name", text(size: 11.5 * u, weight: "bold", fill: accent)[#name], value-size: 11.5 * u)
   #v(1fr)
   #grid(
     columns: (1fr, 1fr, 1fr),
     column-gutter: grid-gutter,
-    labeled-field("Background", background, value-size: 8.5pt),
-    labeled-field("Species", species, value-size: 8.5pt),
-    labeled-field("Type", creature-type, value-size: 8.5pt),
+    labeled-field("Background", background, value-size: 8.5 * u),
+    labeled-field("Species", species, value-size: 8.5 * u),
+    labeled-field("Type", creature-type, value-size: 8.5 * u),
   )
   #v(1fr)
   #labeled-field(
     if classes.len() > 1 { "Classes" } else { "Class" },
-    if classes.len() == 0 { none } else { stack(spacing: 2pt, ..classes.map(_class-entry)) },
-    value-size: 8.5pt,
+    if classes.len() == 0 { none } else { stack(spacing: 2 * u, ..classes.map(_class-entry)) },
+    value-size: 8.5 * u,
   )
 ]
 
 // The shield flag row under Armor Class. Level reuses a hidden copy so both header boxes reserve the same footer height and keep their big numbers aligned.
-#let _shield-row(filled) = [#checkbox(filled: filled, size: flag-size)#h(2pt)#label("Shield", size: 5pt, color: accent)]
+#let _shield-row(filled) = [#checkbox(filled: filled, size: flag-size)#h(2 * u)#label("Shield", size: 5 * u, color: accent)]
 
 // A header box with a centred big number: title at the top, the number centred in the space below, and a footer row at the bottom. Level and Armor Class share this so their numbers sit on the same baseline at the same size.
-#let _header-number-box(name, value, footer) = _cell(height: 100%, inset: (x: 4pt, y: 3pt))[
+#let _header-number-box(name, value, footer) = _cell(height: 100%, inset: (x: 4 * u, y: 3 * u))[
   #set align(center)
-  #label(name, size: 5pt, color: accent)
+  #label(name, size: 5 * u, color: accent)
   #v(1fr)
-  #big-num(value, 19pt)
+  #big-num(value, 19 * u)
   #v(1fr)
   #footer
 ]
@@ -1144,16 +1168,16 @@
 // Hit Points box: big Current (blank) on the left; Temp above Max on the right. Current and Max are bottom-aligned so their labels sit on the same line.
 #let hp-box(max-hp, temp-hp) = _cell(height: 100%)[
   #set align(center)
-  #label("Hit Points", size: 5pt, color: accent)
-  #v(3pt)
+  #label("Hit Points", size: 5 * u, color: accent)
+  #v(3 * u)
   #grid(
     columns: (1.2fr, 1fr),
-    column-gutter: 5pt,
+    column-gutter: 5 * u,
     align: bottom,
-    [#blank-line(34pt) #linebreak() #label("Current", size: 4.5pt)],
-    stack(spacing: 4pt,
-      [#if temp-hp > 0 [#big-num(temp-hp, 9pt)] else [#blank-line(18pt)] #linebreak() #label("Temp", size: 4.5pt)],
-      [#big-num(max-hp, 11pt) #linebreak() #label("Max", size: 4.5pt)],
+    [#blank-line(34 * u) #linebreak() #label("Current", size: 4.5 * u)],
+    stack(spacing: 4 * u,
+      [#if temp-hp > 0 [#big-num(temp-hp, 9 * u)] else [#blank-line(18 * u)] #linebreak() #label("Temp", size: 4.5 * u)],
+      [#big-num(max-hp, 11 * u) #linebreak() #label("Max", size: 4.5 * u)],
     ),
   )
 ]
@@ -1161,28 +1185,28 @@
 // Hit Dice box: Spent (blank, hand-filled) above the computed Max pool.
 #let hit-dice-box(max) = _cell(height: 100%)[
   #set align(center)
-  #label("Hit Dice", size: 5pt, color: accent)
-  #v(3pt)
-  #stack(spacing: 6pt,
-    [#blank-line(28pt) #linebreak() #label("Spent", size: 4.5pt)],
-    [#big-num(max, 11pt) #linebreak() #label("Max", size: 4.5pt)],
+  #label("Hit Dice", size: 5 * u, color: accent)
+  #v(3 * u)
+  #stack(spacing: 6 * u,
+    [#blank-line(28 * u) #linebreak() #label("Spent", size: 4.5 * u)],
+    [#big-num(max, 11 * u) #linebreak() #label("Max", size: 4.5 * u)],
   )
 ]
 
 // Death Saves box: three success + three failure diamond checkboxes (empty, to fill in), drawn at the shared flag size. The row pair is centred in the space below the title.
 #let death-saves-box() = _cell(height: 100%)[
   #set align(center)
-  #label("Death Saves", size: 5pt, color: accent)
+  #label("Death Saves", size: 5 * u, color: accent)
   #v(1fr)
   #let pip = checkbox(size: flag-size)
-  #let pips = [#pip#h(3pt)#pip#h(3pt)#pip]
+  #let pips = [#pip#h(3 * u)#pip#h(3 * u)#pip]
   #grid(
     columns: (auto, auto),
-    column-gutter: 5pt,
-    row-gutter: 5pt,
+    column-gutter: 5 * u,
+    row-gutter: 5 * u,
     align: (left + horizon, left + horizon),
-    text(font: body-font, size: 8pt)[Successes], pips,
-    text(font: body-font, size: 8pt)[Failures], pips,
+    text(font: body-font, size: 8 * u)[Successes], pips,
+    text(font: body-font, size: 8 * u)[Failures], pips,
   )
   #v(1fr)
 ]
@@ -1190,13 +1214,13 @@
 // A row of coins (CP / SP / EP / GP / PP). `coins` is a denom->amount dict; a denomination with no amount stays a blank line for hand-fill.
 #let coins-box(coins: (:)) = grid(
   columns: 5 * (1fr,),
-  column-gutter: 4pt,
+  column-gutter: 4 * u,
   align: center,
   ..(("PP", "pp"), ("GP", "gp"), ("EP", "ep"), ("SP", "sp"), ("CP", "cp")).map(((disp, key)) => {
     let v = coins.at(key, default: none)
     [
-      #if v != none { big-num(v, 10pt) } else { blank-line(100%) }
-      #linebreak() #label(disp, size: 5pt, color: accent)
+      #if v != none { big-num(v, 10 * u) } else { blank-line(100%) }
+      #linebreak() #label(disp, size: 5 * u, color: accent)
     ]
   }),
 )
@@ -1207,18 +1231,18 @@
     let total = slots.at(str(n), default: 0)
     grid(
       columns: (auto, 1fr),
-      column-gutter: 6pt,
+      column-gutter: 6 * u,
       align: (left + horizon, left + horizon),
-      text(font: label-font, size: 6.5pt, fill: if total > 0 { accent } else { rule-color })[LEVEL #n],
+      text(font: label-font, size: 6.5 * u, fill: if total > 0 { accent } else { rule-color })[LEVEL #n],
       if total > 0 {
-        box(baseline: 0.3em)[#for _ in range(total) [#checkbox(size: 11pt)#h(3pt)]]
+        box(baseline: 0.3em)[#for _ in range(total) [#checkbox(size: 11 * u)#h(3 * u)]]
       } else { [] },
     )
   }
   grid(
     columns: 3 * (1fr,),
-    column-gutter: 10pt,
-    rows: 3 * (16pt,),
+    column-gutter: 10 * u,
+    rows: 3 * (16 * u,),
     align: horizon,
     ..range(1, 10).map(n => cell(n)),
   )
@@ -1226,22 +1250,22 @@
 
 // A single labelled stat box (value big, label below) that fills its grid cell —
 // for the Initiative / Speed / Size / Passive Perception / Proficiency Bonus row.
-#let stat-box(name, value, big: false, height: auto) = _cell(height: height, inset: (x: 3pt, y: 4pt))[
+#let stat-box(name, value, big: false, height: auto) = _cell(height: height, inset: (x: 3 * u, y: 4 * u))[
   #set align(center + horizon)
   #stack(
-    spacing: 3pt,
-    text(font: body-font, size: if big { 16pt } else { 13pt }, weight: "bold")[#num-value(value)],
-    label(name, size: 5pt, color: accent),
+    spacing: 3 * u,
+    text(font: body-font, size: if big { 16 * u } else { 13 * u }, weight: "bold")[#num-value(value)],
+    label(name, size: 5 * u, color: accent),
   )
 ]
 
 // Heroic Inspiration box: an empty checkbox with its label.
-#let inspiration-box(height: auto) = _cell(height: height, inset: (x: 3pt, y: 4pt))[
+#let inspiration-box(height: auto) = _cell(height: height, inset: (x: 3 * u, y: 4 * u))[
   #set align(center + horizon)
   #stack(
-    spacing: 3pt,
+    spacing: 3 * u,
     checkbox(size: flag-size),
-    label("Heroic Inspiration", size: 5pt, color: accent),
+    label("Heroic Inspiration", size: 5 * u, color: accent),
   )
 ]
 
@@ -1254,60 +1278,60 @@
     column-gutter: grid-gutter,
     align: horizon,
     ..cats.map(((label-text, key)) => [
-      #box(baseline: 0.5pt, if norm.contains(key) { mark-full(prof-mark-size) } else { mark-empty(prof-mark-size) })#h(2pt)#text(font: body-font, size: 7.5pt)[#label-text]
+      #box(baseline: 0.5 * u, if norm.contains(key) { mark-full(prof-mark-size) } else { mark-empty(prof-mark-size) })#h(2 * u)#text(font: body-font, size: 7.5 * u)[#label-text]
     ]),
   )
 }
 
 // Ability score in a box; ability modifier in a (slightly larger) circle.
 #let _score-box(score) = box(
-  stroke: 0.7pt + rule-color, radius: 2pt, fill: white, inset: (x: 6pt, y: 3.5pt),
-)[#big-num(score, 12.5pt)]
+  stroke: 0.7 * u + rule-color, radius: 2 * u, fill: white, inset: (x: 6 * u, y: 3.5 * u),
+)[#big-num(score, 12.5 * u)]
 
 #let _mod-circle(mod) = circle(
-  radius: 14.5pt, stroke: 0.9pt + accent, fill: white, inset: 0pt,
-)[#align(center + horizon)[#text(font: body-font, size: 14pt, weight: "bold")[#fmt-mod(mod)]]]
+  radius: 14.5 * u, stroke: 0.9 * u + accent, fill: white, inset: 0 * u,
+)[#align(center + horizon)[#text(font: body-font, size: 14 * u, weight: "bold")[#fmt-mod(mod)]]]
 
 // One entry in the left ability rail: ability abbreviation, score box + modifier circle, a Saving Throw row, then the skills governed by that ability (already rendered via `skill-row`). The official left-rail grouping in the dndist skin.
 #let ability-rail-cell(abbr, score, mod, save, skill-rows) = block(
   width: 100%,
   breakable: false,
-  stroke: 0.5pt + rule-color,
-  radius: 2pt,
-  inset: (x: 4pt, y: 4pt),
+  stroke: 0.5 * u + rule-color,
+  radius: 2 * u,
+  inset: (x: 4 * u, y: 4 * u),
 )[
   #grid(
     columns: (1fr, auto, auto),
-    column-gutter: 5pt,
+    column-gutter: 5 * u,
     align: (left + horizon, center + horizon, center + horizon),
-    text(font: label-font, size: 8pt, weight: "bold", fill: accent)[#upper(abbr)],
-    stack(spacing: 1.5pt, _score-box(score), label("Score", size: 4pt, color: accent)),
-    stack(spacing: 1.5pt, _mod-circle(mod), label("Mod", size: 4pt, color: accent)),
+    text(font: label-font, size: 8 * u, weight: "bold", fill: accent)[#upper(abbr)],
+    stack(spacing: 1.5 * u, _score-box(score), label("Score", size: 4 * u, color: accent)),
+    stack(spacing: 1.5 * u, _mod-circle(mod), label("Mod", size: 4 * u, color: accent)),
   )
-  #v(2pt)
+  #v(2 * u)
   #grid(
-    columns: (8pt, 1fr, auto),
+    columns: (8 * u, 1fr, auto),
     align: (center + horizon, left + horizon, right + horizon),
-    gutter: 2pt,
+    gutter: 2 * u,
     if save.proficient { mark-full(prof-mark-size) } else { mark-empty(prof-mark-size) },
-    text(font: body-font, size: 7.5pt, weight: if save.proficient { "bold" } else { "regular" })[Saving Throw],
-    text(font: body-font, size: 7.5pt, weight: if save.proficient { "bold" } else { "regular" })[#fmt-mod(save.bonus)],
+    text(font: body-font, size: 7.5 * u, weight: if save.proficient { "bold" } else { "regular" })[Saving Throw],
+    text(font: body-font, size: 7.5 * u, weight: if save.proficient { "bold" } else { "regular" })[#fmt-mod(save.bonus)],
   )
   #if skill-rows.len() > 0 {
-    v(2pt)
-    line(length: 100%, stroke: 0.3pt + rule-color)
-    v(2pt)
-    stack(spacing: 2.5pt, ..skill-rows)
+    v(2 * u)
+    line(length: 100%, stroke: 0.3 * u + rule-color)
+    v(2 * u)
+    stack(spacing: 2.5 * u, ..skill-rows)
   }
 ]
 
 // One feature "name — desc" line: bold name, then any source tags (subclass / feat category / granter — see `feature-tags`) as a tiny accent eyebrow, sized well under the line so tagged and untagged rows keep identical height (the `_limited-use-row` label trick), then an em-dash and the optional description.
-#let _feature-line(f, size: 8pt, tags: ()) = text(font: body-font, size: size)[
+#let _feature-line(f, size: 8 * u, tags: ()) = text(font: body-font, size: size)[
   #text(weight: "bold")[#f.name]#{
     if tags.len() > 0 {
       h(0.45em)
       // Multiple tags join on a middot separator; no leading dot — the size drop already sets the tag off from the name.
-      eyebrow(tags.join(" · "), size: size * 0.62, tracking: 0.4pt)
+      eyebrow(tags.join(" · "), size: size * 0.62, tracking: 0.4 * u)
     }
   }#if f.at("desc", default: none) != none [ — #f.desc]
 ]
@@ -1335,11 +1359,11 @@
 // One feature entry: its own line, then an indented line per sub-ability folded into it.
 // - The sub-lines sit at the wrapped-line rhythm, so the entry reads as one unit against the wider gap between entries (the `stacked-lines` invariant).
 // - A sub-line drops the granter tag: the line it is indented under is the granter.
-#let feature-item(f, size: 8pt) = {
+#let feature-item(f, size: 8 * u) = {
   let subs = f.at("subs", default: ())
   let line = _feature-line(f, size: size, tags: feature-tags(f))
   if subs.len() == 0 { return line }
-  block(spacing: 0pt, {
+  block(spacing: 0 * u, {
     set par(spacing: dense-leading)
     set block(spacing: dense-leading)
     line
@@ -1352,7 +1376,7 @@
 // A list of feature items. `keep-items` (fixed-size card deck) emits each item as a `keep-together` flow block so a multi-line feature skips a mid-sentence split across a card break — items must be direct flow children (a manual `v(row-gap)` between them), separate from a `stack`, or `keep-together`'s `layout` sees a shrunken region (see `spell-table`). The page-flow letter leaves it off and uses the plain `stacked-lines`.
 //
 // `head` (keep-items only) is a section heading bundled into the first item's keep-together block (heading + head-gap + first item as one atomic unit), so the heading stays off the foot of a card with its items bumped to the next — it bumps together with at least its first item. Later items stay their own keep-together blocks, so a long list still splits between items.
-#let feature-lines(entries, size: 8pt, keep-items: false, head: none) = {
+#let feature-lines(entries, size: 8 * u, keep-items: false, head: none) = {
   // Every feature list — grouped or flat, both layouts — comes through here, so the one-entry-per-feature fold lives here too.
   let items = _fold-sub-features(entries)
   if not keep-items {
@@ -1376,7 +1400,7 @@
 #let _limited-use-row(item, size) = grid(
   columns: (1fr, auto),
   align: (left + horizon, right + horizon),
-  column-gutter: 5pt,
+  column-gutter: 5 * u,
   _pool-label(item, size),
   _uses-cell(item, size),
 )
@@ -1386,7 +1410,7 @@
   set par(leading: dense-leading)
   stack(
     spacing: row-gap,
-    eyebrow(header, size: size * 0.72, tracking: 0.6pt),
+    eyebrow(header, size: size * 0.72, tracking: 0.6 * u),
     ..items.map(it => _limited-use-row(it, size)),
   )
 }
@@ -1397,7 +1421,7 @@
 // - Items arrive pre-sorted (scarcest first, then alphabetical), so each column keeps that order.
 //
 // A pool whose recharge the column cannot fully state (`long-short-regain`, `dawn`) sits in the Long Rest column and gets a superscript marker on its row — see `_recharge-mark` — with the note rendered by the page's own footer (`recharge-footer`).
-#let limited-use-lines(items, size: 8pt, single-column: false) = {
+#let limited-use-lines(items, size: 8 * u, single-column: false) = {
   let (short, long) = recharge-buckets(items)
   if short.len() > 0 and long.len() > 0 {
     if single-column {
@@ -1409,7 +1433,7 @@
     } else {
       grid(
         columns: (1fr, 1fr),
-        column-gutter: 28pt,
+        column-gutter: 28 * u,
         align: top,
         _limited-use-column(short, "Short Rest", size),
         _limited-use-column(long, "Long Rest", size),
@@ -1430,7 +1454,7 @@
 // Order: save advantages first, then resistances (both are defenses — they sit closest to the saves they annotate), then senses. Only the badged advantages carry a marker glyph; resistances and senses are separate from proficiency and tracking, so none of the circle/diamond/hexagon vocabulary applies to them.
 // Callers guard on a non-empty combined list; this renders nothing when all `()`.
 #let _resist-labels = (resistance: "Resistance", immunity: "Immunity", vulnerability: "Vulnerability")
-#let character-notes(senses: (), advs: (), resistances: (), size: 6.5pt) = stacked-lines(
+#let character-notes(senses: (), advs: (), resistances: (), size: 6.5 * u) = stacked-lines(
   advs.map(a => text(font: body-font, size: size)[#adv-badge(size: size * 0.85) #a.note])
     + ("resistance", "immunity", "vulnerability").map(k => {
         let types = resistances.filter(r => r.kind == k).map(r => r.type)
@@ -1445,15 +1469,15 @@
 #let has-defenses(c) = c.senses.len() > 0 or c.save-advantages.len() > 0 or c.resistances.len() > 0
 
 // `character-notes` fed from a resolved character — the argument spread both layouts would otherwise repeat.
-#let character-notes-for(c, size: 6.5pt) = character-notes(
+#let character-notes-for(c, size: 6.5 * u) = character-notes(
   senses: c.senses, advs: c.save-advantages, resistances: c.resistances, size: size,
 )
 
 // A grouped feature list: each source group (see `trait-groups`) under its tiny eyebrow sub-header — the same two-tier vocabulary as the Resources tracker's recharge headers. `head` (a section heading) binds into the first group's eyebrow so the pair stays together at a break; a `label: none` group renders its lines bare. Groups are separated by `group-gap`; within a group the usual row rhythm applies (via `feature-lines`).
-#let grouped-feature-lines(groups, size: 8pt, keep-items: false, head: none) = {
+#let grouped-feature-lines(groups, size: 8 * u, keep-items: false, head: none) = {
   for (i, g) in groups.enumerate() {
     if i > 0 { v(group-gap) }
-    let gh = if g.label != none { eyebrow(g.label, size: size * 0.72, tracking: 0.6pt) }
+    let gh = if g.label != none { eyebrow(g.label, size: size * 0.72, tracking: 0.6 * u) }
     let bound = if i == 0 and head != none {
       if gh == none { head } else { stack(spacing: head-gap, head, gh) }
     } else { gh }
@@ -1470,22 +1494,22 @@
 }
 
 // The grouped counterpart of `feature-box` below: one section head over source-grouped items (the card deck's Features & Traits section).
-#let grouped-feature-box(title, groups, size: 8pt, keep-items: false) = if groups.len() > 0 {
-  block(breakable: true, spacing: 0pt,
+#let grouped-feature-box(title, groups, size: 8 * u, keep-items: false) = if groups.len() > 0 {
+  block(breakable: true, spacing: 0 * u,
     grouped-feature-lines(groups, size: size, keep-items: keep-items, head: section-head(title)),
   )
 }
 
 // A box of named features with optional `desc` text — for traits / class features / feats. `items` are feature records.
-#let feature-box(title, items, size: 8pt, keep-items: false) = if items.len() > 0 {
+#let feature-box(title, items, size: 8 * u, keep-items: false) = if items.len() > 0 {
   // Heading + items are stacked (separate from loose markup with a #v()): a stack honours only its own spacing, so head-gap is the actual gap. Loose markup lets Typst's default paragraph spacing sneak in and swamp head-gap. With `keep-items` the items sit outside that stack (they must be flow-level for keep-together), so the heading is bundled into the first item's keep-together block (via `feature-lines`' `head`), which keeps the heading with at least its first item across a card break — it stays off a card foot.
   if not keep-items {
-    block(breakable: true, spacing: 0pt, sticky-head(
+    block(breakable: true, spacing: 0 * u, sticky-head(
       section-head(title),
       feature-lines(items, size: size),
     ))
   } else {
-    block(breakable: true, spacing: 0pt,
+    block(breakable: true, spacing: 0 * u,
       feature-lines(items, size: size, keep-items: true, head: section-head(title)),
     )
   }

@@ -19,22 +19,25 @@
   eff-unarmed, eff-spell-any-slot,
 )
 #import "src/resolve.typ": resolve, modifier, prof-bonus
+#import "src/layout/layouts.typ": layouts, active-layout
 #import "src/layout/card.typ": card-sheet
 #import "src/layout/letter.typ": letter-sheet
 
 // - Render a declared character in the selected layout.
-// - The layout comes from `sys.inputs.layout` (`--input layout=card|letter`).
+// - The layout comes from `sys.inputs.layout` (`--input layout=…`); `active-layout`
+//   names the same input, so the design unit `u` and this dispatch stay in step.
 // - End a character file with one `#sheet(char)`.
 // - Do not select a renderer in a character file: this function does it.
 // - Give `layout:` to override the input.
-#let sheet(char, layout: sys.inputs.at("layout", default: "card")) = {
-  if layout == "letter" {
-    letter-sheet(char)
-  } else if layout == "card" {
-    card-sheet(char)
-  } else {
-    panic("unknown layout '" + layout + "'; expected 'card' or 'letter'")
-  }
+#let sheet(char, layout: active-layout) = {
+  let l = layouts.at(layout, default: none)
+  if l == none { panic("unknown layout '" + layout + "'; expected one of " + layouts.keys().join(", ")) }
+  // `u` is fixed at import time by `--input layout=…`, so a `layout:` override
+  // that disagrees would draw the right sheet with the wrong metrics.
+  assert(layout == active-layout,
+    message: "layout: '" + layout + "' disagrees with --input layout=" + active-layout
+             + "; select the layout on the command line")
+  if l.kind == "letter" { letter-sheet(char) } else { card-sheet(char) }
 }
 
 #import "src/features/species.typ" as species

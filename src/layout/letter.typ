@@ -17,15 +17,15 @@
 // A labelled sub-block: a small accent label above its body.
 // - `stack` sets the label-to-body space exactly, whatever the body's block defaults are.
 // - So the armor icon row, the weapons list and the tools list stay at the same distance below their labels.
-#let _labelled-block(name, body) = block(spacing: 7pt, stack(
-  spacing: 2.5pt,
-  eyebrow(name, size: 6.5pt),
+#let _labelled-block(name, body) = block(spacing: 7 * u, stack(
+  spacing: 2.5 * u,
+  eyebrow(name, size: 6.5 * u),
   body,
 ))
 
 // A proficiency sub-block: a small label and a comma-joined list; empty shows nothing.
 #let _prof-block(name, items) = if items.len() > 0 {
-  _labelled-block(name, text(font: body-font, size: 8.5pt)[#titly-list(items)])
+  _labelled-block(name, text(font: body-font, size: 8.5 * u)[#titly-list(items)])
 }
 
 // A body-only feature list (bold name — description), for use in a framed-box.
@@ -37,7 +37,7 @@
 // - Class Features shows one group for each class, then the invocations.
 // - Species Traits is one group; its header names the species.
 // - Feats stays flat: its lines carry the category and granter tags.
-#let _feature-list(items, size: 8pt, grouped: false) = if items.len() == 0 {
+#let _feature-list(items, size: 8 * u, grouped: false) = if items.len() == 0 {
   text(size: size, fill: rule-color)[—]
 } else if grouped {
   grouped-feature-lines(trait-groups(items), size: size)
@@ -46,7 +46,7 @@
 }
 
 // Stacked blank lines, for printable tables/boxes with no computed content.
-#let _blank-rows(n) = stack(spacing: 7pt, ..range(n).map(_ => blank-line(100%)))
+#let _blank-rows(n) = stack(spacing: 7 * u, ..range(n).map(_ => blank-line(100%)))
 
 // Max hit-dice pool: each class gives (level) dice of its hit die.
 // - The dice group by die type: "1d8", or "3d8 + 2d10" for a multiclass.
@@ -86,14 +86,14 @@
 
   set page(
     paper: "us-letter", margin: 0.5in, fill: white,
-    footer-descent: 6pt,
+    footer-descent: 6 * u,
     // A school-synergy note or a short-regain note on this page shares the line with the page number (see `footer-line`).
     footer: context footer-line(
-      page-number-footer(counter(page).get().first(), counter(page).final().first(), size: 7.5pt),
-      7.5pt,
+      page-number-footer(counter(page).get().first(), counter(page).final().first(), size: 7.5 * u),
+      7.5 * u,
     ),
   )
-  set text(font: body-font, size: 9.5pt, fill: ink)
+  set text(font: body-font, size: 9.5 * u, fill: ink)
   // - Explicit math (`$…$` in prose, `fmt-*` in structured cells) shows in the Euler math font, for a LaTeX look.
   // - This rule supplies that font only.
   show math.equation: math-styled
@@ -102,8 +102,8 @@
   let has-shield = char.features.any(f => feature-kind(f) == "shield")
   grid(
     columns: (2.7fr, 0.9fr, 1fr, 1.5fr, 1.1fr, 1.3fr),
-    column-gutter: 5pt,
-    rows: 78pt,
+    column-gutter: 5 * u,
+    rows: 78 * u,
     identity-box(
       c.name,
       c.background,
@@ -141,10 +141,10 @@
       // Two ability sub-columns: STR/DEX/CON (with Prof Bonus, Inspiration) | INT/WIS/CHA.
       grid(
         columns: (1fr, 1fr),
-        column-gutter: 5pt,
+        column-gutter: 5 * u,
         align: top,
         stack(
-          spacing: 5pt,
+          spacing: 5 * u,
           stat-box("Proficiency Bonus", fmt-mod(c.proficiency-bonus), big: true),
           ability-cell-for("str"),
           ability-cell-for("dex"),
@@ -152,7 +152,7 @@
           inspiration-box(),
         ),
         stack(
-          spacing: 5pt,
+          spacing: 5 * u,
           ability-cell-for("int"),
           ability-cell-for("wis"),
           ability-cell-for("cha"),
@@ -170,7 +170,7 @@
       // - Render it only when the character has one of these.
       if has-defenses(c) {
         v(letter-section-gap)
-        framed-box("Defenses & Senses", character-notes-for(c, size: 8pt))
+        framed-box("Defenses & Senses", character-notes-for(c, size: 8 * u))
       }
     },
 
@@ -179,10 +179,10 @@
       // Stat row: Initiative / Speed / Size / Passive Perception.
       grid(
         columns: 4 * (1fr,),
-        column-gutter: 5pt,
-        rows: 38pt,
+        column-gutter: 5 * u,
+        rows: 38 * u,
         stat-box("Initiative", fmt-mod(c.initiative), height: 100%),
-        stat-box("Speed", [#bold-num(c.speed)#text(size: 6pt)[ ft]], height: 100%),
+        stat-box("Speed", [#bold-num(c.speed)#text(size: 6 * u)[ ft]], height: 100%),
         stat-box("Size", or-dash(c.size), height: 100%),
         stat-box("Passive Perception", c.passives.perception, height: 100%),
       )
@@ -193,17 +193,17 @@
       // - Skip blank rows after the attacks: they distract.
       // - Render at 8pt, the size of the page-1 right column's other dense boxes: the attack table's five columns leave the Notes column about 13 characters at this width, and 8.5pt wraps most weapons' properties onto a second line.
       framed-box("Weapons & Damage Cantrips", {
-        if c.attacks.len() > 0 { attack-table(c.attacks, attacks-per-action: c.attacks-per-action, size: 8pt) } else { _blank-rows(3) }
+        if c.attacks.len() > 0 { attack-table(c.attacks, attacks-per-action: c.attacks-per-action, size: 8 * u) } else { _blank-rows(3) }
         if c.cunning-strikes.len() > 0 {
           // - This gap is table-to-table, separate from heading-to-content.
           // - Use the loose gap between blocks, as the card deck does between the attack table and the Cunning Strike table.
           // - Use the section gap, separate from the head gap.
           v(letter-section-gap)
-          cunning-strike-table(c.cunning-strikes, size: 8pt)
+          cunning-strike-table(c.cunning-strikes, size: 8 * u)
         }
         if c.metamagic.len() > 0 {
           v(letter-section-gap)
-          metamagic-table(c.metamagic, size: 8pt)
+          metamagic-table(c.metamagic, size: 8 * u)
         }
       })
       v(letter-section-gap)
@@ -227,7 +227,7 @@
 
   grid(
     columns: (1.45fr, 1fr),
-    column-gutter: 12pt,
+    column-gutter: 12 * u,
     align: top,
 
     // Left: spellcasting stats, then the spells table.
@@ -235,13 +235,13 @@
       if c.spellcasting.len() > 0 {
         // - The card's own header, at the letter's size: one row per distinct set of numbers, sources sharing a row joined by "/".
         framed-box("Spellcasting", spellcasting-head(
-          c.spellcasting, size: 9pt, source-label: "Source",
+          c.spellcasting, size: 9 * u, source-label: "Source",
         ))
         v(letter-section-gap)
 
         framed-box(
           "Cantrips & Prepared Spells",
-          spell-table(c.spellcasting, size: 8.5pt, atomic-rows: true, school-notes: spell-school-notes(c.traits)),
+          spell-table(c.spellcasting, size: 8.5 * u, atomic-rows: true, school-notes: spell-school-notes(c.traits)),
           repeat-header: true,
         )
       } else {
@@ -252,20 +252,20 @@
     // Right: roleplay + equipment.
     stack(
       spacing: letter-section-gap,
-      framed-box("Appearance", [], min-height: 80pt),
+      framed-box("Appearance", [], min-height: 80 * u),
       framed-box(
         "Backstory & Personality",
         if c.backstory != none {
           set par(justify: true, leading: 0.5em, spacing: 0.7em)
-          text(font: body-font, size: 8.5pt)[#c.backstory]
+          text(font: body-font, size: 8.5 * u)[#c.backstory]
         } else { [] },
-        min-height: 110pt,
+        min-height: 110 * u,
       ),
-      framed-box("Alignment", text(font: body-font, size: 9pt)[#or-dash(alignment-name(c.alignment))]),
+      framed-box("Alignment", text(font: body-font, size: 9 * u)[#or-dash(alignment-name(c.alignment))]),
       framed-box(
         "Languages",
         if c.proficiencies.language.len() > 0 {
-          text(font: body-font, size: 8.5pt)[#titly-list(c.proficiencies.language.sorted())]
+          text(font: body-font, size: 8.5 * u)[#titly-list(c.proficiencies.language.sorted())]
         } else { text(fill: rule-color)[—] },
       ),
       framed-box("Equipment", {
@@ -273,29 +273,29 @@
         // - EQUIPPED (`c.equipped`) is live gear; INVENTORY (`c.equipment`) is inert cargo.
         // - Keep the two lists separate: the split carries meaning.
         if c.equipped.len() > 0 {
-          eyebrow([Equipped], size: 6pt)
-          v(3pt)
-          bullet-lines(c.equipped, size: 8.5pt)
+          eyebrow([Equipped], size: 6 * u)
+          v(3 * u)
+          bullet-lines(c.equipped, size: 8.5 * u)
         }
         if c.equipment.len() > 0 {
-          if c.equipped.len() > 0 { v(6pt) }
-          eyebrow([Inventory], size: 6pt)
-          v(3pt)
-          bullet-lines(c.equipment, size: 8.5pt)
+          if c.equipped.len() > 0 { v(6 * u) }
+          eyebrow([Inventory], size: 6 * u)
+          v(3 * u)
+          bullet-lines(c.equipment, size: 8.5 * u)
         }
         if c.equipped.len() == 0 and c.equipment.len() == 0 { _blank-rows(4) }
-        v(5pt)
-        line(length: 100%, stroke: 0.3pt + rule-color)
-        v(3pt)
-        eyebrow([Magic Item Attunement], size: 6pt)
-        v(4pt)
+        v(5 * u)
+        line(length: 100%, stroke: 0.3 * u + rule-color)
+        v(3 * u)
+        eyebrow([Magic Item Attunement], size: 6 * u)
+        v(4 * u)
         stack(
-          spacing: 7pt,
+          spacing: 7 * u,
           ..range(3).map(_ => grid(
             columns: (auto, 1fr),
-            column-gutter: 4pt,
+            column-gutter: 4 * u,
             align: horizon,
-            checkbox(size: 6pt),
+            checkbox(size: 6 * u),
             blank-line(100%),
           )),
         )
@@ -309,7 +309,7 @@
           slot-resource-items(merge-slots(c.spellcasting)) + c.limited-uses
         } else { c.limited-uses }
         if resources.len() > 0 {
-          framed-box("Resources", limited-use-lines(resources, size: 8.5pt, single-column: true))
+          framed-box("Resources", limited-use-lines(resources, size: 8.5 * u, single-column: true))
         }
       },
     ),

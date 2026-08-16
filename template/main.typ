@@ -5,9 +5,11 @@
 // - It shows most of the DSL: two classes, a subclass, Eldritch Invocations, a
 //   custom background with an origin feat, an ASI, magic armor, weapon mastery,
 //   a magic item with a scoped spellcasting bonus, a spell list and a backstory.
-// - Select the layout on the command line; the default is card:
+// - Select the layout on the command line; the default is card (card, card-lg,
+//   card-5x8 and letter are the four):
 //     typst compile --root . main.typ sheet.pdf --input layout=card
-//     typst compile --root . main.typ sheet.pdf --input layout=letter
+//     typst compile --root . main.typ sheet-5x8.pdf --input layout=card-5x8
+//     typst compile --root . main.typ letter.pdf --input layout=letter
 //     typst watch --root . main.typ
 // - Make the three fonts available: ETBembo, Montserrat, Euler Math.
 // - Install them, or point TYPST_FONT_PATHS at a directory that holds them.

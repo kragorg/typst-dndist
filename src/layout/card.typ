@@ -13,6 +13,7 @@
 #import "../data/abilities.typ": ability-ids, ability-names
 #import "../data/skills.typ": skill-list
 #import "../data/constants.typ": weapon-mastery-descriptions
+#import "layouts.typ": layouts, card-border, active-layout
 #import "common.typ": *
 
 // ---- Card masthead: ONE 4-area header, used by every card ------------------
@@ -22,7 +23,7 @@
 // - The running page header draws it, so it repeats on any page a card spills onto. NOTE2 becomes "(continued)" there.
 
 // Gap below the header to the body. Used as `header-ascent` in `set page`.
-#let _header-gap = 4pt
+#let _header-gap = 4 * u
 
 #let _card-header(title, subtitle, note1, note2) = {
   grid(
@@ -30,15 +31,15 @@
     column-gutter: grid-gutter,
     align: (left + top, right + top),
     {
-      text(font: body-font, size: 15pt, weight: "bold", fill: accent)[#title]
+      text(font: body-font, size: 15 * u, weight: "bold", fill: accent)[#title]
       linebreak()
       // Reserve the subtitle line (`hide` when empty) to keep the TITLE height constant.
-      text(font: body-font, size: 8pt, style: "italic")[#if subtitle != none { subtitle } else { hide[x] }]
+      text(font: body-font, size: 8 * u, style: "italic")[#if subtitle != none { subtitle } else { hide[x] }]
     },
     {
       set align(right)
       // Both note rows share one base style; a note styles its own spans over it (the PB value, "(continued)").
-      set text(font: label-font, size: 6.5pt, weight: "medium")
+      set text(font: label-font, size: 6.5 * u, weight: "medium")
       if note1 != none { note1 } else { hide[x] }
       if note2 != none { linebreak(); note2 }
     },
@@ -64,7 +65,7 @@
   let m = active.last()
   let start = counter(page).at(m.location()).first()
   let a = m.value
-  let note2 = if cur > start { text(font: body-font, size: 8pt, style: "italic")[(continued)] } else { a.note2 }
+  let note2 = if cur > start { text(font: body-font, size: 8 * u, style: "italic")[(continued)] } else { a.note2 }
   // - A content-sized header top-aligns at the page edge and clips the caps.
   // - Fill the region and push it down with `v(1fr)` to get headroom above the title.
   // - The gap below the rule to the body is `header-ascent` (`_header-gap`).
@@ -74,7 +75,7 @@
 // Gap between the body's bottom edge and the footer's page number, set as `footer-descent` below. Keep it tiny so the number sits snug against the margin.
 // - This is a gap from the BODY, separate from the physical edge. `footer-descent` trims the footer region's near side, and the region always extends down to the page's physical bottom edge.
 // - A larger descent pushes the footer closer to that edge, and into the printer's clip band (see the margin comment on `card-sheet`).
-#let _footer-gap = 0.5pt
+#let _footer-gap = 0.5 * u
 
 // Page-number footer "n/m". It counts only the numbered cards, per each marker's `numbered` flag.
 // - A marker's page range is its own start page through the next marker's start page minus 1, or the document's last page for the final marker.
@@ -95,18 +96,18 @@
   let total = ranges.filter(r => r.numbered).map(r => r.end - r.start + 1).sum(default: 0)
   let n = ranges.filter(r => r.numbered and r.end < cur).map(r => r.end - r.start + 1).sum(default: 0) + (cur - active.last().start + 1)
   // A school-synergy or short-regain note anchored to this page shares the footer's one line with the page number (see `footer-line`).
-  footer-line(page-number-footer(n, total, size: 5.5pt), 5pt)
+  footer-line(page-number-footer(n, total, size: 5.5 * u), 5 * u)
 }
 
 // A footer section header: the tier-1 eyebrow above the Defenses & Senses and Training blocks. It mirrors the letter's `_framed-title`.
 // - Bold and tracked, so it out-ranks the plainer item labels below it.
 // - The hierarchy is weight and tracking, separate from colour. Both stay accent.
-#let _foot-head(title) = eyebrow(title, size: 5.5pt, weight: "bold", tracking: 0.6pt)
+#let _foot-head(title) = eyebrow(title, size: 5.5 * u, weight: "bold", tracking: 0.6 * u)
 
 // A proficiency line: a quiet accent label plus the comma-joined value.
 // - Regular weight, a touch smaller than `_foot-head`, so it reads as tier-2.
 #let _prof-line(name, items) = if items.len() > 0 {
-  [#eyebrow([#name: ], size: 5pt)#text(font: body-font, size: 6.5pt)[#titly-list(items)]]
+  [#eyebrow([#name: ], size: 5 * u)#text(font: body-font, size: 6.5 * u)[#titly-list(items)]]
 }
 
 // --- Card bodies -----------------------------------------------------------
@@ -116,7 +117,7 @@
 // - The optional `span` row (Faction) hangs its value across cols 1–4 with a colspan. Its rule aligns with the left group's, because it is the same column.
 // - Row spacing comes from cell inset, separate from row-gutter, so the rules stay unbroken.
 // - Labels are mixed-case ("PPer", "Spell DC"), so small caps marks the capitals.
-#let _pl-stats(left-rows, right-rows, span: none, size: 14pt) = {
+#let _pl-stats(left-rows, right-rows, span: none, size: 14 * u) = {
   let lab(l) = text(font: body-font, size: size, fill: accent)[#small-caps(l)]
   let val(v) = text(font: body-font, size: size, fill: ink)[#v]
   let n = calc.max(left-rows.len(), right-rows.len())
@@ -136,18 +137,18 @@
     cells += (lab(sl), grid.cell(colspan: 4, val(sv)))  // Faction value spans the block
   }
   grid(
-    columns: (auto, auto, 0.3in, auto, auto),
+    columns: (auto, auto, 0.3in * scale, auto, auto),
     align: (right + horizon, left + horizon, center, right + horizon, left + horizon),
-    inset: (x, y) => (top: 4.5pt, bottom: 4.5pt) + (
-      if x == 0 or x == 3 { (right: 8pt) }        // labels
-      else if x == 1 or x == 4 { (left: 8pt) }    // values (incl. the colspan value, origin x=1)
+    inset: (x, y) => (top: 4.5 * u, bottom: 4.5 * u) + (
+      if x == 0 or x == 3 { (right: 8 * u) }        // labels
+      else if x == 1 or x == 4 { (left: 8 * u) }    // values (incl. the colspan value, origin x=1)
       else { (:) }                                // spacer
     ),
     // - Left rule on every row, Faction included, so it aligns.
     // - Right rule only on rows the right group fills, so it stays off the space below Initiative for a non-caster.
     stroke: (x, y) => {
-      if x == 1 { (left: 0.7pt + rule-color) }
-      else if x == 4 and y < right-rows.len() { (left: 0.7pt + rule-color) }
+      if x == 1 { (left: 0.7 * u + rule-color) }
+      else if x == 4 and y < right-rows.len() { (left: 0.7 * u + rule-color) }
       else { none }
     },
     ..cells,
@@ -160,7 +161,7 @@
   // A break at a separator reads better than a wrap inside a part, so pack the identity parts into lines greedily against the region width.
   // - The divider stays at the end of a broken line, marking the line as continued.
   let placard-line = layout(region => {
-    let styled = s => text(font: body-font, size: 16pt, fill: ink)[#s]
+    let styled = s => text(font: body-font, size: 16 * u, fill: ink)[#s]
     let lines = ()
     let cur = none
     for p in identity-parts(c) {
@@ -188,22 +189,22 @@
   // - Zero the default block and paragraph spacing, so the only gaps are the explicit `v()`s below.
   // - Typst spacing otherwise stacks on top and balloons the space around the class line.
   // - The page's top margin is the fold line, so this body is already in the card's lower half. The `v(fr)`s centre it with a slight downward bias.
-  set block(spacing: 0pt)
-  set par(spacing: 0pt)
+  set block(spacing: 0 * u)
+  set par(spacing: 0 * u)
 
   v(1fr)
   grid(
     columns: (1fr, auto),
-    column-gutter: 10pt,
+    column-gutter: 10 * u,
     align: (left + bottom, right + bottom),
-    text(font: body-font, size: 17pt, weight: "bold", fill: accent)[#small-caps(c.name)],
-    if c.player != none { text(font: body-font, size: 15pt, style: "italic", fill: ink)[#c.player] } else { [] },
+    text(font: body-font, size: 17 * u, weight: "bold", fill: accent)[#small-caps(c.name)],
+    if c.player != none { text(font: body-font, size: 15 * u, style: "italic", fill: ink)[#c.player] } else { [] },
   )
-  v(14pt)
-  line(length: 100%, stroke: 0.7pt + rule-color)
-  v(14pt)
+  v(14 * u)
+  line(length: 100%, stroke: 0.7 * u + rule-color)
+  v(14 * u)
   placard-line
-  v(14pt)
+  v(14 * u)
   align(center, _pl-stats(left-rows, right-rows, span: faction-span))
   v(0.7fr)
 }
@@ -211,12 +212,12 @@
 #let _core-card(c) = {
   grid(
     columns: 6 * (1fr,),
-    gutter: 3pt,
+    gutter: 3 * u,
     ..ability-ids.map(id => ability-cell(
       id, c.abilities.at(id), c.ability-mods.at(id), c.saves.at(id),
     )),
   )
-  v(3pt)
+  v(3 * u)
 
   // HP shows the computed maximum only: blanks for current and temp HP are not useful at the card's at-a-glance size.
   let hp-cell = {
@@ -227,17 +228,17 @@
     // - Six equal boxes, each filling its column, line up under the six ability columns above.
     // - An explicit row height is required: `stat-cell` uses `height: 100%` to fill the row, and `100%` in an auto-sized grid row resolves to the whole page.
     columns: 6 * (1fr,),
-    rows: 32pt,
-    gutter: 3pt,
+    rows: 32 * u,
+    gutter: 3 * u,
     stat-cell(c.ac, "AC", big: true, width: 100%),
     stat-cell(hp-cell, "HP", big: true, width: 100%),
     stat-cell(fmt-mod(c.initiative), "Init", width: 100%),
-    stat-cell([#bold-num(c.speed)#text(size: 8pt)[ ft]], "Speed", width: 100%),
+    stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft]], "Speed", width: 100%),
     stat-cell(c.passives.perception, "Pas. Per", width: 100%),
     // The diamond marks resource tracking. Check it off in play.
-    stat-cell(checkbox(size: 10pt), "Heroic Insp.", width: 100%),
+    stat-cell(checkbox(size: 10 * u), "Heroic Insp.", width: 100%),
   )
-  v(4pt)
+  v(4 * u)
 
   let rows-per-col = calc.ceil(skill-list.len() / 3)
   let cols = range(3).map(ci => skill-list.slice(
@@ -247,11 +248,11 @@
     columns: 3 * (1fr,),
     column-gutter: grid-gutter,
     ..cols.map(col => stack(
-      spacing: 1.5pt,
+      spacing: 1.5 * u,
       ..col.map(sk => skill-row(sk, c.skills.at(sk.id))),
     )),
   )
-  v(4pt)
+  v(4 * u)
 
   // - The footer splits in two: Defenses & Senses on the left, proficiency training on the right.
   // - The left box lists save advantages, then damage responses, then senses. Its header shows only when there is at least one of them.
@@ -260,13 +261,13 @@
     column-gutter: grid-gutter,
     if has-defenses(c) {
       stack(
-        spacing: 3pt,
+        spacing: 3 * u,
         _foot-head[DEFENSES & SENSES],
-        character-notes-for(c, size: 6.5pt),
+        character-notes-for(c, size: 6.5 * u),
       )
     } else { [] },
     stack(
-      spacing: 3pt,
+      spacing: 3 * u,
       _foot-head[TRAINING & PROFICIENCIES],
       stacked-lines((
         _prof-line("Armor", c.proficiencies.armor),
@@ -282,7 +283,7 @@
   spellcasting-head(c.spellcasting)
   v(section-gap)
   spell-table(
-    c.spellcasting, size: 7.5pt, keep-groups: true,
+    c.spellcasting, size: 7.5 * u, keep-groups: true,
     atomic-rows: true, school-notes: spell-school-notes(c.traits),
   )
 }
@@ -396,18 +397,18 @@
     slot-resource-items(merge-slots(c.spellcasting)) + c.limited-uses
   } else { c.limited-uses }
   _card-sections((
-    (c.attacks.len() > 0 or b.spell-attacks.len() > 0, attack-table(c.attacks, attacks-per-action: c.attacks-per-action, spells: b.spell-attacks, size: 7.5pt)),
-    (b.masteries.len() > 0, activation-table("Mastery", b.masteries, size: 7.5pt)),
-    (c.cunning-strikes.len() > 0, cunning-strike-table(c.cunning-strikes, size: 7.5pt)),
-    (b.actions.len() > 0, activation-table("Action", b.actions, size: 7.5pt)),
-    (bonus-all.len() > 0, activation-table("Bonus Action", bonus-all, size: 7.5pt)),
-    (reaction-all.len() > 0, activation-table("Reaction", reaction-all, size: 7.5pt)),
-    (b.other.len() > 0, activation-table("Other", b.other, size: 7.5pt)),
-    (c.metamagic.len() > 0, metamagic-table(c.metamagic, size: 7.5pt)),
+    (c.attacks.len() > 0 or b.spell-attacks.len() > 0, attack-table(c.attacks, attacks-per-action: c.attacks-per-action, spells: b.spell-attacks, size: 7.5 * u)),
+    (b.masteries.len() > 0, activation-table("Mastery", b.masteries, size: 7.5 * u)),
+    (c.cunning-strikes.len() > 0, cunning-strike-table(c.cunning-strikes, size: 7.5 * u)),
+    (b.actions.len() > 0, activation-table("Action", b.actions, size: 7.5 * u)),
+    (bonus-all.len() > 0, activation-table("Bonus Action", bonus-all, size: 7.5 * u)),
+    (reaction-all.len() > 0, activation-table("Reaction", reaction-all, size: 7.5 * u)),
+    (b.other.len() > 0, activation-table("Other", b.other, size: 7.5 * u)),
+    (c.metamagic.len() > 0, metamagic-table(c.metamagic, size: 7.5 * u)),
     // - Limited-use resource pools form the tail: two side-by-side tables of diamonds, Short Rest and Long Rest.
     // - The pair travels together, so neither bucket orphans at a card break.
     // - A character with resources but no actions still emits this card, titled "Actions": `has-actions` above includes `c.limited-uses`.
-    (_all-resources.len() > 0, resource-tables(_all-resources, size: 7.5pt)),
+    (_all-resources.len() > 0, resource-tables(_all-resources, size: 7.5 * u)),
   ))
 }
 
@@ -417,13 +418,13 @@
 // - Emitted only when a backstory is declared.
 #let _backstory-card(c) = {
   set par(justify: true, leading: 0.6em, spacing: 1em)
-  set text(size: 9.5pt)
+  set text(size: 9.5 * u)
   c.backstory
 }
 
 #let _gear-card(c) = {
   if c.currency != none {
-    block(spacing: 0pt)[#eyebrow([Currency: ], size: 6pt)#text(font: body-font, size: 8pt)[#c.currency]]
+    block(spacing: 0 * u)[#eyebrow([Currency: ], size: 6 * u)#text(font: body-font, size: 8 * u)[#c.currency]]
     v(section-gap)
   }
   // - Two lists with different meanings. Keep them separate.
@@ -434,38 +435,46 @@
   if c.equipped.len() > 0 {
     sticky-head(
       section-head("Equipped"),
-      bullet-lines(c.equipped, size: 7.5pt, columns: 2),
+      bullet-lines(c.equipped, size: 7.5 * u, columns: 2),
     )
   }
   if c.equipment.len() > 0 {
     if c.equipped.len() > 0 { v(section-gap) }
     sticky-head(
       section-head("Inventory"),
-      bullet-lines(c.equipment, size: 7.5pt, columns: 2),
+      bullet-lines(c.equipment, size: 7.5 * u, columns: 2),
     )
   }
 }
 
 // --- Deck assembly ---------------------------------------------------------
 
-#let card-sheet(char, width: 6in, height: 4in) = {
+#let card-sheet(char) = {
   let c = resolve(char)
+  let L = layouts.at(active-layout)
 
-  // - Margins compensate a measured printer offset, so the printed card has equal whitespace on all sides.
-  // - This printer clips borderless 4x6 prints by ~1mm (left), ~5.15mm (right), ~1.05mm (top), ~2.25mm (bottom).
-  // - Each file margin = the desired printed margin + that edge's clip. Re-measure with calibration.typ for a different printer.
+  // - Each edge margin is the registry's scale-1 margin plus the design border's
+  //   growth: `L.margin.at(e) + card-border.at(e) * (L.scale - 1)`. The printer
+  //   clip is fixed (a physical property of the printer); the border grows with
+  //   the type it frames. At scale 1 the growth term is exactly zero, so `card`
+  //   draws its authored literals. See `layouts.typ` for the measured clips.
   // - Every card's masthead lives in the running header (`_running-head`), so the top margin is enlarged, uniformly, to hold it.
   // - One margin serves all cards, so the header sits at the same place on every card. `header-ascent` sets the header-to-body gap.
   set page(
-    width: width, height: height,
-    margin: (left: 0.16in, right: 0.32in, top: 0.58in, bottom: 0.21in),
+    width: L.width, height: L.height,
+    margin: (
+      left: L.margin.at("left") + card-border.at("left") * (L.scale - 1),
+      right: L.margin.at("right") + card-border.at("right") * (L.scale - 1),
+      top: L.margin.at("top") + card-border.at("top") * (L.scale - 1),
+      bottom: L.margin.at("bottom") + card-border.at("bottom") * (L.scale - 1),
+    ),
     fill: white,
     header-ascent: _header-gap,
     header: _running-head,
     footer-descent: _footer-gap,
     footer: _page-footer,
   )
-  set text(font: body-font, size: 8pt, fill: ink)
+  set text(font: body-font, size: 8 * u, fill: ink)
   // Explicit math (`$…$` in prose, `fmt-*` on structured cells) renders in the Euler math font (LaTeX look); this rule just supplies that font.
   show math.equation: math-styled
 
@@ -478,19 +487,24 @@
   let cl = meta-line(c)
   let core-note1 = if cl != "" { cl } else { none }
   // NOTE2 pairs the alignment with the proficiency bonus on the masthead's lower meta row.
-  let pb = [#text(font: label-font, size: 5.5pt)[PB ]#text(font: body-font, size: 8pt, weight: "bold")[#fmt-mod(c.proficiency-bonus)]]
+  let pb = [#text(font: label-font, size: 5.5 * u)[PB ]#text(font: body-font, size: 8 * u, weight: "bold")[#fmt-mod(c.proficiency-bonus)]]
   let al = alignment-name(c.alignment)
   let core-note2 = if al == none { pb } else { [#al#meta-sep#pb] }
 
+  // The placard's content is authored at its own unit (`fixed-scale`): the
+  // foldable tent and the core card are the deck's two fixed compositions, tuned
+  // to fill a card exactly, so they only grow when the card itself does.
+  let fixed = L.fixed-scale / L.scale
+
   // Placard (card #1): a foldable table-tent on its own portrait page, with no running header — its masthead lives in the body's lower half so the blank top folds back and the card stands up. Content after it flows to a fresh page under the ambient `set page`, so the core card lands on page 2 and the running head (which drops its first `<card-marker>` there) is unaffected.
   page(
-    width: 4in, height: 6in, fill: white,
-    // Top margin = the horizontal fold line (half of 6in), so the body region is the card's lower half — the placard content sits below the fold and the blank upper half folds back to stand the card up.
-    margin: (x: 0.3in, top: 3in, bottom: 0.45in),
+    width: L.height, height: L.width, fill: white,
+    // Top margin = the horizontal fold line (half of the card's width).
+    margin: (x: 0.3in * L.fixed-scale, top: L.width / 2, bottom: 0.45in * L.fixed-scale),
     header: none, footer: none,
-  )[#_placard-card(c)]
+  )[#at-scale(fixed, _placard-card(c))]
 
-  _card-marker(c.name, core-subtitle, core-note1, core-note2); _core-card(c)
+  _card-marker(c.name, core-subtitle, core-note1, core-note2); at-scale(fixed, _core-card(c))
   if b.has-actions {
     pagebreak(); _card-marker(c.name, none, [Actions], none)
     _actions-card(c, b)
@@ -498,7 +512,7 @@
   if c.spellcasting.len() > 0 { pagebreak(); _card-marker(c.name, none, [Spells], none); _spells-card(c) }
   if b.has-features {
     pagebreak(); _card-marker(c.name, none, [Features & Traits], none)
-    grouped-feature-box("Features & Traits", b.trait-groups, size: 7.5pt, keep-items: true)
+    grouped-feature-box("Features & Traits", b.trait-groups, size: 7.5 * u, keep-items: true)
   }
   if b.has-gear { pagebreak(); _card-marker(c.name, none, [Gear], none, numbered: false); _gear-card(c) }
   if c.backstory != none { pagebreak(); _card-marker(c.name, none, [Backstory], none, numbered: false); _backstory-card(c) }

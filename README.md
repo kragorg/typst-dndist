@@ -5,7 +5,9 @@ Define and render printable **D&D 5.5e** character sheets in [Typst](https://typ
 A character is declared as data plus a list of composable *features* (species, classes, items,
 spells, feats). A resolver folds those features' effects into computed values — ability modifiers,
 proficiency bonus, **Armor Class**, **maximum HP**, skills, saves, passives, attacks, spell slots —
-and two layouts render the result: a themed **index-card deck** and a **full letter sheet**.
+and four layouts render the result: the themed **index-card deck** on three stocks — `card`
+(4x6, dense 8pt type), `card-lg` (same 4x6 stock at 115% type, so the deck runs longer), and
+`card-5x8` (8x5 stock at 125%, the same deck, bigger) — and a **full letter sheet**.
 
 You never write a number the rules can derive.
 
@@ -41,9 +43,13 @@ from — it is easier to delete than to discover.
 typst init @preview/dndist:1.0.0 ~/mychar
 cd ~/mychar
 typst compile --root . main.typ sheet.pdf --input layout=card
-typst compile --root . main.typ sheet.pdf --input layout=letter
+typst compile --root . main.typ sheet-5x8.pdf --input layout=card-5x8
+typst compile --root . main.typ letter.pdf --input layout=letter
 typst watch --root . main.typ
 ```
+
+The layout is one of `card` (default), `card-lg`, `card-5x8`, or `letter` — one
+character file renders every layout, with no per-file wiring.
 
 That is the whole setup: [Typst](https://typst.app/docs/tutorial/installation/), a clone, one script,
 two variables. The fonts are **not** vendored into this repository — `fonts.pl` downloads them into
@@ -148,7 +154,7 @@ same reason.
   languages: ("Elvish", "Celestial"),   // Common is automatic; choose two more
 )
 
-#sheet(glory)                      // layout comes from --input layout=card|letter
+#sheet(glory)                      // layout comes from --input layout=card|card-lg|card-5x8|letter
 ```
 
 Every character file ends with a single `#sheet(char)`; the layout is chosen at the command line, so
@@ -242,7 +248,8 @@ src/resolve.typ       the resolution / computation engine
 src/data/             abilities, skills, tools, constants (armor table, …)
 src/features/         species, classes, subclasses, invocations, backgrounds,
                       items, weapons, spells, feats
-src/layout/           shared components, card deck, letter sheet
+src/layout/           layouts.typ (the layout registry + design unit), shared
+                      components, card deck, letter sheet
 template/main.typ     what `typst init` gives you
 tests/                resolve-test.typ (engine assertions) + render fixtures
 packages/             one symlink naming this repo @preview/dndist:<version>
@@ -261,7 +268,7 @@ if anything leaks in or goes missing.
 Implemented: the effect/feature model with nested sub-features; the AC and ability engines; derived
 stats (skills with expertise / Jack of All Trades / Reliable Talent, saves, passives); spellcasting
 with slots, upcasting, and per-spell detail; weapon attacks with finesse, mastery, and Pact of the
-Blade; limited-use resource tracking; multiclassing; computed max HP; both layouts.
+Blade; limited-use resource tracking; multiclassing; computed max HP; all four layouts.
 
 Not yet: multiclass spell-slot tables, spell preparation limits, conditional effects (e.g. Bracers
 of Defense gating), input validation, and Action/Bonus Action/Reaction tables on the letter sheet

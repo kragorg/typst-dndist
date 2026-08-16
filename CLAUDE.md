@@ -29,6 +29,7 @@ Inside the devShell:
 ``` sh
 typst compile --root . tests/resolve-test.typ /tmp/t.pdf          # the engine assertions
 typst-strict --root . tests/example.typ /tmp/e.pdf --input layout=card
+typst-strict --root . tests/example.typ /tmp/e-lg.pdf --input layout=card-lg  # any of the four
 ```
 
 **`--root .` matters.** `tests/resolve-test.typ` reaches relatively into
@@ -163,7 +164,10 @@ renderers.
     src/data/constants.typ  languages, tool name lists, alignment codes, armor table
     src/features/           species.typ, classes.typ, subclasses/, invocations.typ,
                             backgrounds.typ, items.typ, weapons.typ, spells.typ, feats.typ
-    src/layout/             common.typ (components, fonts, proficiency icons, the
+    src/layout/             layouts.typ (the layout registry: page geometry, scale,
+                            fixed-scale, scale-1 margins for card, card-lg, card-5x8
+                            and letter — named once, read by dndist.typ and common.typ),
+                            common.typ (components, fonts, proficiency icons, the
                             sheet-table/stacked-lines rhythm builders, keep-together +
                             spell/attack tables, feature boxes, the limited-use-lines
                             diamond tracker for the letter's narrow Resources box
@@ -1413,6 +1417,25 @@ FEATS list's ORIGIN / FIGHTING STYLE tags (General stays untagged).
   `typst.wrapper` propagates it, so it resolves as `@preview/cuti` for
   compile/`nix flake check`/devShell with no extra `--package-path`
   wiring. Add future Typst-package deps the same way.
+- **The design unit `u` (`common.typ`), and the layout registry
+  `layouts.typ`.** Every absolute length in a layout file is a multiple
+  of `u` (`1pt * scale`) --- type sizes, strokes, radii, insets, gaps
+  --- and the registry entry for the active layout (named once in
+  `src/layout/layouts.typ`, selected by `--input layout=…`) provides
+  its `scale`, page geometry, and scale-1 margins. `em`-relative tokens
+  (`dense-leading`/`row-inset`/`row-gap`/`group-gap`, the `0.055em`
+  fake-bold strokes, `pad(left: 1em)`) and relative lengths (%), `fr`,
+  `size * n`) are *not* multiplied: they follow the font size already.
+  Inch/mm-authored lengths multiply by `scale` instead of `u`
+  (`0.3in * scale`). There must be **no bare `pt` literal** in a layout
+  file (module tokens included: `section-gap = 16 * u`,
+  `card-stat-size = 13 * u`, `prof-mark-size = 6 * u`,
+  `flag-size = 8 * u`). The deck's two fixed compositions (placard,
+  core card) are authored at the registry's `fixed-scale` and rendered
+  via `at-scale(factor, body)` (`common.typ`): laid out in a region
+  `1/factor` the real size so wraps and `1fr` columns resolve at the
+  fixed unit, then scaled back to fill the card. A new layout is one
+  registry entry, nothing else.
 - **Identifiers** use kebab-case (`studded-leather`, `card-sheet`).
 - Renderers call `resolve()` themselves --- pass them a **declared**
   character, not a resolved one.
@@ -1420,8 +1443,12 @@ FEATS list's ORIGIN / FIGHTING STYLE tags (General stays untagged).
   is declared once, then the file ends with a single `#sheet(char)`.
   `sheet()` (`dndist.typ`) is the *one* place that dispatches to
   `card-sheet`/`letter-sheet`, reading `sys.inputs.layout`
-  (`--input layout=card|letter`, defaulting to card); never inline that
-  if/else per file. A bare `typst compile <f> --input layout=…` works
+  (`--input layout=card|card-lg|card-5x8|letter`, defaulting to card);
+  never inline that if/else per file. The layout set and the design unit
+  live in the registry (`src/layout/layouts.typ`), and `sheet()` reads
+  it --- `assert`s that a per-call `layout:` override agrees with
+  `--input layout=…`, because `u` is fixed for the compile by the input.
+  A bare `typst compile <f> --input layout=…` works
   from the devShell, and the consumer repo's ninja rule passes the same
   flag per edge. This is why every character file --- a fixture here, a
   real character there --- must go through `sheet()` rather than calling
@@ -1745,7 +1772,9 @@ FEATS list's ORIGIN / FIGHTING STYLE tags (General stays untagged).
   The rhythm is three `em`-relative tokens next to `section-gap` ---
   `dense-leading` / `row-inset` / `row-gap` --- so gaps scale with font
   size (tight on the 8pt cards, roomier on the 9.5pt letter) and the
-  invariant holds by construction. Adding a new table or list means
+  invariant holds by construction. `em` handles the *font-relative*
+  gaps; every other absolute length goes through the design unit `u`
+  (see the design-unit convention). Adding a new table or list means
   calling these, not passing your own
   `inset`/`stroke`/`spacing`/`leading`. `sheet-table` wraps its
   `table()` in `block(width: 100%, spacing: 0pt, …)` --- a bare
@@ -1899,8 +1928,9 @@ FEATS list's ORIGIN / FIGHTING STYLE tags (General stays untagged).
   `stat-cell(..., big: true)` (AC, HP) and the card's own `hp-cell` read
   at the same size. The pair needs no SCORE/MOD labels (the letter's rail
   carries them): a modifier always shows its sign, a score never does.
-  Size a new headline stat off the token, not a literal, or the rows
-  drift out of tier.
+  Size a new headline stat off the token (a `* u` multiple of the design
+  unit), not a literal `pt`, or the rows drift out of tier and out of
+  scale on the enlarged layouts.
 - **One masthead for every card ---
   `_card-header(title, subtitle, note1, note2)`.** All cards (core and
   the spells/actions/gear section cards) render the *same* four-area

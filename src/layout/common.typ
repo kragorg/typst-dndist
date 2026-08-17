@@ -409,7 +409,7 @@
 // The one table constructor. Every sheet table routes through this so the rhythm above lives in a single place and no table can pick a bespoke (wrong) inset or leading.
 // - Owns the cell text style: a `set text(font: body-font, size)` so every body cell reads in the body font at the shared `size`. A cell that wants emphasis wraps its content in `text(weight: …)`/`emph`, nothing more. The `label`-styled headers set their own font, so the rule skips them.
 // - `headers` are plain strings (rendered as 5.5pt labels); `rows` is an array of content-cell arrays; `align` passes straight through to `table` (a single alignment, a per-column array, or a function).
-// - `atomic-rows` (both the letter's page-spanning spell table AND the card deck's spell table) marks every body cell `breakable: false`, so a row skips a mid-cell split across a page/card break — it bumps whole to the next region instead. On the cards it pairs with `keep-groups`: a level-group bumps intact when it fits a card, and a group taller than a card splits between rows rather than mid-cell.
+// - `atomic-rows` (the letter's page-spanning spell table, the card deck's spell table, and the card deck's action-economy tables — ATTACK / MASTERY / CUNNING STRIKE / ACTION / BONUS ACTION / REACTION / OTHER / METAMAGIC) marks every body cell `breakable: false`, so a row skips a mid-cell split across a page/card break — it bumps whole to the next region instead. On the spells card it pairs with `keep-groups`: a level-group bumps intact when it fits a card, and a group taller than a card splits between rows rather than mid-cell. On the actions card it pairs with `keep-together` at the call site: a table that fits a whole card never splits at all, and one taller than a card splits between rows rather than mid-cell.
 // - The returned table is wrapped in a zero-spacing block (mirroring `feature-box`/`keep-together`'s own `block(spacing: 0pt, …)`): a bare `table()` placed in flow otherwise carries Typst's default block spacing on top of whatever explicit gap a caller places around it (`v(section-gap)`, `v(head-gap)`, …), silently doubling that gap wherever two such tables are adjacent (e.g. attack-table -> Cunning Strike table) while a spot already wrapped in a zero-spacing block (a `feature-box` heading) reads correctly — a real, visible inconsistency. Zeroing it here, once, makes every explicit gap around a sheet-table exact by construction.
 // - `width: 100%` avoids the auto-width block collapsing a `1fr` column to near-zero (the same trap `keep-together`'s `measure` guards against).
 #let sheet-table(columns, headers, rows, align: left + top, size: 8 * u, atomic-rows: false) = {
@@ -618,7 +618,7 @@
 }
 
 // Attack table: Name / Range / Hit / Damage & Type / Notes. Weapons first (from `attacks`), then any actionable spells (from `spells` — resolved spells-detail dicts, routed here by casting time + attack/save in card.typ). A spell's Hit cell is its attack bonus ("+5") or its save ("INT 14"), mirroring the spell table's HIT/SAVE column; its Notes cell is `spell-action-note` (damage lives in the Damage column, so it drops from the note).
-#let attack-table(attacks, attacks-per-action: 1, spells: (), size: 8 * u) = if attacks.len() > 0 or spells.len() > 0 {
+#let attack-table(attacks, attacks-per-action: 1, spells: (), size: 8 * u, atomic-rows: false) = if attacks.len() > 0 or spells.len() > 0 {
   let weapon-rows = attacks.map(a => (
     {
       // A weapon-attack cantrip's line (True Strike / Booming Blade / Shillelagh) names the weapon, then the cantrip it is cast through — italic, the same mark a whole spell row wears, because casting that cantrip is what this row does.
@@ -662,11 +662,12 @@
     weapon-rows + spell-rows,
     align: (left + top, left + top, center + top, left + top, left + top),
     size: size,
+    atomic-rows: atomic-rows,
   )
 }
 
 // Cunning Strike table (2024 Rogue, level 5): the non-damage riders a Rogue can add to a Sneak Attack hit. Mirrors attack-table's shape and empty-list guard — renders nothing for a character without the feature. SAVE shows "DC <n> <ABBR>" (mathified like the spell table's HIT/SAVE cell) or an em-dash for a no-save option.
-#let cunning-strike-table(cunning-strikes, size: 8 * u) = if cunning-strikes.len() > 0 {
+#let cunning-strike-table(cunning-strikes, size: 8 * u, atomic-rows: false) = if cunning-strikes.len() > 0 {
   sheet-table(
     (auto, auto, auto, 1fr),
     ("Cunning Strike", "Cost", "Save", "Effect"),
@@ -678,6 +679,7 @@
     )),
     align: (left + top, center + top, center + top, left + top),
     size: size,
+    atomic-rows: atomic-rows,
   )
 }
 
@@ -686,7 +688,7 @@
 // shape and empty-list guard — renders nothing for a character without the
 // feature. Cost is Sorcery Points ("1 SP"), not dice, so the Cost column is
 // plain text rather than `fmt-dice`.
-#let metamagic-table(metamagic, size: 8 * u) = if metamagic.len() > 0 {
+#let metamagic-table(metamagic, size: 8 * u, atomic-rows: false) = if metamagic.len() > 0 {
   sheet-table(
     (auto, auto, 1fr),
     ("Metamagic", "Cost", "Effect"),
@@ -697,6 +699,7 @@
     )),
     align: (left + top, center + top, left + top),
     size: size,
+    atomic-rows: atomic-rows,
   )
 }
 
@@ -715,13 +718,14 @@
 }
 
 // The ACTION / BONUS ACTION / REACTION tables (card deck's Actions/Feats/Traits card): a feature/trait/feat's name plus its `notes` prose. All three tables share this one shape — only the title and item list differ — so one helper is called three times instead of three near-identical functions. Mirrors attack-table/cunning-strike-table's empty-list guard.
-#let activation-table(title, items, size: 8 * u) = if items.len() > 0 {
+#let activation-table(title, items, size: 8 * u, atomic-rows: false) = if items.len() > 0 {
   sheet-table(
     (auto, 1fr),
     (title, "Notes"),
     items.map(t => ([#t.name], item-action-note(t))),
     align: (left + top, left + top),
     size: size,
+    atomic-rows: atomic-rows,
   )
 }
 

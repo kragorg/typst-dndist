@@ -396,15 +396,22 @@
   let _all-resources = if c.spellcasting.len() > 0 {
     slot-resource-items(merge-slots(c.spellcasting)) + c.limited-uses
   } else { c.limited-uses }
+  // - Every action-economy table is one atomic unit: a table that fits a whole card
+  //   bumps intact to a continuation card rather than stranding its header and a row
+  //   at a card foot, and one taller than a card still splits, between its rows
+  //   (`atomic-rows`) rather than mid-cell. Spell tables are exempt on purpose —
+  //   they get long, and their level-groups split cleanly (`spell-table`'s own
+  //   keep-groups + atomic-rows).
+  let keep = body => keep-together(body)
   _card-sections((
-    (c.attacks.len() > 0 or b.spell-attacks.len() > 0, attack-table(c.attacks, attacks-per-action: c.attacks-per-action, spells: b.spell-attacks, size: 7.5 * u)),
-    (b.masteries.len() > 0, activation-table("Mastery", b.masteries, size: 7.5 * u)),
-    (c.cunning-strikes.len() > 0, cunning-strike-table(c.cunning-strikes, size: 7.5 * u)),
-    (b.actions.len() > 0, activation-table("Action", b.actions, size: 7.5 * u)),
-    (bonus-all.len() > 0, activation-table("Bonus Action", bonus-all, size: 7.5 * u)),
-    (reaction-all.len() > 0, activation-table("Reaction", reaction-all, size: 7.5 * u)),
-    (b.other.len() > 0, activation-table("Other", b.other, size: 7.5 * u)),
-    (c.metamagic.len() > 0, metamagic-table(c.metamagic, size: 7.5 * u)),
+    (c.attacks.len() > 0 or b.spell-attacks.len() > 0, keep(attack-table(c.attacks, attacks-per-action: c.attacks-per-action, spells: b.spell-attacks, size: 7.5 * u, atomic-rows: true))),
+    (b.masteries.len() > 0, keep(activation-table("Mastery", b.masteries, size: 7.5 * u, atomic-rows: true))),
+    (c.cunning-strikes.len() > 0, keep(cunning-strike-table(c.cunning-strikes, size: 7.5 * u, atomic-rows: true))),
+    (b.actions.len() > 0, keep(activation-table("Action", b.actions, size: 7.5 * u, atomic-rows: true))),
+    (bonus-all.len() > 0, keep(activation-table("Bonus Action", bonus-all, size: 7.5 * u, atomic-rows: true))),
+    (reaction-all.len() > 0, keep(activation-table("Reaction", reaction-all, size: 7.5 * u, atomic-rows: true))),
+    (b.other.len() > 0, keep(activation-table("Other", b.other, size: 7.5 * u, atomic-rows: true))),
+    (c.metamagic.len() > 0, keep(metamagic-table(c.metamagic, size: 7.5 * u, atomic-rows: true))),
     // - Limited-use resource pools form the tail: two side-by-side tables of diamonds, Short Rest and Long Rest.
     // - The pair travels together, so neither bucket orphans at a card break.
     // - A character with resources but no actions still emits this card, titled "Actions": `has-actions` above includes `c.limited-uses`.

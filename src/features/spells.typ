@@ -761,11 +761,10 @@
   damage: ((1, 1, "d8", "Necrotic"), (5, 2, "d8", "Necrotic"), (11, 3, "d8", "Necrotic"), (17, 4, "d8", "Necrotic")),
   notes: [Against a target missing any of its Hit Points, roll $d 12$ dice instead.],
 )
-// - The `area` shapes draw as glyphs, and an Emanation has none, thus the 5-ft Emanation stays prose.
 #let word-of-radiance = _spell(
   "Word of Radiance", 0, school: "Evocation",
-  casting-time: "Action", range: "Self", components: "V, M",
-  duration: "Instantaneous", save: "CON",
+  casting-time: "Action", range: "Self", area: (shape: "emanation", size: "5 ft"),
+  components: "V, M", duration: "Instantaneous", save: "CON",
   damage: ((1, 1, "d6", "Radiant"), (5, 2, "d6", "Radiant"), (11, 3, "d6", "Radiant"), (17, 4, "d6", "Radiant")),
   notes: [Radiance erupts in a 5-ft Emanation, hitting each creature of your choice that you can see in it.],
 )

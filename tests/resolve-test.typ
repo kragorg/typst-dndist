@@ -1917,6 +1917,8 @@
 #for s in ("Burning Hands", "Faerie Fire", "Scorching Ray", "See Invisibility") {
   assert(cleric-src.spells.contains(s), message: s + " must fold into the Cleric source")
 }
+#let mi-cleric = therin.spellcasting.find(s => s.source == "Magic Initiate (Cleric)")
+#assert.eq(mi-cleric.spells-detail.find(s => s.name == "Word of Radiance").area, (shape: "emanation", size: "5 ft"))
 // Thaumaturge: Int mod plus the Wisdom modifier, and Religion also has proficiency.
 #assert.eq(therin.skills.arcana.bonus, 3)
 #assert.eq(therin.skills.religion.bonus, 5)

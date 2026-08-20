@@ -41,7 +41,7 @@
       desc: [As a Bonus Action, you teleport up to 30 ft to an unoccupied space you can see, and you have Advantage on your next attack roll this turn. You regain one expended use by expending a spell slot of level 2 or higher (no action required).],
       effects: (eff-limited-use("Moonlight Step", ctx => calc.max(1, ctx.ability-mods.wis), uses-label: "WIS mod", source: "Circle of the Moon"),),
       activation: "Bonus Action",
-      notes: [Teleport up to 30 ft; Advantage on your next attack roll this turn.],
+      notes: ctx => [Teleport up to 30 ft; Advantage on your next attack roll this turn (#calc.max(1, ctx.ability-mods.wis)/Long Rest).],
     ))
   }
   if level >= 14 {

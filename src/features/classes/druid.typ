@@ -69,7 +69,7 @@
     source: "Druid",
     activation: "Bonus Action",
     desc: [As a Bonus Action, shape-shift into a Beast form you know for this feature. You stay in that form for #hours #hours-word, or until you use Wild Shape again, have the Incapacitated condition, or die; you can also leave the form early as a Bonus Action. You know #known Beast forms (Challenge Rating #cr or lower); #fly. You can replace one known form on a Long Rest. While shape-shifted, you gain Temporary Hit Points equal to your Druid level, your game statistics are replaced by the Beast's (you retain your creature type; Hit Points; Hit Dice; Intelligence, Wisdom, and Charisma; class features; languages; and feats), and you can't cast spells.],
-    notes: [Shape-shift into a known Beast form; gain $#level$ THP. Lasts #hours #hours-word (_B.Action_ to leave early).],
+    notes: [Shape-shift into a known Beast form; gain $#level$ THP. Lasts #hours #hours-word (_B.Action_ to leave early) (uses Wild Shape).],
   )
 }
 
@@ -81,7 +81,7 @@
   source: "Druid",
   activation: "Action",
   desc: [As a Magic Action, expend a spell slot or a use of Wild Shape to cast the _Find Familiar_ spell without Material components. The familiar is Fey rather than a normal animal, and it disappears when you finish a Long Rest.],
-  notes: [Cast _Find Familiar_ (no Material components) by expending a spell slot or a Wild Shape use.],
+  notes: [Cast _Find Familiar_ (no Material components) (uses Wild Shape or spell slot).],
 )
 
 #let druid(

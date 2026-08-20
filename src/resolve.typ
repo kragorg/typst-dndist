@@ -440,7 +440,7 @@
     spell-bonuses.insert(key, spell-bonuses.at(key, default: 0) + v)
   }
 
-  let item-features = features.filter(f => f.at("spells", default: ()).len() > 0)
+  let item-features = features.filter(f => f.at("kind", default: none) == "magic-item" and f.at("spells", default: ()).len() > 0)
   item-features.map(f => {
     let (dc, atk) = if sources.len() > 0 {
       let src = if f.at("source-name", default: none) != none {

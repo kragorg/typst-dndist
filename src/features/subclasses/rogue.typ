@@ -26,7 +26,7 @@
       desc: [Up to your Dexterity modifier (min 1) times per Long Rest, immediately after you deal Sneak Attack damage on your turn, deal $#{str(wail-dice)}d 6$ Necrotic damage to a second creature you can see within 30 ft of the first.],
       notes: ctx => {
         let n = calc.max(1, ctx.ability-mods.dex);
-        [$+#{str(wail-dice)}d 6$ Necrotic to a 2nd creature within 30 ft of 1st after Sneak Attack, #{n} uses/long rest.]
+        [$+#{str(wail-dice)}d 6$ Necrotic to a 2nd creature within 30 ft of 1st after Sneak Attack (#n/Long Rest).]
       },
     ))
   }

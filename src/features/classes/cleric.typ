@@ -77,7 +77,7 @@
         source: "Cleric",
         activation: "Action",
         desc: ctx => [As a Magic Action, point your Holy Symbol at another creature you can see within 30 ft and roll #_roll(dice, 8, ctx.ability-mods.wis). Either restore that many Hit Points to it, or deal that much Necrotic or Radiant damage (your choice) on a failed Constitution saving throw (DC $#{8 + ctx.pb + ctx.ability-mods.wis}$), half as much on a success.],
-        notes: ctx => [Restore #_roll(dice, 8, ctx.ability-mods.wis) HP to a creature within 30 ft, or deal that much Necrotic or Radiant damage on a failed CON $#{8 + ctx.pb + ctx.ability-mods.wis}$ save (half on a success).],
+        notes: ctx => [Restore #_roll(dice, 8, ctx.ability-mods.wis) HP to a creature within 30 ft, or deal that much Necrotic or Radiant damage on a failed CON $#{8 + ctx.pb + ctx.ability-mods.wis}$ save (half on a success) (uses Channel Divinity).],
       ),
       feature(
         "Turn Undead",
@@ -85,7 +85,7 @@
         source: "Cleric",
         activation: "Action",
         desc: ctx => [As a Magic Action, present your Holy Symbol and censure Undead. Each Undead of your choice within 30 ft makes a Wisdom saving throw (DC $#{8 + ctx.pb + ctx.ability-mods.wis}$). On a failure it has the Frightened and Incapacitated conditions for 1 minute and moves as far from you as it can on its turns, ending early if it takes damage or if you have the Incapacitated condition or die.],
-        notes: ctx => [Each Undead of your choice within 30 ft is Frightened and Incapacitated for 1 min on a failed WIS $#{8 + ctx.pb + ctx.ability-mods.wis}$ save, and flees you.],
+        notes: ctx => [Each Undead of your choice within 30 ft is Frightened and Incapacitated for 1 min on a failed WIS $#{8 + ctx.pb + ctx.ability-mods.wis}$ save, and flees you (uses Channel Divinity).],
       ),
     ),
   )

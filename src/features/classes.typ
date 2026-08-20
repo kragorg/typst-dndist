@@ -92,7 +92,7 @@
       source: "Bard",
       activation: "Bonus Action",
       desc: [As a Bonus Action, inspire a creature within 60 ft that can see or hear you; it gains a Bardic Inspiration die ($1d 6$ at level 1) it can add to one failed d20 Test within the hour.],
-      notes: [Give a creature within 60 ft a $1d 6$ Bardic Inspiration die (add to one d20 Test within 1 hour).],
+      notes: [Give a creature within 60 ft a $1d 6$ Bardic Inspiration die (add to one d20 Test within 1 hour) (uses Bardic Inspiration).],
     ),
   ) + if level >= 2 { (jack-of-all-trades,) } else { () },
 )
@@ -108,7 +108,7 @@
       recharge: "long-short-regain",
       kind: "class-feature", source: "Fighter", activation: "Bonus Action",
       desc: [As a Bonus Action, draw on your stamina to regain $1d 10$ + your Fighter level in Hit Points.],
-      notes: [Regain $1d 10 + #str(level)$ HP.],
+      notes: [Regain $1d 10 + #str(level)$ HP (uses Second Wind).],
     ),
   )
     + if fighting-style != none { (_fighting-style(fighting-style),) } else { () }
@@ -241,7 +241,7 @@
         source: "Sorcerer",
         activation: "Bonus Action",
         desc: [Twice per Long Rest, as a Bonus Action, unleash your innate magic for 1 minute: your spell save DC increases by $1$ and you have Advantage on the attack rolls of your Sorcerer spells.],
-        notes: [$+1$ to spell save DC; Advantage on Sorcerer spell attack rolls. 1 minute.],
+        notes: [$+1$ to spell save DC; Advantage on Sorcerer spell attack rolls. 1 minute (2/Long Rest).],
       ),
     ) + if level >= 2 {
       (_font-of-magic(level), feature(

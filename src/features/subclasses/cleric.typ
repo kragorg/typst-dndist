@@ -23,14 +23,14 @@
       "Radiance of the Dawn", "Light Domain",
       activation: "Action",
       desc: ctx => [As a Magic Action, expend a use of your Channel Divinity to present your Holy Symbol and flash light in a 30-ft Emanation, dispelling any magical Darkness there. Each creature of your choice in it takes $2d 10 + #level$ Radiant damage on a failed Constitution saving throw (DC $#{8 + ctx.pb + ctx.ability-mods.wis}$), half as much on a success.],
-      notes: ctx => [Expend a Channel Divinity use: dispel magical Darkness in a 30-ft Emanation and deal $2d 10 + #level$ Radiant on a failed CON $#{8 + ctx.pb + ctx.ability-mods.wis}$ save (half on a success).],
+      notes: ctx => [Dispel magical Darkness in a 30-ft Emanation and deal $2d 10 + #level$ Radiant on a failed CON $#{8 + ctx.pb + ctx.ability-mods.wis}$ save (half on a success) (uses Channel Divinity).],
     ))
     fs.push(_sub-feature(
       "Warding Flare", "Light Domain",
       activation: "Reaction",
       effects: (eff-limited-use("Warding Flare", ctx => calc.max(1, ctx.ability-mods.wis), uses-label: "WIS mod", source: "Light Domain"),),
-      desc: [When a creature you can see within 30 ft makes an attack roll, you can take a Reaction to impose Disadvantage on it, light flaring before the attack hits or misses.],
-      notes: [Impose Disadvantage on the attack roll of a creature you can see within 30 ft.],
+      desc: ctx => [When a creature you can see within 30 ft makes an attack roll, you can take a Reaction to impose Disadvantage on it, light flaring before the attack hits or misses. #calc.max(1, ctx.ability-mods.wis) uses; regained on a Long Rest.],
+      notes: ctx => [Impose Disadvantage on the attack roll of a creature you can see within 30 ft (#calc.max(1, ctx.ability-mods.wis)/Long Rest).],
     ))
   }
   fs

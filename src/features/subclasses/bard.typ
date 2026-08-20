@@ -26,7 +26,7 @@
       "Mantle of Inspiration", "College of Glamour",
       activation: "Bonus Action",
       desc: [As a Bonus Action, expend a use of Bardic Inspiration to grant up to your Charisma-modifier creatures within 60 ft Temporary HP equal to twice the die roll, and each can immediately use its Reaction to move up to its Speed without provoking Opportunity Attacks.],
-      notes: [Expend a Bardic Inspiration use: allies within 60 ft gain THP ($2 times$ the die) and can use their Reaction to move up to their Speed without provoking Opportunity Attacks.],
+      notes: [Allies within 60 ft gain THP ($2 times$ the die) and can use their Reaction to move up to their Speed without provoking Opportunity Attacks (uses Bardic Inspiration).],
     ))
   }
   fs

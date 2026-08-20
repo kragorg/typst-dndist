@@ -202,6 +202,7 @@
 #let glam-spells = glam.spellcasting.first().spells
 #assert(glam-spells.contains("Charm Person"))
 #assert(glam-spells.contains("Mirror Image"))
+#assert.eq(glam.item-spells.len(), 0)
 
 // --- Abilities as objects (interchangeable with string ids) ----------------
 // Background choices given as ability objects apply the same as strings.
@@ -1112,7 +1113,7 @@
 // sequence — a literal number in the markup produces a different node shape
 // than an interpolated one, so `assert.eq` would spuriously fail otherwise.
 #let pb3 = 3
-#assert.eq(lu.traits.find(t => t.name == "Adrenaline Rush").notes, [Take the Dash action; gain #pb3 THP.])
+#assert.eq(lu.traits.find(t => t.name == "Adrenaline Rush").notes, [Take the Dash action; gain #pb3 THP (#pb3/Short or Long Rest).])
 
 // --- Metamagic (Sorcerer 2) --------------------------------------------------
 // Font of Magic grants the Sorcery Points pool (level uses, Long Rest); the
@@ -1239,6 +1240,7 @@
 #assert(goo-spells.contains("Tasha’s Hideous Laughter"))
 #assert(not goo-spells.contains("Clairvoyance"))
 #assert(not goo-spells.contains("Telekinesis"))
+#assert.eq(gorlock.item-spells.len(), 0)
 
 // --- Weapon-attack cantrips: Booming Blade + True Strike ---------------------
 // A weapon-attack cantrip makes no *spell* attack of its own: its SPELLS-table row
@@ -1428,6 +1430,7 @@
 #assert.eq(kinv.cast-level, 2)
 #assert(kinv.fixed-slot)
 #assert(kw.spells-detail.find(s => s.name == "Arcane Eye").cast-level == 4)
+#assert.eq(kragor.item-spells.len(), 0)
 
 // --- Computed max HP (5.5e fixed rule) --------------------------------------
 // Single class: Bard 4, Con 12 (+1). First level maxes the die; later levels take the average.
@@ -1646,6 +1649,7 @@
 #assert.eq(moon.spellcasting.len(), 1)
 #let moon-src = moon.spellcasting.first()
 #assert.eq(moon-src.source, "Druid")
+#assert.eq(moon.item-spells.len(), 0)
 #assert(moon-src.spells.contains("Cure Wounds"))
 #assert(moon-src.spells.contains("Moonbeam"))
 #assert(moon-src.cantrips.contains("Starry Wisp"))
@@ -1815,9 +1819,10 @@
 #assert.eq(drac.traits.find(t => t.name == "Breath Weapon").at("activation", default: none), none)
 // Its dice scale on total character level: 2d10 from level 5.
 #let d5 = 2
+#let pb5 = 3
 #assert.eq(
   drac.traits.find(t => t.name == "Breath Weapon").notes,
-  [Replace one attack: 15-ft Cone or 30-ft Line, DEX $#{8 + 3 + 2}$ save, $#{str(d5)}d 10$ Cold (half on a success).],
+  [Replace one attack: 15-ft Cone or 30-ft Line, DEX $#{8 + 3 + 2}$ save, $#{str(d5)}d 10$ Cold (half on a success) (#pb5/Long Rest).],
 )
 
 // --- Assassin (Rogue subclass) ---------------------------------------------
@@ -1917,6 +1922,7 @@
 #for s in ("Burning Hands", "Faerie Fire", "Scorching Ray", "See Invisibility") {
   assert(cleric-src.spells.contains(s), message: s + " must fold into the Cleric source")
 }
+#assert.eq(therin.item-spells.len(), 0)
 #let mi-cleric = therin.spellcasting.find(s => s.source == "Magic Initiate (Cleric)")
 #assert.eq(mi-cleric.spells-detail.find(s => s.name == "Word of Radiance").area, (shape: "emanation", size: "5 ft"))
 // Thaumaturge: Int mod plus the Wisdom modifier, and Religion also has proficiency.
@@ -1933,7 +1939,9 @@
 #assert.eq(therin.traits.find(t => t.name == "Turn Undead").activation, "Action")
 #assert.eq(therin.traits.find(t => t.name == "Radiance of the Dawn").activation, "Action")
 #assert.eq(therin.traits.find(t => t.name == "Warding Flare").activation, "Reaction")
-#assert.eq(therin.traits.find(t => t.name == "Channel Divinity").at("notes", default: none), none)
+#let therin-wis = 4
+#assert.eq(therin.traits.find(t => t.name == "Warding Flare").notes, [Impose Disadvantage on the attack roll of a creature you can see within 30 ft (#therin-wis/Long Rest).])
+#assert.eq(therin.traits.find(t => t.name == "Divine Spark").notes, [Restore $1d 8 + 4$ HP to a creature within 30 ft, or deal that much Necrotic or Radiant damage on a failed CON $14$ save (half on a success) (uses Channel Divinity).])
 // The Mace is a simple weapon, so the attack carries PB; Sap stays hidden without trained mastery.
 #let mace-line = therin.attacks.find(a => a.name == "Mace")
 #assert.eq(mace-line.bonus, 3)

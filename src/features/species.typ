@@ -138,7 +138,7 @@
         [When you take the Attack action, you can replace one attack with an exhalation in a 15-ft Cone or a 30-ft Line 5 ft wide. Each creature in the area makes a Dexterity save (DC #dc), taking $#{str(dice(ctx))}d 10$ #dmg damage on a failure and half as much on a success. #ctx.pb uses; regained on a Long Rest.]
       },
         effects: (eff-limited-use("Breath Weapon", ctx => ctx.pb, uses-label: "PB", source: "Dragonborn"),),
-        notes: ctx => [Replace one attack: 15-ft Cone or 30-ft Line, DEX $#{8 + ctx.pb + ctx.ability-mods.con}$ save, $#{str(dice(ctx))}d 10$ #dmg (half on a success).]),
+        notes: ctx => [Replace one attack: 15-ft Cone or 30-ft Line, DEX $#{8 + ctx.pb + ctx.ability-mods.con}$ save, $#{str(dice(ctx))}d 10$ #dmg (half on a success) (#ctx.pb/Long Rest).]),
       _trait("Dragonborn", "Damage Resistance", [You have Resistance to #dmg damage.],
         effects: (eff-resistance(dmg, source: "Dragonborn"),)),
       _trait("Dragonborn", "Darkvision", [You have Darkvision with a range of 60 ft.],
@@ -161,7 +161,7 @@
     _trait("Orc", "Adrenaline Rush", [As a Bonus Action, take the Dash action, gaining Temporary HP equal to your Proficiency Bonus. Proficiency Bonus uses; regained on a Short or Long Rest.],
       effects: (eff-limited-use("Adrenaline Rush", ctx => ctx.pb, uses-label: "PB", recharge: "short-or-long", source: "Orc"),),
       activation: "Bonus Action",
-      notes: ctx => [Take the Dash action; gain #ctx.pb THP.]),
+      notes: ctx => [Take the Dash action; gain #ctx.pb THP (#ctx.pb/Short or Long Rest).]),
     _trait("Orc", "Darkvision", [You have Darkvision with a range of 120 ft.],
       effects: (eff-sense("Darkvision", range: "120 ft", source: "Orc"),)),
     _trait("Orc", "Relentless Endurance", [Once per Long Rest, when reduced to 0 HP but not killed outright, you drop to 1 HP instead.],
@@ -273,7 +273,7 @@
     _trait("Aasimar", "Healing Hands", [As a Magic Action, touch a creature and roll a number of d4s equal to your Proficiency Bonus; it regains that many HP. Once per Long Rest.],
       effects: (eff-limited-use("Healing Hands", 1, source: "Aasimar"),),
       activation: "Action",
-      notes: ctx => [Touch a creature; it regains $#{str(ctx.pb)}d 4$ HP.]),
+      notes: ctx => [Touch a creature; it regains $#{str(ctx.pb)}d 4$ HP (1/Long Rest).]),
     _trait("Aasimar", "Light Bearer", [You know the _Light_ cantrip. Charisma is your spellcasting ability for it.],
       effects: (eff-spellcasting("Light Bearer", ability.cha, cantrips: (spell.light,)),)),
     _trait("Aasimar", "Celestial Revelation", ctx => {
@@ -282,7 +282,7 @@
     },
       effects: (eff-limited-use("Celestial Revelation", 1, source: "Aasimar"),),
       activation: "Bonus Action",
-      notes: ctx => [Transform for 1 minute (Wings / Inner Radiance / Necrotic Shroud); damage $+ #{ctx.pb}$/turn.]),
+      notes: ctx => [Transform for 1 minute (Wings / Inner Radiance / Necrotic Shroud); damage $+ #{ctx.pb}$/turn (1/Long Rest).]),
   ),
 )
 

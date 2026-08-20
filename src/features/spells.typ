@@ -345,7 +345,7 @@
 #let speak-with-animals = _spell(
   "Speak with Animals", 1, school: "Divination",
   casting-time: "Action", range: "Self", components: "V, S",
-  duration: "10 min", ritual: true, notes: [Communicate with Beasts.],
+  duration: "10 min", ritual: true, notes: [Communicate with Beasts. Influence them.],
 )
 
 // --- Warlock 1st-level spells ----------------------------------------------
@@ -691,7 +691,7 @@
 )
 #let pass-without-trace = _spell(
   "Pass without Trace", 2, school: "Abjuration",
-  casting-time: "Action", range: "Self", area: (shape: "sphere", size: "30 ft"),
+  casting-time: "Action", range: "Self", area: (shape: "emanation", size: "30 ft"),
   components: "V, S, M", duration: "1 hour", concentration: true,
   notes: [Creatures you choose gain $+10$ to Dexterity (Stealth) checks and leave no tracks.],
 )
@@ -847,4 +847,101 @@
   ),
   notes: [On fail: Incapacitated until SoYNT. On save: half damage, no condition. You may utter a creature's name; if it's in range it becomes the target even if unseen. If the named target isn't in range, the lance dissipates.],
   scaling: [$+1d 6$/slot above 4th.],
+)
+
+// --- Staff spells (Staff of the Woodlands / Staff of Power) -----------------
+#let awaken = _spell(
+  "Awaken", 5, school: "Transmutation",
+  casting-time: "8 hours", range: "Touch", components: "V, S, M", material-cost: true,
+  duration: "Instantaneous",
+  notes: [Beast or Plant with INT ≤3 gains INT 10, learns one language, and is Charmed for 30 days.],
+)
+#let barkskin = _spell(
+  "Barkskin", 2, school: "Transmutation",
+  casting-time: "Bonus Action", range: "Touch", components: "V, S, M",
+  duration: "1 hour",
+  notes: [Give a willing creature AC 17.],
+)
+#let locate-animals-or-plants = _spell(
+  "Locate Animals/Plants", 2, school: "Divination",
+  casting-time: "Action", range: "Self", components: "V, S, M",
+  duration: "Instantaneous", ritual: true,
+  notes: [Describe or name specific kind of Beast or Plant to learn direction and distance within 5 miles.],
+)
+#let speak-with-plants = _spell(
+  "Speak with Plants", 3, school: "Transmutation",
+  casting-time: "Action", range: "Self", area: (shape: "emanation", size: "30 ft"),
+  components: "V, S", duration: "10 min",
+  notes: [Communicate with Plants, turn terrain to/from Difficult Terrain, move branches/vines.],
+)
+#let wall-of-thorns = _spell(
+  "Wall of Thorns", 6, school: "Conjuration",
+  casting-time: "Action", range: "120 ft",
+  components: "V, S, M", duration: "10 min", concentration: true, save: "DEX",
+  slot-damage: (
+    (6, 7, "d8", "Piercing"), (7, 8, "d8", "Piercing"), (8, 9, "d8", "Piercing"),
+    (9, 10, "d8", "Piercing"),
+  ),
+  notes: [60×10×5 ft wall or 20 ft diameter/height circle. Save: half damage. 1 ft move costs 4 ft. Creature entering/ending turn in wall takes $7d 8$ Slashing (DEX save: half damage).],
+  scaling: [$+1d 8$ Piercing & Slashing/slot above 6th.],
+)
+#let cone-of-cold = _spell(
+  "Cone of Cold", 5, school: "Evocation",
+  casting-time: "Action", range: "Self", area: (shape: "cone", size: "60 ft"),
+  components: "V, S, M", duration: "Instantaneous", save: "CON",
+  slot-damage: ((5, 8, "d8", "Cold"), (6, 9, "d8", "Cold"), (7, 10, "d8", "Cold"), (8, 11, "d8", "Cold"), (9, 12, "d8", "Cold")),
+  notes: [Save: half damage. Killed creatures freeze until thawed.],
+  scaling: [$+1d 8$/slot above 5th.],
+)
+#let fireball = _spell(
+  "Fireball", 3, school: "Evocation",
+  casting-time: "Action", range: "150 ft", area: (shape: "sphere", size: "20 ft"),
+  components: "V, S, M", duration: "Instantaneous", save: "DEX",
+  slot-damage: (
+    (3, 8, "d6", "Fire"), (4, 9, "d6", "Fire"), (5, 10, "d6", "Fire"),
+    (6, 11, "d6", "Fire"), (7, 12, "d6", "Fire"), (8, 13, "d6", "Fire"),
+    (9, 14, "d6", "Fire"),
+  ),
+  notes: [20-ft radius Sphere. Save: half damage. Flammable objects burn.],
+  scaling: [$+1d 6$/slot above 3rd.],
+)
+#let globe-of-invulnerability = _spell(
+  "Globe of Invulnerability", 6, school: "Abjuration",
+  casting-time: "Action", range: "Self", area: (shape: "emanation", size: "10 ft"),
+  components: "V, S, M", duration: "1 min", concentration: true,
+  notes: [Barrier blocks spells of 5th level or lower from affecting anything within it.],
+  scaling: [$+1$ spell level blocked/slot above 6th.],
+)
+#let hold-monster = _spell(
+  "Hold Monster", 5, school: "Enchantment",
+  casting-time: "Action", range: "90 ft", components: "V, S, M",
+  duration: "1 min", concentration: true, save: "WIS",
+  notes: [Paralyze one creature. It repeats the save at EoNT.],
+  scaling: [$+1$ creature/slot above 5th.],
+)
+#let levitate = _spell(
+  "Levitate", 2, school: "Transmutation",
+  casting-time: "Action", range: "60 ft", components: "V, S, M",
+  duration: "10 min", concentration: true, save: "CON",
+  notes: [Target creature or object (≤500 lb) rises vertically up to 20 ft. _Magic Action_: change altitude by up to 20 ft.],
+)
+#let lightning-bolt = _spell(
+  "Lightning Bolt", 3, school: "Evocation",
+  casting-time: "Action", range: "Self", area: (shape: "line", size: "100 ft"),
+  components: "V, S, M", duration: "Instantaneous", save: "DEX",
+  slot-damage: ((3, 8, "d6", "Lightning"), (4, 9, "d6", "Lightning"), (5, 10, "d6", "Lightning"), (6, 11, "d6", "Lightning"), (7, 12, "d6", "Lightning"), (8, 13, "d6", "Lightning"), (9, 14, "d6", "Lightning")),
+  notes: [100-ft long, 5-ft wide Line. Save: half damage.],
+  scaling: [$+1d 6$/slot above 3rd.],
+)
+#let ray-of-enfeeblement = _spell(
+  "Ray of Enfeeblement", 2, school: "Necromancy",
+  casting-time: "Action", range: "60 ft", components: "V, S",
+  duration: "1 min", concentration: true, save: "CON",
+  notes: [Save fail: Disadv. on STR D20 tests, subtract $1d 8$ from damage rolls (repeat save at EoNT). Save success: Disadv. on next attack roll.],
+)
+#let wall-of-force = _spell(
+  "Wall of Force", 5, school: "Evocation",
+  casting-time: "Action", range: "120 ft", components: "V, S, M",
+  duration: "10 min", concentration: true,
+  notes: [Invisible, impassable, indestructible wall (dome/globe 10-ft radius, or ten 10×10-ft panels). Blocks ethereal travel.],
 )

@@ -2013,5 +2013,111 @@
 #assert.eq(get-eff("Pistol").category, "martial")
 #assert.eq(get-eff("Pistol").kind, "ranged")
 
+// --- Staff of the Woodlands --------------------------------------------------
+#let druid-woodlands = resolve(character(
+  abilities: (str: 10, dex: 10, con: 10, int: 10, wis: 16, cha: 10),
+  features: (
+    class.druid(level: 2, cantrips: (spell.shillelagh,)),
+    item.staff-of-the-woodlands,
+  ),
+))
+
+// Equipped gear includes the starred magic item.
+#assert(druid-woodlands.equipped.contains("Staff of the Woodlands*"))
+
+// Spell attack bonus gains +2; save DC is unaffected.
+#let dw-cast = druid-woodlands.spellcasting.find(s => s.source == "Druid")
+#assert.eq(dw-cast.attack, 7) // PB 2 + Wis 3 + Staff 2
+#assert.eq(dw-cast.save-dc, 13) // 8 + PB 2 + Wis 3 (no DC bonus)
+
+// 6 charges, long-rest recharge tracking.
+#let dw-charges = druid-woodlands.limited-uses.find(u => u.name == "Staff of the Woodlands")
+#assert.eq(dw-charges.uses, 6)
+#assert.eq(dw-charges.recharge, "long")
+
+// Weapon attack: Quarterstaff +2 (Str 10 = +0 mod, PB 2, magic 2 -> bonus +4, 1d6+2).
+#let dw-staff = druid-woodlands.attacks.find(a => a.name == "Staff of the Woodlands" and a.at("via-spell", default: none) == none)
+#assert.eq(dw-staff.bonus, 4)
+#assert.eq(dw-staff.damage, "1d6+2")
+#assert.eq(dw-staff.damage-type, "Bludgeoning")
+#assert.eq(dw-staff.versatile-damage, "1d8+2")
+
+// Shillelagh variant: Wis 16 (+3), PB 2, magic 2 -> bonus +7, 1d8 + 3 (Wis) + 2 (Staff) = 1d8+5.
+#let dw-shil = attack-lines(druid-woodlands, "Staff of the Woodlands", via: "Shillelagh").first()
+#assert.eq(dw-shil.bonus, 7)
+#assert.eq(dw-shil.damage, "1d8+5")
+#assert.eq(dw-shil.damage-type, "Bludgeoning")
+
+// Staff of the Woodlands item-spells table has 8 spells with charge costs.
+#let dw-item-spells = druid-woodlands.item-spells.find(i => i.name == "Staff of the Woodlands")
+#assert.eq(dw-item-spells.spells.len(), 8)
+#let dw-sp = name => dw-item-spells.spells.find(s => s.name == name)
+#assert.eq(dw-sp("Animal Friendship").charges, 1)
+#assert.eq(dw-sp("Animal Friendship").save-dc, 13)
+#assert.eq(dw-sp("Awaken").charges, 5)
+#assert.eq(dw-sp("Awaken").casting-time, "8 hours")
+#assert.eq(dw-sp("Barkskin").charges, 2)
+#assert.eq(dw-sp("Barkskin").casting-time, "Bonus Action")
+#assert.eq(dw-sp("Locate Animals/Plants").charges, 2)
+#assert.eq(dw-sp("Pass without Trace").charges, 2)
+#assert.eq(dw-sp("Speak with Animals").charges, 1)
+#assert.eq(dw-sp("Speak with Animals").ritual, false)
+#assert.eq(dw-sp("Locate Animals/Plants").ritual, false)
+#assert.eq(dw-sp("Speak with Plants").charges, 3)
+#assert.eq(dw-sp("Wall of Thorns").charges, 6)
+#assert.eq(dw-sp("Wall of Thorns").damage, "7d8")
+#assert.eq(dw-sp("Wall of Thorns").save-dc, 13)
+
+// Staff of the Woodlands is a passive trait in Features & Traits (no action-table clutter).
+#assert(druid-woodlands.traits.any(t => t.name == "Staff of the Woodlands"))
+#assert(not druid-woodlands.traits.any(t => t.name == "Tree Form"))
+
+// Two-handed grip on Staff of the Woodlands.
+#let dw-2h = resolve(character(
+  abilities: (str: 10, dex: 10, con: 10, int: 10, wis: 16, cha: 10),
+  features: (
+    class.druid(level: 2),
+    two-handed(item.staff-of-the-woodlands),
+  ),
+))
+#let dw-2h-staff = dw-2h.attacks.find(a => a.name == "Staff of the Woodlands")
+#assert.eq(dw-2h-staff.damage, "1d8+2")
+#assert.eq(dw-2h-staff.versatile-damage, "1d6+2")
+
+// Carried (inert in inventory) Staff of the Woodlands.
+#let dw-carried = resolve(character(
+  abilities: (str: 10, dex: 10, con: 10, int: 10, wis: 16, cha: 10),
+  features: (
+    class.druid(level: 2),
+    carried(item.staff-of-the-woodlands),
+  ),
+))
+#assert(not dw-carried.equipped.contains("Staff of the Woodlands*"))
+#assert(dw-carried.equipment.contains("Staff of the Woodlands*"))
+#assert.eq(dw-carried.spellcasting.find(s => s.source == "Druid").attack, 5)
+#assert(not dw-carried.attacks.any(a => a.name == "Staff of the Woodlands"))
+#assert(not dw-carried.limited-uses.any(u => u.name == "Staff of the Woodlands"))
+#assert.eq(dw-carried.item-spells.len(), 0)
+
+// --- Staff of Power ----------------------------------------------------------
+#let sorc-power = resolve(character(
+  abilities: (str: 10, dex: 14, con: 12, int: 10, wis: 10, cha: 16),
+  features: (
+    class.sorcerer(level: 5, cantrips: (spell.fire-bolt,), spells: (spell.shield,)),
+    item.staff-of-power,
+  ),
+))
+#assert.eq(sorc-power.ac, 14) // 10 + Dex 2 + Staff 2
+#assert.eq(sorc-power.saves.cha.bonus, 8) // PB 3 + Cha 3 + Staff 2
+#assert.eq(sorc-power.spellcasting.find(s => s.source == "Sorcerer").attack, 8) // PB 3 + Cha 3 + Staff 2
+#let sop-spells = sorc-power.item-spells.find(i => i.name == "Staff of Power")
+#assert.eq(sop-spells.spells.len(), 9)
+#let sop-sp = name => sop-spells.spells.find(s => s.name == name)
+#assert.eq(sop-sp("Cone of Cold").charges, 5)
+#assert.eq(sop-sp("Fireball").charges, 5)
+#assert.eq(sop-sp("Fireball").damage, "10d6") // 5th-level Fireball
+#assert.eq(sop-sp("Magic Missile").charges, 1)
+#assert.eq(sop-sp("Wall of Force").charges, 5)
+
 #set page(width: auto, height: auto, margin: 12pt)
 All resolve-engine assertions passed.

@@ -429,6 +429,54 @@
   }
 }
 
+// Resolve spells cast from magic items (e.g. Staff of the Woodlands, Staff of Power).
+// - Each equipped feature with a non-empty `spells:` list projects into an item spell table.
+// - Uses the character's spell save DC and spell attack bonus (from spellcasting sources or ability mods).
+#let resolve-item-spells(features, sources, level, mods, pb, effects) = {
+  let spell-bonuses = (:)
+  for e in effects.filter(e => e.effect == "spell-damage-bonus") {
+    let v = if e.ability != none { mods.at(e.ability) } else { e.value }
+    let key = lower(e.spell).replace("-", " ")
+    spell-bonuses.insert(key, spell-bonuses.at(key, default: 0) + v)
+  }
+
+  let item-features = features.filter(f => f.at("spells", default: ()).len() > 0)
+  item-features.map(f => {
+    let (dc, atk) = if sources.len() > 0 {
+      let src = if f.at("source-name", default: none) != none {
+        sources.find(s => s.source == f.source-name)
+      } else { none }
+      if src != none {
+        (src.save-dc, src.attack)
+      } else {
+        (sources.map(s => s.save-dc).fold(0, calc.max), sources.map(s => s.attack).fold(0, calc.max))
+      }
+    } else {
+      let max-mod = mods.values().fold(0, calc.max)
+      let b = effects.filter(x => x.effect == "spellcasting-bonus" and x.source-name == none)
+      (
+        8 + pb + max-mod + b.map(x => x.dc).sum(default: 0),
+        pb + max-mod + b.map(x => x.attack).sum(default: 0),
+      )
+    }
+
+    let projected = f.spells.map(entry => {
+      let (s, slot, charges) = if type(entry) == dictionary and "spell" in entry {
+        (entry.spell, entry.at("slot", default: none), entry.at("charges", default: 1))
+      } else {
+        (entry, none, 1)
+      }
+      let eff-slot = if slot != none { slot } else { s.at("level", default: 1) }
+      let detail = _spell-detail(s, f.name, dc, atk, level, spell-bonuses, slot: eff-slot, fixed-slot: true)
+      detail + (charges: charges, ritual: false)
+    })
+    (
+      name: f.name,
+      spells: projected,
+    )
+  })
+}
+
 // Increase a melee attack's reach by the reach bonus in feet.
 // - A melee weapon's `range` is its reach, so it always increases; a Thrown weapon's throw range lives in its own `thrown-range` field and stays unchanged.
 #let _apply-reach(range, reach) = {
@@ -770,7 +818,7 @@
     let c = t.at("casts", default: none)
     if c == none { return t }
     let (s, slot) = _unpack-spell-entry(c)
-    t + (cast: _spell-detail(s, t.name, none, none, level, (:), slot: slot, fixed-slot: true))
+    t + (cast: _spell-detail(s, t.name, none, none, level, (:), slot: slot, fixed-slot: true) + (ritual: false))
   }
   let traits = dedup-by(
     flatten-features(char.features).map(t => {
@@ -846,6 +894,7 @@
       language: collect-profs(effects, "language"),
     ),
     spellcasting: resolve-spellcasting(effects, mods, pb, level),
+    item-spells: resolve-item-spells(flatten-features(char.features), resolve-spellcasting(effects, mods, pb, level), level, mods, pb, effects),
     attacks: attacks,
     attacks-per-action: resolve-attacks-per-action(effects),
     equipped: equipped,

@@ -556,7 +556,7 @@
   [#mark#if parts.len() > 0 [ #parts.join[ ]]#if _upcastable(s) [ #_scaling-mark(0.9em)]]
 }
 
-// Area-of-effect glyphs, drawn (the sheet's ETBembo/Montserrat fonts lack unicode glyphs) so they render and scale with the surrounding text. Each is a small line-art icon in an `s`-square box: square/circle are the flat footprints; cube/sphere/cylinder add a 3-D cue (an isometric edge set, an equator, a capped body); line is a bar; cone a triangle emanating from a point. Used in the RANGE column as "«icon» 20 ft" beside a spell's range.
+// Area-of-effect glyphs, drawn (the sheet's ETBembo/Montserrat fonts lack unicode glyphs) so they render and scale with the surrounding text. Each is a small line-art icon in an `s`-square box: square/circle are the flat footprints; cube/sphere/cylinder add a 3-D cue (an isometric edge set, an equator, a capped body); line is a bar; cone a triangle emanating from a point; emanation four arrows radiating outward from the center. Used in the RANGE column as "«icon» 20 ft" beside a spell's range.
 #let _aoe-icon(shape, s) = {
   let sw = 0.6 * u + ink
   box(baseline: 0.15em, width: s, height: s)[
@@ -585,6 +585,19 @@
       place(horizon, rect(width: s, height: s * 0.24, fill: ink, stroke: none))
     } else if shape == "cone" {
       place(polygon(stroke: sw, fill: none, (0 * u, s / 2), (s, 0 * u), (s, s)))
+    } else if shape == "emanation" {
+      let c = s / 2
+      let ah = s * 0.20
+      let aw = s * 0.15
+      // Four solid arrows radiating outward from the center
+      place(line(start: (c, c), end: (c, ah), stroke: sw))
+      place(polygon(fill: ink, stroke: none, (c, 0 * u), (c - aw, ah), (c + aw, ah)))
+      place(line(start: (c, c), end: (c, s - ah), stroke: sw))
+      place(polygon(fill: ink, stroke: none, (c, s), (c - aw, s - ah), (c + aw, s - ah)))
+      place(line(start: (c, c), end: (ah, c), stroke: sw))
+      place(polygon(fill: ink, stroke: none, (0 * u, c), (ah, c - aw), (ah, c + aw)))
+      place(line(start: (c, c), end: (s - ah, c), stroke: sw))
+      place(polygon(fill: ink, stroke: none, (s, c), (s - ah, c - aw), (s - ah, c + aw)))
     }
   ]
 }
@@ -1038,6 +1051,32 @@
   for (i, lv) in levels.enumerate() {
     if i > 0 { v(section-gap) }
     level-group(lv)
+  }
+}
+
+// Table of spells cast from a magic item (e.g. Staff of the Woodlands, Staff of Power).
+// - Columns: Spell / Range / Hit/Save / Charges / Damage/Effect.
+// - Magic item spells require no material components; the fourth column lists the charge cost instead.
+#let item-spell-table(title, spells, size: 8 * u, atomic-rows: false) = {
+  if spells.len() == 0 { return }
+  let tbl = sheet-table(
+    (auto, auto, auto, auto, 1fr),
+    ("Spell", "Range", "Hit/Save", "Charges", "Damage/Effect"),
+    spells.map(s => (
+      _spell-name-cell(s, size),
+      _spell-range-cell(s, size * 0.9),
+      _spell-hit-cell(s),
+      text(size: size)[#s.charges],
+      _spell-effect-cell(s, size * 0.9),
+    )),
+    align: (left + top, left + top, center + top, center + top, left + top),
+    size: size,
+    atomic-rows: atomic-rows,
+  )
+  if title != none {
+    sticky-head(section-head(title), tbl)
+  } else {
+    tbl
   }
 }
 

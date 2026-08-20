@@ -368,7 +368,8 @@
     // - The Gear card holds the EQUIPPED and INVENTORY lists.
     has-actions: (c.attacks, actions, bonus-actions, reactions,
       c.cunning-strikes, c.metamagic, spell-attacks, spell-bonus-items,
-      spell-reaction-items, masteries, other, c.limited-uses).any(l => l.len() > 0)
+      spell-reaction-items, masteries, other, c.limited-uses,
+      c.at("item-spells", default: ())).any(l => l.len() > 0)
       or c.spellcasting.any(s => s.slots.values().any(v => v > 0)),
     has-features: (traits, feats).any(l => l.len() > 0),
     has-gear: c.equipped.len() > 0 or c.equipment.len() > 0 or c.currency != none,
@@ -412,6 +413,10 @@
     (reaction-all.len() > 0, keep(activation-table("Reaction", reaction-all, size: 7.5 * u, atomic-rows: true))),
     (b.other.len() > 0, keep(activation-table("Other", b.other, size: 7.5 * u, atomic-rows: true))),
     (c.metamagic.len() > 0, keep(metamagic-table(c.metamagic, size: 7.5 * u, atomic-rows: true))),
+    ..c.at("item-spells", default: ()).map(item => (
+      item.spells.len() > 0,
+      keep(item-spell-table(item.name, item.spells, size: 7.5 * u, atomic-rows: true)),
+    )),
     // - Limited-use resource pools form the tail: two side-by-side tables of diamonds, Short Rest and Long Rest.
     // - The pair travels together, so neither bucket orphans at a card break.
     // - A character with resources but no actions still emits this card, titled "Actions": `has-actions` above includes `c.limited-uses`.

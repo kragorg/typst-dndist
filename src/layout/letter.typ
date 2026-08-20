@@ -247,6 +247,14 @@
       } else {
         framed-box("Cantrips & Prepared Spells", _blank-rows(12))
       }
+      for item in c.at("item-spells", default: ()) {
+        v(letter-section-gap)
+        framed-box(
+          item.name,
+          item-spell-table(none, item.spells, size: 8.5 * u, atomic-rows: true),
+          repeat-header: true,
+        )
+      }
     },
 
     // Right: roleplay + equipment.

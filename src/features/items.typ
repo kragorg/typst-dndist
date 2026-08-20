@@ -3,7 +3,8 @@
 // - Armor and shields come from SRD 5.2.1. Each magic item cites its own
 //   source; NOTICE records which entries are SRD and which are not.
 
-#import "../model.typ": feature, limited-use-feature, eff-ac-base, eff-ac-bonus, eff-check-advantage, eff-prof, eff-save-bonus, eff-sense, eff-spellcasting-bonus
+#import "../model.typ": feature, limited-use-feature, eff-ac-base, eff-ac-bonus, eff-check-advantage, eff-prof, eff-save-bonus, eff-sense, eff-spellcasting-bonus, eff-weapon, eff-limited-use
+#import "../data/abilities.typ": ability
 #import "../data/constants.typ": armor-table, armor-dex-cap
 #import "../data/skills.typ": skill
 // An item that casts a spell names it with `casts:`; the spell catalog owns the numbers. `spells.typ` reaches only model.typ and the ability data, so this does not cycle back.
@@ -223,4 +224,87 @@
   notes: [Forgo the d20; treat one attack roll as a 10. Recharges at dawn.],
 )
 
+// - Source: DMG 2024 / SRD 5.1, rare staff (requires Attunement by a Druid).
+// - Wielded as a magic Quarterstaff (+2 to attack and damage rolls).
+// - Grants a +2 bonus to spell attack rolls.
+// - 6 charges, regaining 1d6 at dawn. If the last charge is expended, roll a d20; on a 1, it becomes a nonmagical Quarterstaff.
+// - Spells: Animal Friendship (1), Awaken (5), Barkskin (2), Locate Animals or Plants (2), Pass without Trace (2), Speak with Animals (1), Speak with Plants (3), Wall of Thorns (6).
+// - Tree Form: As a Magic Action, plant the staff in earth and expend 1 charge to transform it into a 60-ft tree. Touching the tree and taking a Magic Action reverts it.
+#let staff-of-the-woodlands = feature(
+  "Staff of the Woodlands",
+  kind: "magic-item",
+  source: "Magic Item",
+  effects: (
+    eff-weapon(
+      "Staff of the Woodlands",
+      base-name: "Quarterstaff",
+      category: "simple",
+      kind: "melee",
+      ability: ability.str,
+      damage: "1d6",
+      damage-type: "Bludgeoning",
+      range: "5 ft",
+      properties: ("Versatile", "Topple"),
+      versatile: "1d8",
+      shillelagh: true,
+      bonus: 2,
+    ),
+    eff-limited-use("Staff of the Woodlands", 6, recharge: "long"),
+    eff-spellcasting-bonus(attack: 2),
+  ),
+  spells: (
+    (spell: spell.animal-friendship, charges: 1),
+    (spell: spell.awaken, charges: 5),
+    (spell: spell.barkskin, charges: 2),
+    (spell: spell.locate-animals-or-plants, charges: 2),
+    (spell: spell.pass-without-trace, charges: 2),
+    (spell: spell.speak-with-animals, charges: 1),
+    (spell: spell.speak-with-plants, charges: 3),
+    (spell: spell.wall-of-thorns, charges: 6),
+  ),
+  desc: [This staff has 6 charges, regaining $1d 6$ at dawn. It can be wielded as a magic Quarterstaff ($+2$ to attack and damage rolls). While holding it, you gain a $+2$ bonus to spell attack rolls. You can expend charges to cast spells from it (using your spell save DC): _Animal Friendship_ (1), _Awaken_ (5), _Barkskin_ (2), _Locate Animals or Plants_ (2), _Pass without Trace_ (2), _Speak with Animals_ (1), _Speak with Plants_ (3), or _Wall of Thorns_ (6). As a Magic Action, you can plant the staff in earth and expend 1 charge to transform it into a 60-foot-tall tree with a 5-foot trunk and 20-foot radius branches; touching the tree and taking a Magic Action returns the staff to normal. If you expend the last charge, roll a $d 20$; on a $1$, the staff becomes a nonmagical Quarterstaff (requires Attunement by a Druid).],
+)
 
+// - Source: DMG 2024 / SRD 5.1, very rare staff (requires Attunement by a Sorcerer, Warlock, or Wizard).
+// - Wielded as a magic Quarterstaff (+2 to attack and damage rolls).
+// - Grants +2 to AC, saving throws, and spell attack rolls.
+// - 20 charges, regaining 2d8+4 at dawn.
+// - Spells: Cone of Cold (5), Fireball (5th-level, 5), Globe of Invulnerability (6), Hold Monster (5), Levitate (2), Lightning Bolt (5th-level, 5), Magic Missile (1), Ray of Enfeeblement (1), Wall of Force (5).
+// - Retributive Strike: Magic Action, break staff for 30-ft explosion.
+#let staff-of-power = feature(
+  "Staff of Power",
+  kind: "magic-item",
+  source: "Magic Item",
+  effects: (
+    eff-weapon(
+      "Staff of Power",
+      base-name: "Quarterstaff",
+      category: "simple",
+      kind: "melee",
+      ability: ability.str,
+      damage: "1d6",
+      damage-type: "Bludgeoning",
+      range: "5 ft",
+      properties: ("Versatile", "Topple"),
+      versatile: "1d8",
+      shillelagh: true,
+      bonus: 2,
+    ),
+    eff-limited-use("Staff of Power", 20, recharge: "long"),
+    eff-ac-bonus(2, source: "Staff of Power"),
+    eff-save-bonus(2, source: "Staff of Power"),
+    eff-spellcasting-bonus(attack: 2),
+  ),
+  spells: (
+    (spell: spell.cone-of-cold, charges: 5),
+    (spell: spell.fireball, slot: 5, charges: 5),
+    (spell: spell.globe-of-invulnerability, charges: 6),
+    (spell: spell.hold-monster, charges: 5),
+    (spell: spell.levitate, charges: 2),
+    (spell: spell.lightning-bolt, slot: 5, charges: 5),
+    (spell: spell.magic-missile, charges: 1),
+    (spell: spell.ray-of-enfeeblement, charges: 1),
+    (spell: spell.wall-of-force, charges: 5),
+  ),
+  desc: [This staff has 20 charges, regaining $2d 8 + 4$ at dawn. It can be wielded as a magic Quarterstaff ($+2$ to attack and damage rolls). While holding it, you gain a $+2$ bonus to Armor Class, saving throws, and spell attack rolls. You can expend charges to cast spells from it (using your spell save DC): _Cone of Cold_ (5), _Fireball_ (5th-level, 5), _Globe of Invulnerability_ (6), _Hold Monster_ (5), _Levitate_ (2), _Lightning Bolt_ (5th-level, 5), _Magic Missile_ (1), _Ray of Enfeeblement_ (1), or _Wall of Force_ (5). If you expend the last charge, roll a $d 20$; on a 1, it becomes a nonmagical Quarterstaff $+2$; on a 20, it regains $1d 8 + 2$ charges. As a Magic Action, you can break the staff for a Retributive Strike (requires Attunement by a Sorcerer, Warlock, or Wizard).],
+)

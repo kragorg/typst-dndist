@@ -27,6 +27,89 @@
   out
 }
 
+// Derive the proficiency bonus from a monster's Challenge Rating.
+#let _pb-from-cr(cr) = {
+  if type(cr) == int {
+    if cr <= 4 { 2 }
+    else if cr <= 8 { 3 }
+    else if cr <= 12 { 4 }
+    else if cr <= 16 { 5 }
+    else if cr <= 20 { 6 }
+    else if cr <= 24 { 7 }
+    else if cr <= 28 { 8 }
+    else { 9 }
+  } else {
+    let s = str(cr).trim()
+    if s.contains("/") or s == "0" or s == "1" or s == "2" or s == "3" or s == "4" { 2 }
+    else {
+      let n = int(s)
+      if n <= 8 { 3 }
+      else if n <= 12 { 4 }
+      else if n <= 16 { 5 }
+      else if n <= 20 { 6 }
+      else if n <= 24 { 7 }
+      else if n <= 28 { 8 }
+      else { 9 }
+    }
+  }
+}
+
+// Normalize a monster stat block record into computed display facts.
+#let resolve-monster(m) = {
+  let scores = (:)
+  for id in ability-ids {
+    scores.insert(id, m.abilities.at(id, default: 10))
+  }
+  let mods = (:)
+  for (id, score) in scores {
+    mods.insert(id, modifier(score))
+  }
+  let pb = if m.at("pb", default: none) != none { m.pb } else { _pb-from-cr(m.at("cr", default: "0")) }
+  let init = if m.at("initiative", default: none) != none { m.initiative } else { mods.dex }
+
+  let declared-saves = m.at("saves", default: (:))
+  let saves = (:)
+  for (id, mod) in mods {
+    if id in declared-saves {
+      let val = declared-saves.at(id)
+      let bonus = if type(val) == int { val } else { int(val) }
+      saves.insert(id, (bonus: bonus, proficient: bonus != mod))
+    } else {
+      saves.insert(id, (bonus: mod, proficient: false))
+    }
+  }
+
+  (
+    kind: "monster",
+    name: m.name,
+    size: m.at("size", default: "Medium"),
+    creature-type: m.at("creature-type", default: "Beast"),
+    alignment: m.at("alignment", default: "Unaligned"),
+    ac: m.at("ac", default: 10),
+    hp: m.at("hp", default: 10),
+    hit-dice: m.at("hit-dice", default: none),
+    speed: if type(m.at("speed", default: 30)) == int { str(m.speed) + " ft" } else { str(m.at("speed", default: "30 ft")) },
+    abilities: scores,
+    ability-mods: mods,
+    initiative: init,
+    pb: pb,
+    saves: saves,
+    skills: m.at("skills", default: (:)),
+    vulnerabilities: m.at("vulnerabilities", default: ()),
+    resistances: m.at("resistances", default: ()),
+    immunities: m.at("immunities", default: ()),
+    condition-immunities: m.at("condition-immunities", default: ()),
+    senses: m.at("senses", default: ()),
+    languages: m.at("languages", default: none),
+    cr: str(m.at("cr", default: "0")),
+    traits: m.at("traits", default: ()),
+    actions: m.at("actions", default: ()),
+    bonus-actions: m.at("bonus-actions", default: ()),
+    reactions: m.at("reactions", default: ()),
+    desc: m.at("desc", default: none),
+  )
+}
+
 // Flatten a feature list depth-first, nested sub-features included.
 // - Stamp each nested feature with plain-string ancestry; the layouts group and tag by it.
 // - A top-level feature gets no ancestry.
@@ -821,13 +904,15 @@
     t + (cast: _spell-detail(s, t.name, none, none, level, (:), slot: slot, fixed-slot: true) + (ritual: false))
   }
   let traits = dedup-by(
-    flatten-features(char.features).map(t => {
-      let n = t.at("notes", default: none)
-      let d = t.at("desc", default: none)
-      let t = if type(n) == function { t + (notes: (n)(ctx)) } else { t }
-      let t = if type(d) == function { t + (desc: (d)(ctx)) } else { t }
-      with-cast(t)
-    }),
+    flatten-features(char.features)
+      .filter(t => t.at("kind", default: none) != "monster")
+      .map(t => {
+        let n = t.at("notes", default: none)
+        let d = t.at("desc", default: none)
+        let t = if type(n) == function { t + (notes: (n)(ctx)) } else { t }
+        let t = if type(d) == function { t + (desc: (d)(ctx)) } else { t }
+        with-cast(t)
+      }),
     t => t.name
   )
 
@@ -849,6 +934,13 @@
     .filter(f => is-gear(f) and f.at("carried", default: false))
     .map(gear-entry)
 
+  // Monsters can be declared directly in character features (like gear/items) or via character(monsters: ...)
+  let raw-monsters = (
+    char.at("monsters", default: ())
+    + char.features.filter(f => f.at("kind", default: none) == "monster")
+    + flatten-features(char.features).filter(f => f.at("kind", default: none) == "monster")
+  )
+  let resolved-monsters = dedup-by(raw-monsters.map(resolve-monster), m => m.name)
   // Max HP: `auto` (default) computes the 5.5e fixed-rule maximum; a declared int overrides it (rolled HP).
   // - Either way `eff-stat("hp")` bonuses (Tough) fold on top.
   let base-hp = {
@@ -908,6 +1000,7 @@
     limited-uses: resolve-limited-uses(effects, ctx),
     cunning-strikes: resolve-cunning-strikes(effects, pb, mods),
     metamagic: traits.filter(t => t.at("via-name", default: none) == "Metamagic"),
+    monsters: resolved-monsters,
     raw: char,
   )
 }

@@ -9,7 +9,7 @@
 // - Card 5 Gear: currency, EQUIPPED (live gear: every non-carried modelled item) and INVENTORY (inert cargo: carried gear + declared kit). Magic items are starred in both lists.
 // - Takes a declared character. Resolves it internally.
 
-#import "../resolve.typ": resolve
+#import "../resolve.typ": resolve, modifier
 #import "../data/abilities.typ": ability-ids, ability-names
 #import "../data/skills.typ": skill-list
 #import "../data/constants.typ": weapon-mastery-descriptions
@@ -459,6 +459,123 @@
   }
 }
 
+#let _monster-card(m) = {
+  grid(
+    columns: 4 * (1fr,),
+    rows: 25 * u,
+    gutter: 2.5 * u,
+    stat-cell(str(m.ac), "AC", width: 100%),
+    stat-cell(
+      if m.hit-dice != none { [#bold-num(m.hp)#text(size: 6.5 * u, weight: "regular")[ (#m.hit-dice)]] } else { [#bold-num(m.hp)] },
+      "HP", width: 100%
+    ),
+    stat-cell(fmt-mod(m.initiative), "Init", width: 100%),
+    stat-cell(text(size: 7.5 * u, weight: "bold")[#m.speed], "Speed", width: 100%),
+  )
+  v(2.5 * u)
+
+  grid(
+    columns: 6 * (1fr,),
+    gutter: 2.5 * u,
+    ..ability-ids.map(id => {
+      let score = m.abilities.at(id, default: 10)
+      let mod = m.ability-mods.at(id, default: 0)
+      let save = m.saves.at(id)
+      box(
+        width: 100%,
+        stroke: 0.5 * u + rule-color,
+        radius: 2 * u,
+        inset: (x: 2 * u, y: 3.5 * u),
+        align(center + horizon, stack(
+          spacing: 1.5 * u,
+          text(font: label-font, size: 5 * u, weight: "bold", fill: accent)[#upper(id)],
+          text(font: body-font, fill: ink)[#text(size: 7.5 * u)[#bold-num(score)] #text(size: 6 * u, weight: "regular")[(#fmt-mod(mod))]],
+          [
+            #text(font: label-font, size: 4.5 * u, weight: "regular", fill: accent, tracking: 0.4 * u)[SAVE ]
+            #text(font: body-font, size: 6 * u, weight: if save.proficient { "bold" } else { "regular" }, fill: ink)[#fmt-mod(save.bonus)]
+          ],
+        ))
+      )
+    })
+  )
+  v(2 * u)
+
+  let sec-lines = ()
+  if m.skills != none and m.skills.len() > 0 {
+    let skill-strs = if type(m.skills) == dictionary {
+      m.skills.pairs().map(((k, v)) => titly(k) + " " + fmt-mod(v))
+    } else {
+      m.skills.map(s => if type(s) == str { s } else { str(s) })
+    }
+    sec-lines.push([#eyebrow([Skills: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#skill-strs.join(", ")]])
+  }
+  if m.vulnerabilities != none and m.vulnerabilities.len() > 0 {
+    sec-lines.push([#eyebrow([Damage Vulnerabilities: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#m.vulnerabilities.join(", ")]])
+  }
+  if m.resistances != none and m.resistances.len() > 0 {
+    sec-lines.push([#eyebrow([Damage Resistances: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#m.resistances.join(", ")]])
+  }
+  if m.immunities != none and m.immunities.len() > 0 {
+    sec-lines.push([#eyebrow([Damage Immunities: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#m.immunities.join(", ")]])
+  }
+  if m.condition-immunities != none and m.condition-immunities.len() > 0 {
+    sec-lines.push([#eyebrow([Condition Immunities: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#m.condition-immunities.join(", ")]])
+  }
+  if m.senses != none and (type(m.senses) == str or m.senses.len() > 0) {
+    let sense-str = if type(m.senses) == str { m.senses } else { m.senses.join(", ") }
+    sec-lines.push([#eyebrow([Senses: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#sense-str]])
+  }
+  if m.languages != none and m.languages != "" {
+    sec-lines.push([#eyebrow([Languages: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#m.languages]])
+  }
+  if sec-lines.len() > 0 {
+    stacked-lines(sec-lines)
+    v(2 * u)
+  }
+
+  line(length: 100%, stroke: 0.4 * u + rule-color)
+
+  if m.traits.len() > 0 {
+    v(5 * u)
+    sticky-head(
+      section-head("Traits"),
+      stacked-lines(m.traits.map(t => [
+        #text(font: body-font, size: 7.5 * u)[#text(weight: "bold")[#t.name.] #t.desc]
+      ])),
+    )
+  }
+
+  if m.actions.len() > 0 {
+    v(if m.traits.len() > 0 { 6 * u } else { 5 * u })
+    sticky-head(
+      section-head("Actions"),
+      stacked-lines(m.actions.map(a => [
+        #text(font: body-font, size: 7.5 * u)[#text(weight: "bold")[#a.name.] #a.desc]
+      ])),
+    )
+  }
+
+  if m.bonus-actions.len() > 0 {
+    v(6 * u)
+    sticky-head(
+      section-head("Bonus Actions"),
+      stacked-lines(m.bonus-actions.map(ba => [
+        #text(font: body-font, size: 7.5 * u)[#text(weight: "bold")[#ba.name.] #ba.desc]
+      ])),
+    )
+  }
+
+  if m.reactions.len() > 0 {
+    v(6 * u)
+    sticky-head(
+      section-head("Reactions"),
+      stacked-lines(m.reactions.map(r => [
+        #text(font: body-font, size: 7.5 * u)[#text(weight: "bold")[#r.name.] #r.desc]
+      ])),
+    )
+  }
+}
+
 // --- Deck assembly ---------------------------------------------------------
 
 #let card-sheet(char) = {
@@ -527,5 +644,12 @@
     grouped-feature-box("Features & Traits", b.trait-groups, size: 7.5 * u, keep-items: true)
   }
   if b.has-gear { pagebreak(); _card-marker(c.name, none, [Gear], none, numbered: false); _gear-card(c) }
+  if c.monsters.len() > 0 {
+    for m in c.monsters {
+      let sub = m.size + " " + m.creature-type + if m.alignment != none { ", " + m.alignment } else { "" }
+      pagebreak(); _card-marker(m.name, sub, [CR #m.cr], [PB #fmt-mod(m.pb)], numbered: false)
+      _monster-card(m)
+    }
+  }
   if c.backstory != none { pagebreak(); _card-marker(c.name, none, [Backstory], none, numbered: false); _backstory-card(c) }
 }

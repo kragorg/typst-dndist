@@ -343,6 +343,72 @@
 #let carried(f) = f + (carried: true)
 
 // ---------------------------------------------------------------------------
+// Monster constructor
+// ---------------------------------------------------------------------------
+
+// - A monster / beast stat block for character features like Druid Known Forms,
+//   familiars, or summons.
+// - `abilities`: base scores, e.g. (str: 12, dex: 15, con: 12, int: 3, wis: 12, cha: 6).
+// - `hp`: int or string, e.g. 11. `hit-dice`: e.g. "2d8 + 2".
+// - `traits`, `actions`, `bonus-actions`, `reactions`: lists of (name, desc) records.
+#let monster(
+  name,
+  size: "Medium",
+  creature-type: "Beast",
+  alignment: "Unaligned",
+  ac: 10,
+  hp: 10,
+  hit-dice: none,
+  speed: "30 ft",
+  abilities: (:),
+  initiative: none,
+  saves: (:),
+  skills: (:),
+  vulnerabilities: (),
+  resistances: (),
+  immunities: (),
+  condition-immunities: (),
+  senses: (),
+  languages: none,
+  cr: "0",
+  pb: none,
+  traits: (),
+  actions: (),
+  bonus-actions: (),
+  reactions: (),
+  desc: none,
+  ..rest
+) = (
+  kind: "monster",
+  name: name,
+  size: size,
+  creature-type: creature-type,
+  alignment: alignment,
+  ac: ac,
+  hp: hp,
+  hit-dice: hit-dice,
+  speed: speed,
+  abilities: abilities,
+  initiative: initiative,
+  saves: saves,
+  skills: skills,
+  vulnerabilities: vulnerabilities,
+  resistances: resistances,
+  immunities: immunities,
+  condition-immunities: condition-immunities,
+  senses: senses,
+  languages: languages,
+  cr: cr,
+  pb: pb,
+  traits: traits,
+  actions: actions,
+  bonus-actions: bonus-actions,
+  reactions: reactions,
+  desc: desc,
+  ..rest.named(),
+)
+
+// ---------------------------------------------------------------------------
 // Character constructor
 // ---------------------------------------------------------------------------
 
@@ -375,6 +441,7 @@
   tools: (),
   equipment: (),
   currency: none,
+  monsters: (),
   ..rest
 ) = (
   name: name,
@@ -393,6 +460,7 @@
     + tools.map(t => eff-prof("tool", t)),
   equipment: equipment,
   currency: currency,
+  monsters: monsters,
   backstory: rest.pos().at(0, default: none),
   ..rest.named(),
 )

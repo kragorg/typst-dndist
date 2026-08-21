@@ -8,10 +8,10 @@
 // - It gives sheet(), which selects a renderer from `--input layout=…`.
 // - It gives the game-object namespaces: ability, skill, tool.
 // - It gives the feature namespaces: species, class, subclass, invocation,
-//   background, item, spell, feat.
+//   background, item, weapon, spell, feat, monster.
 
 #import "src/model.typ": (
-  character, feature, limited-use-feature, asi, carried, id-of,
+  character, feature, limited-use-feature, asi, carried, id-of, monster,
   eff-ability, eff-ac-base, eff-ac-formula, eff-ac-bonus, eff-ac-set,
   eff-prof, eff-save-advantage, eff-check-advantage, eff-save-bonus, eff-resistance, eff-sense, eff-limited-use, eff-skill-rule, eff-skill-bonus, eff-stat, eff-spellcasting,
   eff-spellcasting-bonus, eff-weapon, eff-weapon-mastery, eff-pact-blade,
@@ -51,6 +51,7 @@
 #import "src/features/weapons.typ": magic-weapon, two-handed
 #import "src/features/spells.typ" as spell
 #import "src/features/feats.typ" as feat
+#import "src/features/monsters.typ" as monster
 
 // Game objects for direct use in the DSL.
 #import "src/data/abilities.typ": ability

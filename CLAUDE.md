@@ -150,9 +150,9 @@ renderers.
 
     dndist.typ              Public API: re-exports + namespaces (ability, skill, tool,
                             species, class, subclass, invocation, background, item,
-                            weapon, spell, feat);
+                            weapon, spell, feat, monster);
                             sheet(char) dispatches card/letter from `--input layout=`
-    src/model.typ           character(), feature(), limited-use-feature() (a feature whose
+    src/model.typ           character(), monster(), feature(), limited-use-feature() (a feature whose
                             one effect is a pool named after itself), asi() (an Ability
                             Score Improvement as a named, non-rendering feature), carried()
                             (marks gear as inert pack cargo — INVENTORY, no effects),
@@ -163,7 +163,8 @@ renderers.
     src/data/tools.typ      tool objects (built from the name lists in constants.typ)
     src/data/constants.typ  languages, tool name lists, alignment codes, armor table
     src/features/           species.typ, classes.typ, subclasses/, invocations.typ,
-                            backgrounds.typ, items.typ, weapons.typ, spells.typ, feats.typ
+                            backgrounds.typ, items.typ, weapons.typ, spells.typ, feats.typ,
+                            monsters.typ
     src/layout/             layouts.typ (the layout registry: page geometry, scale,
                             fixed-scale, scale-1 margins for card, card-lg, card-5x8
                             and letter — named once, read by dndist.typ and common.typ),
@@ -187,7 +188,8 @@ renderers.
                             Traits card holds one passive Features & Traits section —
                             grouped by source under tiny eyebrow sub-headers, the
                             feats folded in as a Feats subsection (see the
-                            source-grouping note);
+                            source-grouping note); Gear card; Monster cards for
+                            Known Forms / summons (after gear);
                             a Backstory card when declared),
                             letter.typ (a fixed one-page core + a roleplay section
                             that flows over as many pages as it needs — 3 pages for
@@ -1327,6 +1329,10 @@ its **2024 category**: `"Origin Feat"`, `"Fighting Style Feat"` (the
 styles nested by `_fighting-style`, classes.typ), or plain `"Feat"` for
 a General feat --- `feature-tags` (common.typ) maps the first two to the
 FEATS list's ORIGIN / FIGHTING STYLE tags (General stays untagged).
+- `monster.*` --- catalog of SRD 5.2.1 Beasts (`monster.wolf`, `monster.brown-bear`,
+  `monster.cat`, `monster.spider`, etc.) and the `monster.custom(...)` builder for
+  features requiring monster stat blocks (such as a Druid's Wild Shape Known Forms).
+  Monster stat blocks render as index cards placed after the Gear card in the deck.
 
 ## Code comments
 

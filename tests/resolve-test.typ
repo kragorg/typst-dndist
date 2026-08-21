@@ -2129,5 +2129,100 @@
 #assert.eq(sop-sp("Magic Missile").charges, 1)
 #assert.eq(sop-sp("Wall of Force").charges, 5)
 
+
+// --- Monsters / Known Forms --------------------------------------------------
+
+// Monster catalog checks.
+#assert.eq(monster.wolf.name, "Wolf")
+#assert.eq(monster.wolf.cr, "1/4")
+#assert.eq(monster.wolf.ac, 12)
+#assert.eq(monster.wolf.hp, 11)
+#assert.eq(monster.wolf.speed, "40 ft")
+#assert.eq(monster.wolf.abilities.str, 14)
+#assert.eq(monster.wolf.abilities.dex, 15)
+#assert.eq(monster.wolf.traits.len(), 1)
+#assert.eq(monster.wolf.actions.len(), 1)
+
+#assert.eq(monster.brown-bear.name, "Brown Bear")
+#assert.eq(monster.brown-bear.cr, "1")
+#assert.eq(monster.brown-bear.hp, 22)
+#assert.eq(monster.brown-bear.speed, "40 ft, climb 30 ft")
+#assert.eq(monster.brown-bear.actions.len(), 3)
+
+#assert.eq(monster.goat.name, "Goat")
+#assert.eq(monster.goat.cr, "0")
+#assert.eq(monster.goat.ac, 10)
+#assert.eq(monster.goat.hp, 4)
+#assert.eq(monster.goat.speed, "40 ft, climb 30 ft")
+#assert.eq(monster.goat.saves.str, 2)
+#let r-goat = resolve(character(abilities: (str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10), features: (monster.goat,))).monsters.first()
+#assert.eq(r-goat.saves.str.bonus, 2)
+#assert.eq(r-goat.saves.str.proficient, true)
+#assert.eq(r-goat.saves.dex.bonus, 0)
+#assert.eq(r-goat.saves.dex.proficient, false)
+
+#assert.eq(monster.giant-goat.name, "Giant Goat")
+#assert.eq(monster.giant-goat.cr, "1/2")
+#assert.eq(monster.giant-goat.hp, 19)
+#assert.eq(monster.giant-goat.saves.str, 5)
+// Character with monsters passed via character(monsters: ...)
+#let druid-char-monsters = resolve(character(
+  name: "Druid With Monsters",
+  abilities: (str: 10, dex: 14, con: 12, int: 10, wis: 16, cha: 10),
+  features: (class.druid(level: 2),),
+  monsters: (monster.wolf, monster.brown-bear),
+))
+#assert.eq(druid-char-monsters.monsters.len(), 2)
+#assert.eq(druid-char-monsters.monsters.at(0).name, "Wolf")
+#assert.eq(druid-char-monsters.monsters.at(0).pb, 2)
+#assert.eq(druid-char-monsters.monsters.at(0).ability-mods.dex, 2)
+#assert.eq(druid-char-monsters.monsters.at(1).name, "Brown Bear")
+#assert.eq(druid-char-monsters.monsters.at(1).ability-mods.str, 3)
+// Monsters must not pollute character stats, traits, or gear.
+#assert(not druid-char-monsters.traits.any(t => t.name == "Wolf" or t.name == "Brown Bear"))
+#assert(not druid-char-monsters.equipped.any(g => g.contains("Wolf")))
+#assert.eq(druid-char-monsters.abilities.str, 10)
+
+// Character with monsters passed directly in features: (...) like items
+#let druid-features = resolve(character(
+  name: "Druid With Monsters in Features",
+  abilities: (str: 10, dex: 14, con: 12, int: 10, wis: 16, cha: 10),
+  features: (
+    class.druid(level: 4),
+    monster.cat,
+    monster.spider,
+    monster.wolf,
+  ),
+))
+#assert.eq(druid-features.monsters.len(), 3)
+#assert.eq(druid-features.monsters.map(m => m.name), ("Cat", "Spider", "Wolf"))
+// Custom monster builder
+#let custom-beast = monster.custom(
+  "Cave Panther",
+  size: "Medium", creature-type: "Beast",
+  ac: 13, hp: 22, hit-dice: "4d8 + 4", speed: "40 ft, climb 30 ft", cr: "1/2",
+  abilities: (str: 15, dex: 16, con: 12, int: 3, wis: 14, cha: 7),
+  skills: (stealth: 7, perception: 4),
+  senses: ("Darkvision 60 ft", "Passive Perception 14"),
+  traits: (
+    (name: "Keen Smell", desc: [Advantage on Perception checks relying on smell.]),
+  ),
+  actions: (
+    (name: "Bite", desc: [_Melee Attack Roll:_ $+5$ to hit. _Hit:_ $6$ ($1d 6 + 3$) Piercing damage.]),
+  ),
+)
+#let char-custom = resolve(character(
+  abilities: (str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10),
+  monsters: (custom-beast,),
+))
+#assert.eq(char-custom.monsters.len(), 1)
+#let m-panther = char-custom.monsters.first()
+#assert.eq(m-panther.name, "Cave Panther")
+#assert.eq(m-panther.ac, 13)
+#assert.eq(m-panther.hp, 22)
+#assert.eq(m-panther.hit-dice, "4d8 + 4")
+#assert.eq(m-panther.pb, 2)
+#assert.eq(m-panther.ability-mods.dex, 3)
+#assert.eq(m-panther.skills.stealth, 7)
 #set page(width: auto, height: auto, margin: 12pt)
 All resolve-engine assertions passed.

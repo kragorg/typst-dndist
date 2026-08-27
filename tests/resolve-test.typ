@@ -1877,6 +1877,19 @@
   ("short-or-long", "long", "dawn"), // Adrenaline Rush, Relentless Endurance, then the ring
 )
 
+// --- Ring of Telekinesis -----------------------------------------------------
+#let tk-ringed = resolve(character(
+  abilities: (str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10),
+  features: (item.ring-of-telekinesis,),
+))
+#let tk-cast = tk-ringed.traits.find(t => t.name == "Ring of Telekinesis").cast
+#assert.eq(tk-cast.name, "Telekinesis")
+#assert.eq(tk-cast.range, "60 ft")
+#assert.eq(tk-cast.save, "STR")
+#assert.eq(tk-ringed.spellcasting.len(), 0)
+#assert.eq(tk-ringed.equipped, ("Ring of Telekinesis*",))
+#assert.eq(tk-ringed.limited-uses.len(), 0)
+
 // --- Cleric 4 / Light Domain ------------------------------------------------
 // A full Wisdom caster. The domain's always-prepared spells fold into the
 // Cleric source instead of a second one, Divine Order (Thaumaturge) adds the

@@ -200,6 +200,17 @@
   notes: [Expend 1 charge.],
 )
 
+// - Source: DMG 2024 / SRD 5.1, very rare ring (requires Attunement).
+// - While wearing this ring, you can cast Telekinesis from it.
+#let ring-of-telekinesis = feature(
+  "Ring of Telekinesis",
+  kind: "magic-item",
+  source: "Magic Item",
+  activation: "Action",
+  casts: spell.telekinesis,
+  desc: [While wearing this ring, you can cast _Telekinesis_ from it (requires Attunement).],
+)
+
 // Source: DMG 2024.
 #let wand-of-magic-detection = limited-use-feature(
   "Wand of Magic Detection", 3,

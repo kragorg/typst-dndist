@@ -222,45 +222,22 @@
     },
   )
 
-  // --- Page 2: spellcasting | roleplay -------------------------------------
+  // --- Page 2: roleplay ---------------------------------------------------
   pagebreak()
 
+  let resources = if c.spellcasting.len() > 0 {
+    slot-resource-items(merge-slots(c.spellcasting)) + c.limited-uses
+  } else { c.limited-uses }
+
   grid(
-    columns: (1.45fr, 1fr),
-    column-gutter: 12 * u,
+    columns: (1fr, 1fr),
+    column-gutter: grid-gutter,
     align: top,
 
-    // Left: spellcasting stats, then the spells table.
+    // Left: appearance, backstory, alignment, languages, resources.
     {
-      if c.spellcasting.len() > 0 {
-        // - The card's own header, at the letter's size: one row per distinct set of numbers, sources sharing a row joined by "/".
-        framed-box("Spellcasting", spellcasting-head(
-          c.spellcasting, size: 9 * u, source-label: "Source",
-        ))
-        v(letter-section-gap)
-
-        framed-box(
-          "Cantrips & Prepared Spells",
-          spell-table(c.spellcasting, size: 8.5 * u, atomic-rows: true, school-notes: spell-school-notes(c.traits)),
-          repeat-header: true,
-        )
-      } else {
-        framed-box("Cantrips & Prepared Spells", _blank-rows(12))
-      }
-      for item in c.at("item-spells", default: ()) {
-        v(letter-section-gap)
-        framed-box(
-          item.name,
-          item-spell-table(none, item.spells, size: 8.5 * u, atomic-rows: true),
-          repeat-header: true,
-        )
-      }
-    },
-
-    // Right: roleplay + equipment.
-    stack(
-      spacing: letter-section-gap,
-      framed-box("Appearance", [], min-height: 80 * u),
+      framed-box("Appearance", [], min-height: 80 * u)
+      v(letter-section-gap)
       framed-box(
         "Backstory & Personality",
         if c.backstory != none {
@@ -268,14 +245,24 @@
           text(font: body-font, size: 8.5 * u)[#c.backstory]
         } else { [] },
         min-height: 110 * u,
-      ),
-      framed-box("Alignment", text(font: body-font, size: 9 * u)[#or-dash(alignment-name(c.alignment))]),
+      )
+      v(letter-section-gap)
+      framed-box("Alignment", text(font: body-font, size: 9 * u)[#or-dash(alignment-name(c.alignment))])
+      v(letter-section-gap)
       framed-box(
         "Languages",
         if c.proficiencies.language.len() > 0 {
           text(font: body-font, size: 8.5 * u)[#titly-list(c.proficiencies.language.sorted())]
         } else { text(fill: rule-color)[—] },
-      ),
+      )
+      if resources.len() > 0 {
+        v(letter-section-gap)
+        framed-box("Resources", limited-use-lines(resources, size: 8.5 * u, single-column: true))
+      }
+    },
+
+    // Right: equipment, coins.
+    {
       framed-box("Equipment", {
         // - Two labelled groups, stacked as the Resources box stacks its recharge groups.
         // - EQUIPPED (`c.equipped`) is live gear; INVENTORY (`c.equipment`) is inert cargo.
@@ -307,19 +294,37 @@
             blank-line(100%),
           )),
         )
-      }),
-      framed-box("Coins", coins-box(coins: _parse-currency(c.currency))),
-      // - Show a diamond tracker for each limited-use resource pool (Innate Sorcery, Lucky, Wails from the Grave, ...), plus spell slot levels.
-      // - Include a spell-slot line per level even when there are no limited-use pools.
-      // - Keep the box on this page with the other tracking boxes (attunement, coins): the ability rail fixes the height of page 1's grid, which has no reliable slack.
-      {
-        let resources = if c.spellcasting.len() > 0 {
-          slot-resource-items(merge-slots(c.spellcasting)) + c.limited-uses
-        } else { c.limited-uses }
-        if resources.len() > 0 {
-          framed-box("Resources", limited-use-lines(resources, size: 8.5 * u, single-column: true))
-        }
-      },
-    ),
+      })
+      v(letter-section-gap)
+      framed-box("Coins", coins-box(coins: _parse-currency(c.currency)))
+    },
   )
+
+  // --- Page 3+: spellcasting (full width) -----------------------------------
+  let has-spells = c.spellcasting.len() > 0 or c.at("item-spells", default: ()).len() > 0
+  if has-spells {
+    pagebreak()
+    if c.spellcasting.len() > 0 {
+      // - The card's own header, at the letter's size: one row per distinct set of numbers, sources sharing a row joined by "/".
+      framed-box("Spellcasting", spellcasting-head(
+        c.spellcasting, size: 9 * u, source-label: "Source",
+      ))
+      v(letter-section-gap)
+
+      framed-box(
+        "Cantrips & Prepared Spells",
+        spell-table(c.spellcasting, size: 8.5 * u, atomic-rows: true, school-notes: spell-school-notes(c.traits)),
+        repeat-header: true,
+      )
+    }
+    for (i, item) in c.at("item-spells", default: ()).enumerate() {
+      if c.spellcasting.len() > 0 or i > 0 { v(letter-section-gap) }
+      framed-box(
+        item.name,
+        item-spell-table(none, item.spells, size: 8.5 * u, atomic-rows: true),
+        repeat-header: true,
+      )
+    }
+  }
 }
+

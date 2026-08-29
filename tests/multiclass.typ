@@ -17,5 +17,5 @@
   ),
 )
 
-// Select the layout with `--input layout=6x4|6x4L|8x5|8.5x11`. 6x4 is the default.
+// Select the layout with `--input layout=6x4|6x4L|5x8|5x8L|8x5|8.5x11`. 6x4 is the default.
 #sheet(valda)

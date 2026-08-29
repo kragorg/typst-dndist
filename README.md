@@ -5,9 +5,9 @@ Define and render printable **D&D 5.5e** character sheets in [Typst](https://typ
 A character is declared as data plus a list of composable *features* (species, classes, items,
 spells, feats). A resolver folds those features' effects into computed values — ability modifiers,
 proficiency bonus, **Armor Class**, **maximum HP**, skills, saves, passives, attacks, spell slots —
-and four layouts render the result: the themed **index-card deck** on three stocks — `6x4`
-(dense 8pt type), `6x4L` (same 6x4 stock at 115% type, so the deck runs longer), and
-`8x5` (8x5 stock at 125%, the same deck, bigger) — and a **full 8.5x11 sheet**.
+and six layouts render the result: the themed **index-card deck** on multiple stocks — `6x4`
+(dense 8pt type), `6x4L` (same 6x4 stock at 115% type), `5x8` (portrait index card), `5x8L`
+(portrait index card at 115%), `8x5` (landscape 8x5 stock at 125%) — and a **full 8.5x11 sheet**.
 You never write a number the rules can derive.
 
 <!-- Absolute URLs on purpose: docs/ is excluded from the published package (see
@@ -47,7 +47,7 @@ typst compile --root . main.typ letter.pdf --input layout=8.5x11
 typst watch --root . main.typ
 ```
 
-The layout is one of `6x4` (default), `6x4L`, `8x5`, or `8.5x11` — one
+The layout is one of `6x4` (default), `6x4L`, `5x8`, `5x8L`, `8x5`, or `8.5x11` — one
 character file renders every layout, with no per-file wiring.
 
 That is the whole setup: [Typst](https://typst.app/docs/tutorial/installation/), a clone, one script,
@@ -153,7 +153,7 @@ same reason.
   languages: ("Elvish", "Celestial"),   // Common is automatic; choose two more
 )
 
-#sheet(glory)                      // layout comes from --input layout=6x4|6x4L|8x5|8.5x11
+#sheet(glory)                      // layout comes from --input layout=6x4|6x4L|5x8|5x8L|8x5|8.5x11
 ```
 
 Every character file ends with a single `#sheet(char)`; the layout is chosen at the command line, so

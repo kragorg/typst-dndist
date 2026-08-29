@@ -6,8 +6,9 @@
 //   custom background with an origin feat, an ASI, magic armor, weapon mastery,
 //   a magic item with a scoped spellcasting bonus, a spell list and a backstory.
 // - Select the layout on the command line; the default is 6x4 (6x4, 6x4L,
-//   8x5 and 8.5x11 are the four):
+//   5x8, 5x8L, 8x5 and 8.5x11 are the six):
 //     typst compile --root . main.typ sheet.pdf --input layout=6x4
+//     typst compile --root . main.typ sheet-5x8.pdf --input layout=5x8
 //     typst compile --root . main.typ sheet-8x5.pdf --input layout=8x5
 //     typst compile --root . main.typ letter.pdf --input layout=8.5x11
 //     typst watch --root . main.typ

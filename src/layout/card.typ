@@ -581,14 +581,14 @@
 #let card-sheet(char) = {
   let c = resolve(char)
   let L = layouts.at(active-layout)
+  let landscape-w = calc.max(L.width, L.height)
+  let landscape-h = calc.min(L.width, L.height)
+  let portrait-w = calc.min(L.width, L.height)
+  let portrait-h = calc.max(L.width, L.height)
 
   // - Each edge margin is the registry's scale-1 margin plus the design border's
   //   growth: `L.margin.at(e) + card-border.at(e) * (L.scale - 1)`. The printer
   //   clip is fixed (a physical property of the printer); the border grows with
-  //   the type it frames. At scale 1 the growth term is exactly zero, so `card`
-  //   draws its authored literals. See `layouts.typ` for the measured clips.
-  // - Every card's masthead lives in the running header (`_running-head`), so the top margin is enlarged, uniformly, to hold it.
-  // - One margin serves all cards, so the header sits at the same place on every card. `header-ascent` sets the header-to-body gap.
   set page(
     width: L.width, height: L.height,
     margin: (
@@ -625,15 +625,37 @@
   // to fill a card exactly, so they only grow when the card itself does.
   let fixed = L.fixed-scale / L.scale
 
-  // Placard (card #1): a foldable table-tent on its own portrait page, with no running header — its masthead lives in the body's lower half so the blank top folds back and the card stands up. Content after it flows to a fresh page under the ambient `set page`, so the core card lands on page 2 and the running head (which drops its first `<card-marker>` there) is unaffected.
+  // Placard (card #1): always portrait, with no running header — its masthead lives in the body's lower half so the blank top folds back and the card stands up.
   page(
-    width: L.height, height: L.width, fill: white,
-    // Top margin = the horizontal fold line (half of the card's width).
-    margin: (x: 0.3in * L.fixed-scale, top: L.width / 2, bottom: 0.45in * L.fixed-scale),
+    width: portrait-w, height: portrait-h, fill: white,
+    // Top margin = the horizontal fold line (half of the portrait card's height).
+    margin: (x: 0.3in * L.fixed-scale, top: portrait-h / 2, bottom: 0.45in * L.fixed-scale),
     header: none, footer: none,
   )[#at-scale(fixed, _placard-card(c))]
 
-  _card-marker(c.name, core-subtitle, core-note1, core-note2); at-scale(fixed, _core-card(c))
+  // Core stats card (card #2): always landscape.
+  if L.width != landscape-w {
+    page(
+      width: landscape-w, height: landscape-h,
+      margin: (
+        left: L.margin.at("left") + card-border.at("left") * (L.scale - 1),
+        right: L.margin.at("right") + card-border.at("right") * (L.scale - 1),
+        top: L.margin.at("top") + card-border.at("top") * (L.scale - 1),
+        bottom: L.margin.at("bottom") + card-border.at("bottom") * (L.scale - 1),
+      ),
+      fill: white,
+      header-ascent: _header-gap,
+      header: _running-head,
+      footer-descent: _footer-gap,
+      footer: _page-footer,
+    )[
+      #_card-marker(c.name, core-subtitle, core-note1, core-note2)
+      #at-scale(fixed, _core-card(c))
+    ]
+  } else {
+    _card-marker(c.name, core-subtitle, core-note1, core-note2)
+    at-scale(fixed, _core-card(c))
+  }
   if b.has-actions {
     pagebreak(); _card-marker(c.name, none, [Actions], none)
     _actions-card(c, b)
@@ -647,8 +669,28 @@
   if c.monsters.len() > 0 {
     for m in c.monsters {
       let sub = m.size + " " + m.creature-type + if m.alignment != none { ", " + m.alignment } else { "" }
-      pagebreak(); _card-marker(m.name, sub, [CR #m.cr], [PB #fmt-mod(m.pb)], numbered: false)
-      _monster-card(m)
+      if L.width != landscape-w {
+        page(
+          width: landscape-w, height: landscape-h,
+          margin: (
+            left: L.margin.at("left") + card-border.at("left") * (L.scale - 1),
+            right: L.margin.at("right") + card-border.at("right") * (L.scale - 1),
+            top: L.margin.at("top") + card-border.at("top") * (L.scale - 1),
+            bottom: L.margin.at("bottom") + card-border.at("bottom") * (L.scale - 1),
+          ),
+          fill: white,
+          header-ascent: _header-gap,
+          header: _running-head,
+          footer-descent: _footer-gap,
+          footer: _page-footer,
+        )[
+          #_card-marker(m.name, sub, [CR #m.cr], [PB #fmt-mod(m.pb)], numbered: false)
+          #_monster-card(m)
+        ]
+      } else {
+        pagebreak(); _card-marker(m.name, sub, [CR #m.cr], [PB #fmt-mod(m.pb)], numbered: false)
+        _monster-card(m)
+      }
     }
   }
   if c.backstory != none { pagebreak(); _card-marker(c.name, none, [Backstory], none, numbered: false); _backstory-card(c) }

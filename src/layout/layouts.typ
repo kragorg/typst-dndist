@@ -26,6 +26,10 @@
                margin: (left: 0.16in, right: 0.32in, top: 0.58in, bottom: 0.21in)),
   "6x4L":     (kind: "card", scale: 1.15, fixed-scale: 1.00, width: 6in, height: 4in,
                margin: (left: 0.16in, right: 0.32in, top: 0.58in, bottom: 0.21in)),
+  "5x8":      (kind: "card", scale: 1.00, fixed-scale: 1.25, width: 5in, height: 8in,
+               margin: card-border),
+  "5x8L":     (kind: "card", scale: 1.15, fixed-scale: 1.25, width: 5in, height: 8in,
+               margin: card-border),
   // TODO (clip-8x5, open item): the 8x5 printer clip is a physical property of
   // the printer that only a test print reveals, so this margin cannot be
   // finished from the code — it is `clip + card-border`, and it lands with

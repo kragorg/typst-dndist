@@ -166,7 +166,7 @@ renderers.
                             backgrounds.typ, items.typ, weapons.typ, spells.typ, feats.typ,
                             monsters.typ
     src/layout/             layouts.typ (the layout registry: page geometry, scale,
-                            fixed-scale, scale-1 margins for 6x4, 6x4L, 8x5
+                            fixed-scale, scale-1 margins for 6x4, 6x4L, 5x8, 5x8L, 8x5
                             and 8.5x11 — named once, read by dndist.typ and common.typ),
                             common.typ (components, fonts, proficiency icons, the
                             sheet-table/stacked-lines rhythm builders, keep-together +
@@ -1449,7 +1449,7 @@ FEATS list's ORIGIN / FIGHTING STYLE tags (General stays untagged).
   is declared once, then the file ends with a single `#sheet(char)`.
   `sheet()` (`dndist.typ`) is the *one* place that dispatches to
   `card-sheet`/`letter-sheet`, reading `sys.inputs.layout`
-  (`--input layout=6x4|6x4L|8x5|8.5x11`, defaulting to 6x4);
+  (`--input layout=6x4|6x4L|5x8|5x8L|8x5|8.5x11`, defaulting to 6x4);
   never inline that if/else per file. The layout set and the design unit
   live in the registry (`src/layout/layouts.typ`), and `sheet()` reads
   it --- `assert`s that a per-call `layout:` override agrees with

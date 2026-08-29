@@ -1,6 +1,6 @@
 // - Copy this file. Fill in your character.
 // - Compile it with the dndist fonts available. See the README.
-// - Select the layout with `--input layout=6x4|6x4L|8x5|8.5x11`. 6x4 is the default.
+// - Select the layout with `--input layout=6x4|6x4L|5x8|5x8L|8x5|8.5x11`. 6x4 is the default.
 #import "@preview/dndist:1.0.0": *
 
 #let my-character = character(

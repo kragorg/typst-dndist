@@ -157,7 +157,7 @@
               # AND-list exemption; `case` states the skip outright.
               case "$f" in tests/resolve-test.typ) continue ;; esac
               name="$(basename "$f" .typ)"
-              for layout in 6x4 6x4L 8x5 8.5x11; do
+              for layout in 6x4 6x4L 5x8 5x8L 8x5 8.5x11; do
                 echo "rendering $name ($layout)"
                 typst-strict --root "$src" --input "layout=$layout" \
                   "$f" "$out/$name-$layout.pdf"
@@ -167,7 +167,7 @@
 
           # This check compiles the template in place, with the font guard.
           template = typstCheck "template" typst-strict ''
-            for layout in 6x4 6x4L 8x5 8.5x11; do
+            for layout in 6x4 6x4L 5x8 5x8L 8x5 8.5x11; do
               typst-strict --root "$src/template" --input "layout=$layout" \
                 template/main.typ "$out/template-$layout.pdf"
             done
@@ -186,7 +186,7 @@
             typst init @preview/${pname}:${version} mychar
             cd mychar
             mkdir -p "$out"
-            for layout in 6x4 6x4L 8x5 8.5x11; do
+            for layout in 6x4 6x4L 5x8 5x8L 8x5 8.5x11; do
               echo "compiling the scaffolded project ($layout)"
               typst compile --input "layout=$layout" \
                 ${templateEntrypoint} "$out/init-$layout.pdf"

@@ -11,7 +11,7 @@ the public API means a major version bump.
 
 ### Added
 
-- Renamed layouts to dimension-based names: `6x4` (default card), `6x4L` (large card at 115%), `8x5` (8in × 5in landscape at 125%), and `8.5x11` (letter sheet).
+- Dimension-based layout names: `6x4` (default card), `6x4L` (large card at 115%), `5x8` (portrait card), `5x8L` (portrait card at 115%), `8x5` (8in × 5in landscape at 125%), and `8.5x11` (letter sheet).
 - A layout registry (`src/layout/layouts.typ`) and the design unit `u`: every
   layout is one entry (page geometry, scale, margin decomposition), and every
   absolute length in a layout is authored as a multiple of `u`, so one scalar

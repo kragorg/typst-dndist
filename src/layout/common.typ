@@ -1055,13 +1055,13 @@
 }
 
 // Table of spells cast from a magic item (e.g. Staff of the Woodlands, Staff of Power).
-// - Columns: Spell / Range / Hit/Save / Charges / Damage/Effect.
+// - Columns: <title or Spell> / Range / Hit/Save / Charges / Damage/Effect.
 // - Magic item spells require no material components; the fourth column lists the charge cost instead.
 #let item-spell-table(title, spells, size: 8 * u, atomic-rows: false) = {
   if spells.len() == 0 { return }
-  let tbl = sheet-table(
+  sheet-table(
     (auto, auto, auto, auto, 1fr),
-    ("Spell", "Range", "Hit/Save", "Charges", "Damage/Effect"),
+    (if title != none { title } else { "Spell" }, "Range", "Hit/Save", "Charges", "Damage/Effect"),
     spells.map(s => (
       _spell-name-cell(s, size),
       _spell-range-cell(s, size * 0.9),
@@ -1073,11 +1073,6 @@
     size: size,
     atomic-rows: atomic-rows,
   )
-  if title != none {
-    sticky-head(section-head(title), tbl)
-  } else {
-    tbl
-  }
 }
 
 // ---------------------------------------------------------------------------

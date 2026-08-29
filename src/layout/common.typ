@@ -13,7 +13,7 @@
 // of `u` rather than in raw `pt`, so one scalar rescales a whole sheet — type,
 // rules, insets and gaps together, in step. It is fixed for the compile by
 // `--input layout=…`, because a document renders exactly one layout.
-#let scale = layouts.at(active-layout, default: layouts.card).at("scale", default: 1.0)
+#let scale = layouts.at(active-layout, default: layouts.at("6x4")).at("scale", default: 1.0)
 #let u = 1pt * scale
 
 // Render `body` at `factor` times the deck's unit.

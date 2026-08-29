@@ -18,7 +18,7 @@ Inside the dev shell:
 
 ```sh
 typst compile --root . tests/resolve-test.typ /tmp/t.pdf    # the engine assertions
-typst-strict --root . tests/example.typ /tmp/e.pdf --input layout=card
+typst-strict --root . tests/example.typ /tmp/e.pdf --input layout=6x4
 ```
 
 `--root .` is required for `resolve-test.typ`, which reaches relatively into `../src/` for

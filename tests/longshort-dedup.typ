@@ -2,7 +2,7 @@
 // - Second Wind and Wild Shape both carry a footnote marker on their row.
 // - It exercises the dedup: the page foot shows the note one time only.
 // - Compile: `nix develop -c typst compile tests/longshort-dedup.typ out.pdf`
-// - Add `--input layout=letter` for the letter sheet.
+// - Add `--input layout=8.5x11` for the letter sheet.
 #import "@preview/dndist:1.0.0": *
 
 #let test = character(

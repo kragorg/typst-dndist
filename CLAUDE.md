@@ -28,8 +28,8 @@ Inside the devShell:
 
 ``` sh
 typst compile --root . tests/resolve-test.typ /tmp/t.pdf          # the engine assertions
-typst-strict --root . tests/example.typ /tmp/e.pdf --input layout=card
-typst-strict --root . tests/example.typ /tmp/e-lg.pdf --input layout=card-lg  # any of the four
+typst-strict --root . tests/example.typ /tmp/e.pdf --input layout=6x4
+typst-strict --root . tests/example.typ /tmp/e-lg.pdf --input layout=6x4L  # any of the four
 ```
 
 **`--root .` matters.** `tests/resolve-test.typ` reaches relatively into
@@ -166,8 +166,8 @@ renderers.
                             backgrounds.typ, items.typ, weapons.typ, spells.typ, feats.typ,
                             monsters.typ
     src/layout/             layouts.typ (the layout registry: page geometry, scale,
-                            fixed-scale, scale-1 margins for card, card-lg, card-5x8
-                            and letter — named once, read by dndist.typ and common.typ),
+                            fixed-scale, scale-1 margins for 6x4, 6x4L, 8x5
+                            and 8.5x11 — named once, read by dndist.typ and common.typ),
                             common.typ (components, fonts, proficiency icons, the
                             sheet-table/stacked-lines rhythm builders, keep-together +
                             spell/attack tables, feature boxes, the limited-use-lines
@@ -1449,7 +1449,7 @@ FEATS list's ORIGIN / FIGHTING STYLE tags (General stays untagged).
   is declared once, then the file ends with a single `#sheet(char)`.
   `sheet()` (`dndist.typ`) is the *one* place that dispatches to
   `card-sheet`/`letter-sheet`, reading `sys.inputs.layout`
-  (`--input layout=card|card-lg|card-5x8|letter`, defaulting to card);
+  (`--input layout=6x4|6x4L|8x5|8.5x11`, defaulting to 6x4);
   never inline that if/else per file. The layout set and the design unit
   live in the registry (`src/layout/layouts.typ`), and `sheet()` reads
   it --- `assert`s that a per-call `layout:` override agrees with

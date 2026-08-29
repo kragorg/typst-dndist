@@ -11,12 +11,7 @@ the public API means a major version bump.
 
 ### Added
 
-- Two new card layouts, selected like the others with `--input layout=…`:
-  - `card-lg` — the same 4x6 stock as `card`, with the design scaled to 115%
-    so the deck reads larger and runs longer.
-  - `card-5x8` — 8in × 5in landscape stock at 125%, the same deck at a larger
-    size (the printer clip for this stock still needs a test print; the
-    registry entry lands with the design border alone, marked `TODO`).
+- Renamed layouts to dimension-based names: `6x4` (default card), `6x4L` (large card at 115%), `8x5` (8in × 5in landscape at 125%), and `8.5x11` (letter sheet).
 - A layout registry (`src/layout/layouts.typ`) and the design unit `u`: every
   layout is one entry (page geometry, scale, margin decomposition), and every
   absolute length in a layout is authored as a multiple of `u`, so one scalar

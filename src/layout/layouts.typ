@@ -22,21 +22,21 @@
 #let card-border = (left: 0.12063in, right: 0.11724in, top: 0.53866in, bottom: 0.12142in)
 
 #let layouts = (
-  "card":     (kind: "card", scale: 1.00, fixed-scale: 1.00, width: 6in, height: 4in,
+  "6x4":      (kind: "card", scale: 1.00, fixed-scale: 1.00, width: 6in, height: 4in,
                margin: (left: 0.16in, right: 0.32in, top: 0.58in, bottom: 0.21in)),
-  "card-lg":  (kind: "card", scale: 1.15, fixed-scale: 1.00, width: 6in, height: 4in,
+  "6x4L":     (kind: "card", scale: 1.15, fixed-scale: 1.00, width: 6in, height: 4in,
                margin: (left: 0.16in, right: 0.32in, top: 0.58in, bottom: 0.21in)),
-  // TODO (clip-5x8, open item): the 5x8 printer clip is a physical property of
+  // TODO (clip-8x5, open item): the 8x5 printer clip is a physical property of
   // the printer that only a test print reveals, so this margin cannot be
   // finished from the code — it is `clip + card-border`, and it lands with
   // `card-border` alone for now. Until the clip is measured, expect the first
-  // 5x8 prints to truncate an edge. Ask the user to run:
-  //   nix develop -c typst compile --input card=5x8 calibration.typ /tmp/cal-5x8.pdf
-  // print it borderless at 100% on 5x8 stock, read the four clips off the
+  // 8x5 prints to truncate an edge. Ask the user to run:
+  //   nix develop -c typst compile --input card=8x5 calibration.typ /tmp/cal-8x5.pdf
+  // print it borderless at 100% on 8x5 stock, read the four clips off the
   // rulers as calibration.typ's header describes, and add them to this entry.
-  "card-5x8": (kind: "card", scale: 1.25, fixed-scale: 1.25, width: 8in, height: 5in,
+  "8x5":      (kind: "card", scale: 1.25, fixed-scale: 1.25, width: 8in, height: 5in,
                margin: card-border),
-  "letter":   (kind: "letter", scale: 1.00),
+  "8.5x11":   (kind: "letter", scale: 1.00),
 )
 
-#let active-layout = sys.inputs.at("layout", default: "card")
+#let active-layout = sys.inputs.at("layout", default: "6x4")

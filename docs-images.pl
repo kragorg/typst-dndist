@@ -20,13 +20,13 @@ use File::Temp qw(tempdir);
 my @images = (
     {
         name   => "card-deck",
-        layout => "card",
+        layout => "6x4",
         page   => 2,
         dpi    => 150,
     },
     {
         name   => "letter-sheet",
-        layout => "letter",
+        layout => "8.5x11",
         page   => 1,
         dpi    => 100,
     },

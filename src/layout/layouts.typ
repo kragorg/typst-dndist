@@ -6,8 +6,11 @@
 //   `card-border` below.
 // - The 4x6 clips are the ones measured on the index-card stock: this printer
 //   clips borderless 4x6 prints by ~1mm (left), ~5.15mm (right), ~1.05mm (top),
-//   ~2.25mm (bottom). Each file margin = the desired printed margin + that
-//   edge's clip. Re-measure with calibration.typ for a different printer.
+//   ~2.25mm (bottom).
+// - The 5x8 clips measured on portrait stock: ~4mm (left), ~4mm (right),
+//   ~6mm (top), ~5mm (bottom).
+//   Each file margin = the desired printed margin + that edge's clip.
+//   Re-measure with calibration.typ for a different printer.
 // - A card layout's edge margin at scale `s` is
 //   `margin.at(e) + card-border.at(e) * (s - 1)`: the printer clip stays fixed
 //   (it is a physical property of the printer), and the design border grows
@@ -27,9 +30,9 @@
   "6x4L":     (kind: "card", scale: 1.15, fixed-scale: 1.00, width: 6in, height: 4in,
                margin: (left: 0.16in, right: 0.32in, top: 0.58in, bottom: 0.21in)),
   "5x8":      (kind: "card", scale: 1.00, fixed-scale: 1.25, width: 5in, height: 8in,
-               margin: card-border),
+               margin: (left: 0.28in, right: 0.275in, top: 0.775in, bottom: 0.32in)),
   "5x8L":     (kind: "card", scale: 1.15, fixed-scale: 1.25, width: 5in, height: 8in,
-               margin: card-border),
+               margin: (left: 0.28in, right: 0.275in, top: 0.775in, bottom: 0.32in)),
   // TODO (clip-8x5, open item): the 8x5 printer clip is a physical property of
   // the printer that only a test print reveals, so this margin cannot be
   // finished from the code — it is `clip + card-border`, and it lands with

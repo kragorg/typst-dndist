@@ -32,6 +32,7 @@ exclude = [
     "CONTRIBUTING.md",
     "CHANGELOG.md",
     ".gitignore",
+    "calibration.typ",
 ]
 
 [template]

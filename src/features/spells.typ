@@ -455,7 +455,7 @@
 )
 #let sleep = _spell(
   "Sleep", 1, school: "Enchantment",
-  casting-time: "Action", range: "90 ft", area: (shape: "sphere", size: "5 ft"),
+  casting-time: "Action", range: "60 ft", area: (shape: "sphere", size: "5 ft"),
   components: "V, S, M", duration: "1 min", concentration: true, save: "WIS",
   notes: [Creatures in the Sphere that fail the save have the Incapacitated condition until the spell ends, ending early for a creature that takes damage or is shaken awake.],
 )

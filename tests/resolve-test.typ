@@ -1046,6 +1046,7 @@
 #assert(burst.attack)
 #assert.eq(burst.attack-bonus, 5)
 
+#assert.eq(spell.sleep.range, "60 ft")
 // --- Fairy species: Small Fey with a Fairy Magic spellcasting source ----------
 #let fae = resolve(character(
   abilities: (str: 8, dex: 15, con: 14, int: 8, wis: 10, cha: 15),

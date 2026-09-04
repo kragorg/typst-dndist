@@ -209,64 +209,58 @@
   v(0.7fr)
 }
 
-#let _core-card(c) = {
-  grid(
-    columns: 6 * (1fr,),
-    gutter: 3 * u,
-    ..ability-ids.map(id => ability-cell(
-      id, c.abilities.at(id), c.ability-mods.at(id), c.saves.at(id),
-    )),
-  )
-  v(3 * u)
+#let _core-card(c, is-portrait: false) = {
+  if is-portrait {
+    grid(
+      columns: 3 * (1fr,),
+      gutter: 3 * u,
+      ..ability-ids.map(id => ability-cell(
+        id, c.abilities.at(id), c.ability-mods.at(id), c.saves.at(id),
+      )),
+    )
+    v(4 * u)
 
-  // HP shows the computed maximum only: blanks for current and temp HP are not useful at the card's at-a-glance size.
-  let hp-cell = {
-    set text(weight: "bold")
-    text(size: card-stat-size)[#bold-num(c.max-hp)]
-  }
-  grid(
-    // - Six equal boxes, each filling its column, line up under the six ability columns above.
-    // - An explicit row height is required: `stat-cell` uses `height: 100%` to fill the row, and `100%` in an auto-sized grid row resolves to the whole page.
-    columns: 6 * (1fr,),
-    rows: 32 * u,
-    gutter: 3 * u,
-    stat-cell(c.ac, "AC", big: true, width: 100%),
-    stat-cell(hp-cell, "HP", big: true, width: 100%),
-    stat-cell(fmt-mod(c.initiative), "Init", width: 100%),
-    stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft]], "Speed", width: 100%),
-    stat-cell(c.passives.perception, "Pas. Per", width: 100%),
-    // The diamond marks resource tracking. Check it off in play.
-    stat-cell(checkbox(size: 10 * u), "Heroic Insp.", width: 100%),
-  )
-  v(4 * u)
+    let hp-cell = {
+      set text(weight: "bold")
+      text(size: card-stat-size)[#bold-num(c.max-hp)]
+    }
+    grid(
+      columns: 3 * (1fr,),
+      rows: (28 * u, 28 * u),
+      gutter: 3 * u,
+      stat-cell(c.ac, "Armor Class", big: true, width: 100%),
+      stat-cell(hp-cell, "Hit Points", big: true, width: 100%),
+      stat-cell(fmt-mod(c.initiative), "Initiative", width: 100%),
+      stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft]], "Speed", width: 100%),
+      stat-cell(c.passives.perception, "Passive Perception", width: 100%),
+      stat-cell(checkbox(size: 9 * u), "Heroic Inspiration", width: 100%),
+    )
+    v(5 * u)
 
-  let rows-per-col = calc.ceil(skill-list.len() / 3)
-  let cols = range(3).map(ci => skill-list.slice(
-    ci * rows-per-col, calc.min((ci + 1) * rows-per-col, skill-list.len()),
-  ))
-  grid(
-    columns: 3 * (1fr,),
-    column-gutter: grid-gutter,
-    ..cols.map(col => stack(
-      spacing: 1.5 * u,
-      ..col.map(sk => skill-row(sk, c.skills.at(sk.id))),
-    )),
-  )
-  v(4 * u)
+    let num-cols = 2
+    let rows-per-col = calc.ceil(skill-list.len() / num-cols)
+    let cols = range(num-cols).map(ci => skill-list.slice(
+      ci * rows-per-col, calc.min((ci + 1) * rows-per-col, skill-list.len()),
+    ))
+    grid(
+      columns: num-cols * (1fr,),
+      column-gutter: 36 * u,
+      ..cols.map(col => stack(
+        spacing: 2 * u,
+        ..col.map(sk => skill-row(sk, c.skills.at(sk.id))),
+      )),
+    )
+    v(5 * u)
 
-  // - The footer splits in two: Defenses & Senses on the left, proficiency training on the right.
-  // - The left box lists save advantages, then damage responses, then senses. Its header shows only when there is at least one of them.
-  grid(
-    columns: (1fr, 1fr),
-    column-gutter: grid-gutter,
+    let foot-items = ()
     if has-defenses(c) {
-      stack(
+      foot-items.push(stack(
         spacing: 3 * u,
         _foot-head[DEFENSES & SENSES],
         character-notes-for(c, size: 6.5 * u),
-      )
-    } else { [] },
-    stack(
+      ))
+    }
+    foot-items.push(stack(
       spacing: 3 * u,
       _foot-head[TRAINING & PROFICIENCIES],
       stacked-lines((
@@ -275,9 +269,83 @@
         _prof-line("Tools", c.proficiencies.tool.map(tool-label)),
         _prof-line("Languages", c.proficiencies.language.sorted()),
       ).filter(x => x != none)),
-    ),
-  )
+    ))
+    grid(
+      columns: foot-items.len() * (1fr,),
+      column-gutter: grid-gutter,
+      ..foot-items,
+    )
+  } else {
+    grid(
+      columns: 6 * (1fr,),
+      gutter: 3 * u,
+      ..ability-ids.map(id => ability-cell(
+        id, c.abilities.at(id), c.ability-mods.at(id), c.saves.at(id),
+      )),
+    )
+    v(3 * u)
+
+    // HP shows the computed maximum only: blanks for current and temp HP are not useful at the card's at-a-glance size.
+    let hp-cell = {
+      set text(weight: "bold")
+      text(size: card-stat-size)[#bold-num(c.max-hp)]
+    }
+    grid(
+      // - Six equal boxes, each filling its column, line up under the six ability columns above.
+      // - An explicit row height is required: `stat-cell` uses `height: 100%` to fill the row, and `100%` in an auto-sized grid row resolves to the whole page.
+      columns: 6 * (1fr,),
+      rows: 32 * u,
+      gutter: 3 * u,
+      stat-cell(c.ac, "AC", big: true, width: 100%),
+      stat-cell(hp-cell, "HP", big: true, width: 100%),
+      stat-cell(fmt-mod(c.initiative), "Init", width: 100%),
+      stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft]], "Speed", width: 100%),
+      stat-cell(c.passives.perception, "Pas. Per", width: 100%),
+      // The diamond marks resource tracking. Check it off in play.
+      stat-cell(checkbox(size: 10 * u), "Heroic Insp.", width: 100%),
+    )
+    v(4 * u)
+
+    let rows-per-col = calc.ceil(skill-list.len() / 3)
+    let cols = range(3).map(ci => skill-list.slice(
+      ci * rows-per-col, calc.min((ci + 1) * rows-per-col, skill-list.len()),
+    ))
+    grid(
+      columns: 3 * (1fr,),
+      column-gutter: grid-gutter,
+      ..cols.map(col => stack(
+        spacing: 1.5 * u,
+        ..col.map(sk => skill-row(sk, c.skills.at(sk.id))),
+      )),
+    )
+    v(4 * u)
+
+    // - The footer splits in two: Defenses & Senses on the left, proficiency training on the right.
+    // - The left box lists save advantages, then damage responses, then senses. Its header shows only when there is at least one of them.
+    grid(
+      columns: (1fr, 1fr),
+      column-gutter: grid-gutter,
+      if has-defenses(c) {
+        stack(
+          spacing: 3 * u,
+          _foot-head[DEFENSES & SENSES],
+          character-notes-for(c, size: 6.5 * u),
+        )
+      } else { [] },
+      stack(
+        spacing: 3 * u,
+        _foot-head[TRAINING & PROFICIENCIES],
+        stacked-lines((
+          _prof-line("Armor", c.proficiencies.armor),
+          _prof-line("Weapons", c.proficiencies.weapon),
+          _prof-line("Tools", c.proficiencies.tool.map(tool-label)),
+          _prof-line("Languages", c.proficiencies.language.sorted()),
+        ).filter(x => x != none)),
+      ),
+    )
+  }
 }
+
 
 #let _spells-card(c) = {
   spellcasting-head(c.spellcasting)
@@ -581,6 +649,7 @@
 #let card-sheet(char) = {
   let c = resolve(char)
   let L = layouts.at(active-layout)
+  let is-portrait = L.width < L.height
   let landscape-w = calc.max(L.width, L.height)
   let landscape-h = calc.min(L.width, L.height)
   let portrait-w = calc.min(L.width, L.height)
@@ -633,28 +702,12 @@
     header: none, footer: none,
   )[#at-scale(fixed, _placard-card(c))]
 
-  // Core stats card (card #2): always landscape.
-  if L.width != landscape-w {
-    page(
-      width: landscape-w, height: landscape-h,
-      margin: (
-        left: L.margin.at("left") + card-border.at("left") * (L.scale - 1),
-        right: L.margin.at("right") + card-border.at("right") * (L.scale - 1),
-        top: L.margin.at("top") + card-border.at("top") * (L.scale - 1),
-        bottom: L.margin.at("bottom") + card-border.at("bottom") * (L.scale - 1),
-      ),
-      fill: white,
-      header-ascent: _header-gap,
-      header: _running-head,
-      footer-descent: _footer-gap,
-      footer: _page-footer,
-    )[
-      #_card-marker(c.name, core-subtitle, core-note1, core-note2)
-      #at-scale(fixed, _core-card(c))
-    ]
+  // Core stats card (card #2): portrait on portrait stock (5x8, 5x8L), landscape on landscape (6x4, 6x4L, 8x5).
+  _card-marker(c.name, core-subtitle, core-note1, core-note2)
+  if is-portrait {
+    _core-card(c, is-portrait: true)
   } else {
-    _card-marker(c.name, core-subtitle, core-note1, core-note2)
-    at-scale(fixed, _core-card(c))
+    at-scale(fixed, _core-card(c, is-portrait: false))
   }
   if b.has-actions {
     pagebreak(); _card-marker(c.name, none, [Actions], none)

@@ -2149,6 +2149,30 @@
 #assert(not dw-carried.limited-uses.any(u => u.name == "Staff of the Woodlands"))
 #assert.eq(dw-carried.item-spells.len(), 0)
 
+
+// --- Spell Scrolls -----------------------------------------------------------
+// One feature holds every scroll; the Charges column shows the scrolls held,
+// each spell at the character's own save DC. No recharge: a scroll crumbles.
+#let scroll-bearer = resolve(character(
+  abilities: (str: 10, dex: 10, con: 10, int: 10, wis: 16, cha: 10),
+  features: (
+    class.druid(level: 2),
+    item.spell-scrolls(
+      (spell: spell.goodberry, count: 2),
+      (spell: spell.lesser-restoration, count: 1),
+    ),
+  ),
+))
+#let scroll-table = scroll-bearer.item-spells.find(i => i.name == "Spell Scrolls")
+#assert.eq(scroll-table.spells.len(), 2)
+#let scroll = name => scroll-table.spells.find(s => s.name == name)
+#assert.eq(scroll("Goodberry").charges, 2)
+#assert.eq(scroll("Goodberry").casting-time, "Action")
+#assert.eq(scroll("Goodberry").save-dc, 13) // 8 + PB 2 + Wis 3
+#assert.eq(scroll("Lesser Restoration").charges, 1)
+#assert.eq(scroll("Lesser Restoration").casting-time, "Bonus Action")
+#assert(scroll-bearer.equipped.contains("Spell Scrolls*"))
+
 // --- Staff of Power ----------------------------------------------------------
 #let sorc-power = resolve(character(
   abilities: (str: 10, dex: 14, con: 12, int: 10, wis: 10, cha: 16),

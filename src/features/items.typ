@@ -222,6 +222,28 @@
   notes: [Expend 1 charge.],
 )
 
+// - Source: SRD 5.2.1 §Treasure — Spell Scroll.
+// - One feature holds every scroll the character carries, so they render as one
+//   "Spell Scrolls" table beside the other magic items' spell tables
+//   (`resolve-item-spells` projects each `spells:` entry).
+// - Declare each scroll as `(spell: s, count: n)`; a bare spell counts as one.
+// - The table's Charges column shows the scrolls held; each crumbles to dust
+//   once its spell is cast, so there is no recharge and no resource pool.
+// - Casting uses the spell's normal casting time; when the spell is on the
+//   character's class's spell list, it uses their own save DC and spell attack
+//   bonus — which `resolve-item-spells` computes from the character's sources.
+#let spell-scrolls(..scrolls) = feature(
+  "Spell Scrolls",
+  kind: "magic-item",
+  source: "Spell Scroll",
+  spells: scrolls.pos().map(s => if type(s) == dictionary and "spell" in s {
+    (spell: s.spell, charges: s.at("count", default: 1))
+  } else {
+    (spell: s, charges: 1)
+  }),
+  desc: [A spell scroll bears a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can read the scroll and cast its spell without providing any Material components: the casting takes the spell's normal casting time, using your spell save DC and spell attack bonus. The scroll crumbles to dust once the spell is cast.],
+)
+
 // - Source: DMG 2024 (not SRD), common wondrous item, requires Attunement.
 // - 1 use per dawn: forgo the d20, treat the attack roll as a 10.
 #let clockwork-amulet = limited-use-feature(

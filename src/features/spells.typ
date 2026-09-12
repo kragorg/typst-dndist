@@ -944,3 +944,25 @@
   duration: "10 min", concentration: true,
   notes: [Invisible, impassable, indestructible wall (dome/globe 10-ft radius, or ten 10×10-ft panels). Blocks ethereal travel.],
 )
+
+// --- Circle of the Stars & Goro's spells ------------------------------------
+// Source: outside SRD 5.2.1 (Battle Familiar from Arcane Unleashed-style
+// 2024 rules expansion; Guiding Bolt is SRD 5.2.1).
+#let guiding-bolt = _spell(
+  "Guiding Bolt", 1, school: "Evocation",
+  casting-time: "Action", range: "120 ft", attack: true,
+  slot-damage: (
+    (1, 4, "d6", "Radiant"), (2, 5, "d6", "Radiant"), (3, 6, "d6", "Radiant"),
+    (4, 7, "d6", "Radiant"), (5, 8, "d6", "Radiant"), (6, 9, "d6", "Radiant"),
+    (7, 10, "d6", "Radiant"), (8, 11, "d6", "Radiant"), (9, 12, "d6", "Radiant"),
+  ),
+  notes: [Until EoYN, the hit target emits Dim Light in a 10-ft radius and attack rolls against it have Advantage.],
+  scaling: [$+1d 6$/slot above 1st.],
+)
+#let battle-familiar = _spell(
+  "Battle Familiar", 2, school: "Conjuration",
+  casting-time: "Action", range: "10 ft",
+  components: "V, S, M", material-cost: true,
+  duration: "1 hour",
+  notes: [Summon a combat-ready familiar (Celestial, Fey, or Fiend) in an unoccupied space; it rolls initiative and acts as an ally. Choose a form: *Brute* (high AC and HP), *Flyer* (Fly speed, Flyby), or *Stalker* (Prowl before Hide). Its Rend attack uses your spell attack modifier and deals Force damage.],
+)

@@ -1666,6 +1666,32 @@
 ))
 #assert.eq(moon-10.limited-uses.find(u => u.name == "Moonlight Step").uses, 4)
 
+// --- Circle of the Stars -----------------------------------------------------
+#let stars3 = resolve(character(
+  abilities: (wis: 16),
+  features: (class.druid(level: 3, subclass: subclass.druid.circle-of-the-stars),),
+))
+#assert(stars3.spellcasting.len() == 1)  // subclass never emits a second source
+#assert(stars3.spellcasting.first().cantrips.contains("Guidance"))
+#assert(stars3.spellcasting.first().spells.contains("Guiding Bolt"))
+#assert.eq(stars3.limited-uses.find(u => u.name == "Guiding Bolt").uses, 3)
+#assert(stars3.traits.map(t => t.name).contains("Star Map"))
+#assert(stars3.traits.map(t => t.name).contains("Starry Form"))
+// Level 2 (pre-subclass) grants neither Star Map nor Starry Form.
+#let stars2 = resolve(character(
+  abilities: (wis: 16),
+  features: (class.druid(level: 2, subclass: subclass.druid.circle-of-the-stars),),
+))
+#assert(not stars2.traits.any(t => t.name == "Star Map"))
+#assert(not stars2.limited-uses.any(u => u.name == "Guiding Bolt"))
+// Battle Familiar resolves as a prepared 2nd-level Druid spell.
+#let bf = resolve(character(
+  abilities: (wis: 16),
+  features: (class.druid(level: 3, subclass: subclass.druid.circle-of-the-stars,
+    prepared: (spell.battle-familiar,)),),
+))
+#assert(bf.spellcasting.first().spells.contains("Battle Familiar"))
+
 // --- Feat-granted spells collapse to one display row ------------------------
 // A feat spell resolves twice: the feat's own pinned free cast, and the any-slot projection into a
 // source that has slots. `all-spells` keeps only the slot cast, which both spell tables and the card

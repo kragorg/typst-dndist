@@ -53,3 +53,28 @@
   }
   fs
 })
+// - Star Map folds Guidance + Guiding Bolt into the class spellcasting source
+//   (never a second eff-spellcasting); the 3 free Guiding Bolts/Long Rest are
+//   the pool, named by the spell object so the resource row italicizes.
+// - Starry Form expends a Wild Shape use, so it carries no pool of its own
+//   (the Circle Forms pattern).
+#let circle-of-the-stars = _subclass("Circle of the Stars", level => {
+  let fs = ()
+  if level >= 3 {
+    fs.push(_sub-feature(
+      "Star Map", "Circle of the Stars",
+      cantrips: (spell.guidance,),
+      spells: (spell.guiding-bolt,),
+      effects: (eff-limited-use(spell.guiding-bolt, 3, recharge: "long", source: "Circle of the Stars"),),
+      desc: [You've created a star chart, a Tiny object usable as a Spellcasting Focus for your Druid spells. While holding it, you have _Guidance_ and _Guiding Bolt_ prepared, and can cast _Guiding Bolt_ without expending a spell slot $3$ times per Long Rest. If you lose the map, a 1-hour ceremony during a Short or Long Rest magically creates a replacement and destroys the previous map.],
+      notes: [Cast _Guiding Bolt_ without a slot (3/Long Rest).],
+    ))
+    fs.push(_sub-feature(
+      "Starry Form", "Circle of the Stars",
+      activation: "Bonus Action",
+      desc: [As a Bonus Action, expend a use of Wild Shape to take on a starry form rather than shape-shifting. Your body becomes luminous, shedding Bright Light in a 10-ft radius and Dim Light for a further 10 ft. The form lasts 10 minutes and ends early if you dismiss it (no action required), you have the Incapacitated condition, or you use this feature again. When you assume it, choose a constellation: *Archer* — once each turn, as part of the Attack action, make one ranged spell attack against a creature within 60 ft, dealing $1d 8$ + your Wisdom modifier Radiant damage on a hit; *Chalice* — whenever you cast a spell using a spell slot that restores Hit Points, you or another creature within 30 ft regains $1d 8$ + your Wisdom modifier Hit Points; *Dragon* — when you make an Intelligence or Wisdom check or a Constitution save to maintain Concentration, treat a roll of 9 or lower on the $d 20$ as a 10.],
+      notes: [Expend a Wild Shape use; Bright/Dim Light 10/10 ft; Archer / Chalice / Dragon.],
+    ))
+  }
+  fs
+})

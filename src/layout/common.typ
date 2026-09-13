@@ -345,10 +345,28 @@
 }
 
 // One class, subclass first and no parens: "Great Old One Warlock 9".
+// - A subclass whose name restates the class ("Wild Magic Sorcery" before
+//   "Sorcerer", "Draconic Sorcery" likewise) reads redundant with the class
+//   name appended. When a subclass word and the class word share a stem — a
+//   case-insensitive common prefix of 6+ letters ("sorcer…") — that word
+//   becomes the class name itself, fusing the pair: "Wild Magic Sorcerer 3".
+// - The threshold keeps unrelated pairs safe ("Wild" vs "Wizard" shares 3).
+#let _shares-stem(a, b) = {
+  let a = lower(a)
+  let b = lower(b)
+  if calc.min(a.len(), b.len()) < 6 { return false }
+  a.slice(0, 6) == b.slice(0, 6)
+}
+
 #let _identity-class(cls) = {
-  let s = ""
-  if cls.at("subclass", default: none) != none { s += cls.subclass + " " }
-  s + cls.name + " " + str(cls.level)
+  let sub = cls.at("subclass", default: none)
+  let base = cls.name + " " + str(cls.level)
+  if sub == none { return base }
+  let fused = sub.split(" ").map(s => {
+    if cls.name.split(" ").any(w => _shares-stem(w, s)) { cls.name } else { s }
+  }).join(" ")
+  // No word restated the class: the full form keeps the class name.
+  if fused == sub { sub + " " + base } else { fused + " " + str(cls.level) }
 }
 
 // The peer identity facts, one part per fact: species, then each class. The placard packs these into lines itself, so they stay a list here.

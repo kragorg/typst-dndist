@@ -830,6 +830,27 @@
   #if item.at("spell", default: false) { emph(item.name) } else { item.name }#_recharge-mark(item)#_pool-note-mark(item)
 ]
 
+// The superscript marker beside an Armor Class won by a `pre-cast` effect —
+// the resolver's `ac-source` is set only there (the always-active free cast
+// from Magic Initiate, such as Mage Armor). Armor-worn AC needs no footnote.
+// Same metadata-anchor mechanism as `_recharge-mark` / `_pool-note-mark` (same stranded-footnote
+// hazard, same fix); `ac-note-footer` reads the anchors back.
+// - `†` is fixed for this note. It shares the school-synergy sequence's
+//   second symbol, but they never co-locate: the AC box lives on the letter's
+//   page 1 and the card deck's placard/core card, while school notes anchor
+//   to the spell tables on later pages/cards.
+#let _ac-note-mark(c) = if c.at("ac-source", default: none) != none {
+  [#super[†]#metadata((symbol: [†], note: emph(c.ac-source)))<ac-note-marker>]
+}
+
+// The page-bottom counterpart to `_ac-note-mark`: at most one AC note per
+// page (one AC box), rendered beside any other notes in the footer line.
+#let ac-note-footer(size) = context {
+  let marks = query(<ac-note-marker>).filter(m => m.location().page() == here().page())
+  if marks.len() == 0 { return none }
+  text(font: body-font, size: size, marks.map(m => [#super[#m.value.symbol] #m.value.note]).join(h(6 * u)))
+}
+
 // The true page-bottom counterpart to `_recharge-mark` / `_pool-note-mark`: every
 // recharge note and per-pool note whose marker landed on this physical page,
 // deduped by kind (several pools can share one note — a Fighter/Druid has both
@@ -946,11 +967,11 @@
 }
 
 // The page footer's one line, shared by both layouts: any note anchored to this page on the left, the page number on the right.
-// - Notes come from `school-notes-footer` / `recharge-footer`; both are `none` on a page carrying neither.
+// - Notes come from `school-notes-footer` / `recharge-footer` / `ac-note-footer`; all are `none` on a page carrying none.
 // - Two notes on one page join, thus each stays visible.
 // - With no note the page number renders alone, exactly as it did before there were notes.
 #let footer-line(page-number, note-size) = {
-  let parts = (school-notes-footer(note-size), recharge-footer(note-size)).filter(p => p != none)
+  let parts = (school-notes-footer(note-size), recharge-footer(note-size), ac-note-footer(note-size)).filter(p => p != none)
   if parts.len() == 0 { page-number } else {
     grid(
       columns: (1fr, auto),
@@ -1257,7 +1278,9 @@
 #let level-box(level) = _header-number-box("Levels", level, hide(_shield-row(false)))
 
 // Armor Class box with a shield checkbox (filled when a shield is equipped).
-#let ac-box(ac, has-shield) = _header-number-box("Armor Class", ac, _shield-row(has-shield))
+// `note` is the prebuilt `_ac-note-mark(c)` superscript, appended to the big
+// number so a formula-driven AC (Mage Armor) reads with its footnote.
+#let ac-box(ac, has-shield, note: none) = _header-number-box("Armor Class", [#ac#note], _shield-row(has-shield))
 
 // Hit Points box: big Current (blank) on the left; Temp above Max on the right. Current and Max are bottom-aligned so their labels sit on the same line.
 #let hp-box(max-hp, temp-hp) = _cell(height: 100%)[

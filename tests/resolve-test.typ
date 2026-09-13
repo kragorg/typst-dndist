@@ -29,6 +29,12 @@
 #assert.eq(resolve-ac(s, (eff-ac-base(12, cap: none), eff-ac-bonus(2))), 17)
 // Mage Armor (13 + Dex) beats nothing-else + shield.
 #assert.eq(resolve-ac(s, (eff-ac-formula(13, abilities: ("dex",)), eff-ac-bonus(2))), 18)
+// The note rides only a `pre-cast`-flagged winner: the always-active free
+// cast (Mage Armor) names itself; armor and unarmored candidates stay silent.
+#assert.eq(resolve-ac-with-source(s, (eff-ac-formula(13, abilities: ("dex",), source: "Mage Armor"), eff-ac-bonus(2))).source, none)
+#assert.eq(resolve-ac-with-source(s, ((..eff-ac-formula(13, abilities: ("dex",), source: "Mage Armor"), pre-cast: true), eff-ac-bonus(2))).source, "Mage Armor")
+#assert.eq(resolve-ac-with-source(s, (eff-ac-base(12, source: "Studded Leather"), eff-ac-bonus(2))).source, none)
+#assert.eq(resolve-ac-with-source(s, ()).source, none)
 // Plate (18, heavy cap 0) ignores Dex, + shield.
 #assert.eq(resolve-ac(s, (eff-ac-base(18, cap: 0), eff-ac-bonus(2))), 20)
 // Half plate (15, medium cap 2).
@@ -1067,7 +1073,7 @@
 #assert.eq(fae.size, "Small")
 #assert.eq(fae.creature-type, "Fey")
 #assert.eq(fae.abilities.cha, 17)
-#assert.eq(fae.abilities.dex, 16)
+#assert.eq(fae.ac-source, none)
 #assert.eq(fae.ac, 13)
 #assert.eq(fae.skills.deception.level, "proficient")
 #assert.eq(fae.skills.perception.level, "proficient")
@@ -1100,6 +1106,7 @@
   ),
 ))
 #assert.eq(fae-prec.ac, 16)
+#assert.eq(fae-prec.ac-source, "Mage Armor")
 // The free-cast tracker survives: the pool still marks the daily spend.
 #assert(fae-prec.limited-uses.any(r => r.name == "Mage Armor"))
 // An Orc Sorcerer 5 (PB 3): Adrenaline Rush (PB uses, Short-or-Long Rest) and

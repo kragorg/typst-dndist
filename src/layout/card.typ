@@ -174,7 +174,7 @@
   })
 
   let left-rows = (
-    ("AC", str(c.ac)),
+    ("AC", [#str(c.ac)#_ac-note-mark(c)]),
     ("HP", if c.temp-hp > 0 { str(c.max-hp) + [$+$] + str(c.temp-hp) } else { str(c.max-hp) }),
     ("PPer", str(c.passives.perception)),
   )
@@ -207,6 +207,13 @@
   v(14 * u)
   align(center, _pl-stats(left-rows, right-rows, span: faction-span))
   v(0.7fr)
+  // The placard page is a fold-out cover with `footer: none` — no footer
+  // region for `ac-note-footer` to render into. The AC note therefore sits at
+  // the card's bottom edge, left-justified where a page footer would be, in
+  // place of the page footer the other AC sites use.
+  if c.at("ac-source", default: none) != none {
+    align(left, text(font: body-font, size: 6.5 * u, fill: ink)[#super[†] #emph(c.ac-source)])
+  }
 }
 
 #let _core-card(c, is-portrait: false) = {
@@ -228,7 +235,7 @@
       columns: 3 * (1fr,),
       rows: (28 * u, 28 * u),
       gutter: 3 * u,
-      stat-cell(c.ac, "Armor Class", big: true, width: 100%),
+      stat-cell([#str(c.ac)#_ac-note-mark(c)], "Armor Class", big: true, width: 100%),
       stat-cell(hp-cell, "Hit Points", big: true, width: 100%),
       stat-cell(fmt-mod(c.initiative), "Initiative", width: 100%),
       stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft]], "Speed", width: 100%),
@@ -296,7 +303,7 @@
       columns: 6 * (1fr,),
       rows: 32 * u,
       gutter: 3 * u,
-      stat-cell(c.ac, "AC", big: true, width: 100%),
+      stat-cell([#str(c.ac)#_ac-note-mark(c)], "AC", big: true, width: 100%),
       stat-cell(hp-cell, "HP", big: true, width: 100%),
       stat-cell(fmt-mod(c.initiative), "Init", width: 100%),
       stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft]], "Speed", width: 100%),

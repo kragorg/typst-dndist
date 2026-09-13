@@ -182,6 +182,6 @@
       // The pool tracks the free once-per-Long-Rest cast of the granted spell.
       eff-limited-use(spell, 1, source: name),
       eff-spell-any-slot(spell, casting-ability, name),
-    ) + if pre-cast { spell.at("effects", default: ()) } else { () },
+    ) + if pre-cast { spell.at("effects", default: ()).map(e => (..e, pre-cast: true)) } else { () },
   )
 }

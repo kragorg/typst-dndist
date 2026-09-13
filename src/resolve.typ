@@ -174,31 +174,40 @@
   scores
 }
 
-// AC = best candidate base plus all flat bonuses.
+// Resolve Armor Class, returning the value and — only when it matters — the
+// winning candidate's note: an effect flagged `pre-cast` (a free-cast,
+// effectively-always-active spell like Mage Armor) footnotes why the number is
+// what it is. Ordinary armor and unarmored candidates carry no flag and thus
+// no note: a worn breastplate needs no explanation, a free spell does.
 // - A candidate comes from armor or from an alternate formula.
 // - A "set" effect overrides the base.
-#let resolve-ac(scores, effects) = {
+#let resolve-ac-with-source(scores, effects) = {
   let acs = effects.filter(e => e.effect == "ac")
   let bonus = acs.filter(e => e.kind == "bonus").map(e => e.value).sum(default: 0)
+  let note-of = e => if e.at("pre-cast", default: false) { e.at("source", default: none) } else { none }
   let dexmod = modifier(scores.dex)
 
   let sets = acs.filter(e => e.kind == "set")
   if sets.len() > 0 {
-    return calc.max(..sets.map(e => e.value)) + bonus
+    let best = sets.fold(sets.first(), (a, b) => if b.value > a.value { b } else { a })
+    return (value: best.value + bonus, source: note-of(best))
   }
 
-  // Default candidate: unarmored 10 + Dex, no cap.
-  let candidates = (10 + dexmod,)
+  // Default candidate: unarmored 10 + Dex, no cap, no note.
+  let candidates = ((10 + dexmod, none),)
   for e in acs.filter(e => e.kind == "base") {
     let dex = if e.cap == none { dexmod } else { calc.min(dexmod, e.cap) }
-    candidates.push(e.base + dex)
+    candidates.push((e.base + dex, note-of(e)))
   }
   for e in acs.filter(e => e.kind == "formula") {
     let extra = e.abilities.map(a => modifier(scores.at(a))).sum(default: 0)
-    candidates.push(e.base + extra)
+    candidates.push((e.base + extra, note-of(e)))
   }
-  calc.max(..candidates) + bonus
+  let best = candidates.fold(candidates.first(), (a, b) => if b.first() > a.first() { b } else { a })
+  (value: best.first() + bonus, source: best.last())
 }
+
+#let resolve-ac(scores, effects) = resolve-ac-with-source(scores, effects).value
 
 // Compute the bonus for each skill, with expertise, proficiency, and Jack of All Trades.
 #let resolve-skills(scores, effects, pb) = {
@@ -951,6 +960,7 @@
     if declared == auto { fixed-max-hp(class-features, mods.con, level) } else { declared }
   }
 
+  let ac-res = resolve-ac-with-source(scores, effects)
   (
     name: char.name,
     player: char.at("player", default: none),
@@ -964,13 +974,13 @@
     },
     classes: class-features,
     faction: char.faction,
-    // Every named feature/trait, sub-features included (for display). `notes` functions have been evaluated against `ctx` above.
     traits: traits,
     level: level,
     proficiency-bonus: pb,
     abilities: scores,
     ability-mods: mods,
-    ac: resolve-ac(scores, effects),
+    ac: ac-res.value,
+    ac-source: ac-res.source,
     initiative: resolve-stat(effects, "initiative", mods.dex, pb: pb, ctx: ctx),
     speed: resolve-stat(effects, "speed", char.at("speed", default: 30), ctx: ctx),
     max-hp: resolve-stat(effects, "hp", base-hp, ctx: ctx),
@@ -979,7 +989,6 @@
     saves: resolve-saves(scores, effects, pb),
     passives: (
       perception: passive("perception"),
-      investigation: passive("investigation"),
       insight: passive("insight"),
     ),
     proficiencies: (

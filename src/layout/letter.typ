@@ -112,7 +112,7 @@
       c.classes,
     ),
     level-box(c.level),
-    ac-box(c.ac, has-shield),
+    ac-box(c.ac, has-shield, note: _ac-note-mark(c)),
     hp-box(c.max-hp, c.temp-hp),
     hit-dice-box(fmt-dice(_hit-dice(c.classes))),
     death-saves-box(),

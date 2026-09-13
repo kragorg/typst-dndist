@@ -629,11 +629,12 @@
 // - The cantrip imbues a Club or Quarterstaff the caster holds; the weapon keeps making a weapon attack.
 // - Attack and damage use the caster's spellcasting `ability` instead of Strength.
 // - The weapon's damage die becomes a d8, growing at levels 5 (d10), 11 (d12), and 17 (2d6).
-// - The damage type stays the weapon's own; the caster may choose Force instead on a hit.
+// - The hit may be Force damage or the weapon's own type (caster's choice); the
+//   line shows Force, the standard choice (rarely resisted).
 #let _shillelagh-line(e, ability, scores, pb, level, properties, proficient) = {
   let die = if level >= 17 { "2d6" } else if level >= 11 { "1d12" } else if level >= 5 { "1d10" } else { "1d8" }
   _attack-line(
-    e.name, ability, die, e.damage-type, e.range, properties, proficient, scores, pb,
+    e.name, ability, die, "Force", e.range, properties, proficient, scores, pb,
     magic-bonus: e.at("bonus", default: 0), kind: e.kind, thrown-range: e.thrown-range,
   ) + (via-spell: "Shillelagh", extra-attack: false)
 }

@@ -502,6 +502,14 @@
   notes: [Teleport up to 30 ft to an unoccupied space you can see.],
 )
 
+#let maximilians-earthen-grasp = _spell(
+  "Maximilian's Earthen Grasp", 2, school: "Transmutation",
+  casting-time: "Action", range: "30 ft", area: (shape: "square", size: "5 ft"),
+  components: "V, S, M", duration: "1 min", concentration: true, save: "STR",
+  damage: ((1, 2, "d6", "Bludgeoning"),),
+  notes: [A Medium hand of compacted soil rises from a 5-ft Square on the ground and grabs one creature you can see within 5 ft of it. Failed save: $2d 6$ Bludgeoning and Restrained for the duration. _Magic Action_: crush the grasped target (STR save; $2d 6$ Bludgeoning, half on a success), or move the hand or grab a different creature. Escape: STR check vs. spell save DC.],
+)
+
 // Magic Initiate (Wizard) 1st-level spell
 #let shield = _spell(
   "Shield", 1, school: "Abjuration",

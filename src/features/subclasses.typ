@@ -9,4 +9,5 @@
 #import "subclasses/cleric.typ" as cleric
 #import "subclasses/druid.typ" as druid
 #import "subclasses/rogue.typ" as rogue
+#import "subclasses/sorcerer.typ" as sorcerer
 #import "subclasses/warlock.typ" as warlock

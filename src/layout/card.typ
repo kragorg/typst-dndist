@@ -815,6 +815,13 @@
     _actions-card(c, b)
   }
   if c.spellcasting.len() > 0 { pagebreak(); _card-marker(c.name, none, [Spells], none); _spells-card(c) }
+  // - Wild Magic Sorcery carries the PHB's d100 Wild Magic Surge table as an
+  //   in-play reference; it follows the Spells card. The subclass's features
+  //   only name the table — the sheet itself lives in data/wild-magic-surge.typ.
+  if c.classes.any(cl => cl.at("subclass", default: none) == "Wild Magic Sorcery") {
+    pagebreak(); _card-marker(c.name, none, [Wild Magic Surge], none)
+    wild-magic-surge-table(size: 7.5 * u, atomic-rows: true)
+  }
   if b.has-features {
     pagebreak(); _card-marker(c.name, none, [Features & Traits], none)
     grouped-feature-box("Features & Traits", b.trait-groups, size: 7.5 * u, keep-items: true)

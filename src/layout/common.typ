@@ -716,6 +716,21 @@
   )
 }
 
+// Wild Magic Surge table (2024 PHB, Wild Magic Sorcery): the PHB's d100 surge
+// table, verbatim (data/wild-magic-surge.typ). The card deck renders it on its
+// own card after the Spells card, keyed off a resolved class carrying the
+// "Wild Magic Sorcery" subclass (see card.typ) — the subclass's features only
+// name the table, so the layout owns the reference sheet.
+#import "../data/wild-magic-surge.typ": wild-magic-surge-rows
+#let wild-magic-surge-table(size: 8 * u, atomic-rows: false) = sheet-table(
+  (auto, 1fr),
+  ("1d100", "Effect"),
+  wild-magic-surge-rows.map(r => ([#r.first()], [#r.last()])),
+  align: (center + top, left + top),
+  size: size,
+  atomic-rows: atomic-rows,
+)
+
 // The Notes cell of an activated feature: its own `notes` prose, led by the spell it casts when it declares one (a wand's Magic Action — `casts:`, resolved to `cast` in resolve.typ).
 // - The cast line names the spell, its beam count and its range, then the damage: the numbers come from the spell catalog, so an item's prose never restates them.
 // - The spell's name is italic, the one mark these tables use for a spell (`spell-name-cell`): here the row is the item, so the italic is what says a spell is involved at all.

@@ -107,12 +107,16 @@
 // - The count is still computed.
 // - Both layouts render the `limited-uses` list as a diamond tracker labelled by the feature `name` alone.
 // - `name` takes a **spell object** as readily as a string (the `id-of` idiom): a pool that tracks a free cast passes `spell.misty-step`, never the name typed out again. The object form sets `spell: true`, and the resource tables italicize that row — a spell reads as a spell wherever the sheet names one.
-#let eff-limited-use(name, uses, recharge: "long", uses-label: none, source: none) = (
+#let eff-limited-use(name, uses, recharge: "long", uses-label: none, source: none, note: none) = (
   effect: "limited-use",
   name: if type(name) == str { name } else { name.name },
   spell: type(name) != str,
   uses: uses, recharge: recharge,
   uses-label: uses-label, source: source,
+  // - An extra regain path the rest column cannot state (Tides of Chaos also
+  //   regains a use when its Sorcerer casts with a slot). Markup content;
+  //   the layouts footnote it beside the pool's label — see `_pool-note-mark`.
+  note: note,
 )
 
 // Flat bonus to all saving throws (Cloak/Ring of Protection +1).
@@ -320,10 +324,14 @@
 // - The `eff-limited-use` takes the feature's own name and source; neither is restated.
 // - Other feature fields (kind / desc / activation / notes) pass through named.
 // - A pool named differently from its feature (Lucky's "Luck Points", a feat's free cast) declares its own `eff-limited-use`.
-#let limited-use-feature(name, uses, recharge: "long", uses-label: none, source: none, ..rest) = feature(
+#let limited-use-feature(
+  name, uses, recharge: "long", uses-label: none, source: none, note: none, ..rest,
+) = feature(
   name,
   source: source,
-  effects: (eff-limited-use(name, uses, recharge: recharge, uses-label: uses-label, source: source),),
+  effects: (eff-limited-use(
+    name, uses, recharge: recharge, uses-label: uses-label, source: source, note: note,
+  ),),
   ..rest.named(),
 )
 

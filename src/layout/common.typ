@@ -794,26 +794,49 @@
   if n != none [#super[#n.symbol]#metadata(item.recharge)<recharge-marker>]
 }
 
+// The superscript marker for a pool carrying its own `note` — an extra regain
+// path its rest column cannot state (Tides of Chaos also regains a use when its
+// Sorcerer casts with a spell slot). Mirrors `_recharge-mark`'s metadata-anchor
+// mechanism (same stranded-footnote hazard, same fix); the anchor carries the
+// symbol and note text for `recharge-footer` to read back.
+// - `¶` is fixed for this note, never sequential, and collides with no other
+//   footnote symbol (`§` short-rest regain, `*` dawn / school-synergy).
+#let _pool-note-mark(item) = if item.at("note", default: none) != none {
+  [#super[¶]#metadata((symbol: [¶], note: item.note))<pool-note-marker>]
+}
+
 // A resource pool's label, shared by both trackers — the card deck's `resource-tables` and the letter's `_limited-use-row` — so the two cannot drift.
 // - A pool that tracks a free cast is labelled by the spell, so it is italic like every other spell name on the sheet (`eff-limited-use`'s spell-object form sets the flag).
 // - Regular weight, matching every other name column on both sheets. It was bold: ETBembo ships no bold italic, so a bold label silently drops to regular the moment it goes italic, leaving the spell pools reading lighter than the features beside them — an accidental hierarchy where only a category difference was meant.
 #let _pool-label(item, size) = text(font: body-font, size: size)[
-  #if item.at("spell", default: false) { emph(item.name) } else { item.name }#_recharge-mark(item)
+  #if item.at("spell", default: false) { emph(item.name) } else { item.name }#_recharge-mark(item)#_pool-note-mark(item)
 ]
 
-// The true page-bottom counterpart to `_recharge-mark`: every recharge note whose
-// marker landed on this physical page, deduped by kind (several pools can share
-// one note — a Fighter/Druid has both Second Wind and Wild Shape) and rendered in
-// the table's own order so two notes on one page keep a stable reading order.
+// The true page-bottom counterpart to `_recharge-mark` / `_pool-note-mark`: every
+// recharge note and per-pool note whose marker landed on this physical page,
+// deduped by kind (several pools can share one note — a Fighter/Druid has both
+// Second Wind and Wild Shape) and rendered in the table's own order so two notes
+// on one page keep a stable reading order.
 // Mirrors `school-notes-footer`'s "ask what's on this page once it's known"
 // idiom — see that note for why a real footnote is unsafe here.
 #let recharge-footer(size) = context {
   let cur = here().page()
   let kinds = query(<recharge-marker>).filter(m => m.location().page() == cur).map(m => m.value)
   let present = _recharge-notes.pairs().filter(((k, n)) => kinds.contains(k))
-  if present.len() == 0 { return none }
-  text(font: body-font, size: size, present.map(((k, n)) => [#super[#n.symbol] #n.note]).join(h(6 * u)))
+  let kind-parts = present.map(((k, n)) => [#super[#n.symbol] #n.note])
+  // Per-pool notes (`_pool-note-mark`) dedup by content: two pools restating
+  // one rule render one note.
+  let marks = query(<pool-note-marker>).filter(m => m.location().page() == cur)
+  let notes = ()
+  for m in marks {
+    if not notes.contains(m.value) { notes.push(m.value) }
+  }
+  let pool-parts = notes.map(n => [#super[#n.symbol] #n.note])
+  let parts = kind-parts + pool-parts
+  if parts.len() == 0 { return none }
+  text(font: body-font, size: size, parts.join(h(6 * u)))
 }
+
 // The resource tables' Uses cell (`resource-tables`, card): a row of empty diamonds to check off in play (the resource-tracking marker), with the derivation label ("PB", "DEX mod") as a tiny eyebrow inline-left of the diamonds when the count is derived — smaller than the diamonds so its presence keeps the row height identical (rows with and without a label stay the same height).
 #let _uses-cell(item, size) = {
   let diamonds = box[#for i in range(item.uses) [#h(if i > 0 { 3 * u } else { 0 * u })#checkbox(size: size * 0.82)]]

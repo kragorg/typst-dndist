@@ -833,6 +833,7 @@
       uses-label: e.uses-label,
       recharge: e.recharge,
       source: e.source,
+      note: e.at("note", default: none),
     ))
     .sorted(key: e => (
       str(rank.at(e.recharge, default: 9))

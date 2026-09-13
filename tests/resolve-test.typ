@@ -2288,5 +2288,42 @@
 #assert.eq(m-panther.pb, 2)
 #assert.eq(m-panther.ability-mods.dex, 3)
 #assert.eq(m-panther.skills.stealth, 7)
+
+// --- Awakened beasts ---------------------------------------------------------
+// The Awaken spell's variant of any catalog beast: Intelligence 10 and one
+// spoken language. The catalog entry itself must stay untouched (the copy is a
+// value, so nested mutation re-copies).
+#let awoken = monster.awakened(monster.giant-wolf-spider, "Primordial")
+#assert.eq(awoken.name, "Awakened Giant Wolf Spider")
+#assert.eq(awoken.abilities.int, 10)
+#assert.eq(awoken.languages, "Primordial")
+#assert.eq(monster.giant-wolf-spider.abilities.int, 3)
+#assert.eq(monster.giant-wolf-spider.languages, none)
+#assert.eq(monster.giant-wolf-spider.name, "Giant Wolf Spider")
+
+// --- Battle Familiar stat block ----------------------------------------------
+// The spell's summon block, concretized at the slot level and the summoner's
+// spell attack. No CR, so no PB either (both derive from the CR).
+#let bf-char = resolve(character(
+  abilities: (str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10),
+  monsters: (monster.battle-familiar(level: 2, spell-attack: 5),),
+))
+#assert.eq(bf-char.monsters.len(), 1)
+#let bf = bf-char.monsters.first()
+#assert.eq(bf.name, "Battle Familiar")
+#assert.eq(bf.ac, 13) // 11 + spell level 2
+#assert.eq(bf.hp, 20)
+#assert.eq(bf.hit-dice, none)
+#assert.eq(bf.cr, none)
+#assert.eq(bf.pb, none)
+#assert.eq(bf.initiative, 3) // derived from DEX 16, like every other monster
+#assert.eq(bf.ability-mods.str, 3)
+#assert.eq(bf.saves.str.bonus, 3) // no proficiency: saves equal the modifiers
+#assert.eq(bf.condition-immunities, ("Charmed", "Frightened"))
+#assert(bf.traits.map(t => t.name).contains("Talented"))
+#assert(bf.actions.map(a => a.name).contains("Prowl (Stalker Only)"))
+// A higher slot scales the fixed numbers.
+#assert.eq(monster.battle-familiar(level: 4, spell-attack: 7).ac, 15)
+#assert.eq(monster.battle-familiar(level: 4, spell-attack: 7).hp, 30)
 #set page(width: auto, height: auto, margin: 12pt)
 All resolve-engine assertions passed.

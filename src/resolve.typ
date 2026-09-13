@@ -64,7 +64,9 @@
   for (id, score) in scores {
     mods.insert(id, modifier(score))
   }
-  let pb = if m.at("pb", default: none) != none { m.pb } else { _pb-from-cr(m.at("cr", default: "0")) }
+  let pb = if m.at("pb", default: none) != none { m.pb }
+    else if m.at("cr", default: none) != none { _pb-from-cr(m.at("cr", default: "0")) }
+    else { none }
   let init = if m.at("initiative", default: none) != none { m.initiative } else { mods.dex }
 
   let declared-saves = m.at("saves", default: (:))
@@ -101,7 +103,7 @@
     condition-immunities: m.at("condition-immunities", default: ()),
     senses: m.at("senses", default: ()),
     languages: m.at("languages", default: none),
-    cr: str(m.at("cr", default: "0")),
+    cr: if m.at("cr", default: none) == none { none } else { str(m.cr) },
     traits: m.at("traits", default: ()),
     actions: m.at("actions", default: ()),
     bonus-actions: m.at("bonus-actions", default: ()),

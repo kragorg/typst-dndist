@@ -583,3 +583,59 @@
     (name: "Nimble Escape", desc: [The tiger takes the Disengage or Hide action.]),
   ),
 )
+
+// --- Awakened beasts ---------------------------------------------------------
+
+// - Source: SRD 5.2.1 §Awaken. The spell gives the touched Beast "an
+//   Intelligence of 10 and the ability to speak one language you know"; the
+//   language is the caster's choice, passed in as `language`.
+// - The variant derives from any catalog beast: the copy gains Int 10, the
+//   spoken language, and an "Awakened" name prefix. Character files may still
+//   rename the copy (Typst dicts are values: nested mutation re-copies, so the
+//   catalog entry stays untouched).
+#let awakened(beast, language) = {
+  let m = beast
+  m.abilities.insert("int", 10)
+  m.insert("languages", language)
+  m.insert("name", "Awakened " + beast.name)
+  m
+}
+
+// --- Spell summons -----------------------------------------------------------
+
+// - Source: outside SRD 5.2.1 — the Battle Familiar stat block, from the same
+//   Arcane Unleashed-style 2024 expansion as the spell in spells.typ. NOTICE
+//   records the entry.
+// - The spell's stat block, concretized for one casting: `level` is the spell
+//   slot used, `spell-attack` the summoner's spell attack modifier (Rend's
+//   attack bonus). Both are the caster's numbers, passed by the character file.
+// - The form choice stays visible in the block: variant details keep their
+//   "X Only" markers, so one card serves a Brute, Flyer, or Stalker cast. The
+//   AC/HP cells carry the Flyer/Stalker values; the Brute values and the
+//   higher-slot scaling sit in the closing note (`desc`).
+// - No CR: a spell summon has no challenge rating, so `cr: none` keeps the
+//   card's CR/PB masthead note off (see the card layout's monster notes).
+#let battle-familiar(level: 2, spell-attack: none) = monster(
+  "Battle Familiar",
+  size: "Medium", creature-type: "Celestial, Fey, or Fiend", alignment: "Neutral",
+  ac: 11 + level,
+  hp: 20 + 5 * calc.max(level - 2, 0),
+  hit-dice: none,
+  speed: "40 ft, fly 30 ft (hover; Flyer only), swim 30 ft",
+  abilities: (str: 16, dex: 16, con: 12, int: 8, wis: 13, cha: 10),
+  immunities: (),
+  condition-immunities: ("Charmed", "Frightened"),
+  senses: ("Passive Perception 11",),
+  languages: "Understands the languages its summoner knows",
+  cr: none,
+  traits: (
+    (name: "Talented", desc: [The familiar adds #calc.floor(level / 2) to any ability check or saving throw it makes (half the spell's level, rounded down).]),
+    (name: "Flyby (Flyer Only)", desc: [The familiar doesn't provoke an Opportunity Attack when it flies out of an enemy's reach.]),
+  ),
+  actions: (
+    (name: "Multiattack", desc: [The familiar makes #calc.floor(level / 2) Rend attack#if calc.floor(level / 2) != 1 [s]. It can replace one of these attacks with Prowl if available.]),
+    (name: "Prowl (Stalker Only)", desc: [The familiar moves up to half its Speed without provoking Opportunity Attacks. At the end of this movement, it can take the Hide action.]),
+    (name: "Rend", desc: [_Melee Attack Roll:_ #if spell-attack != none [$+#spell-attack$] else [Bonus equals your spell attack modifier], reach 5 ft. _Hit:_ #calc.floor(4.5 + 3 + level) ($1d 8 + #(3 + level)$) Force damage.]),
+  ),
+  desc: [Summoned by the _Battle Familiar_ spell; it disappears when the spell ends, when it drops to 0 Hit Points, or when its summoner dies. Choose a form: _Brute_ has AC #(11 + level + 2) and #(30 + 5 * calc.max(level - 2, 0)) Hit Points; _Flyer_ flies and swims as its Speed shows; _Stalker_ has Prowl. With a slot above 2nd: AC +1, Hit Points +5, and one more Rend and Talented bonus per two slot levels.],
+)

@@ -528,6 +528,55 @@
 }
 
 #let _monster-card(m) = {
+  // Speed presentation. The stat cell carries the PRIMARY speed: the walk
+  // speed when the monster has one, else its main special speed with the mode
+  // named ("60 ft Swim" for a dolphin). The Speeds meta line lists every
+  // speed — the walk value first, then each special speed with its mode
+  // capitalized and qualifiers restated: "40 ft; Fly 30 ft, hover
+  // (Flyer only); Swim 30 ft".
+  let cap = s => upper(s.first()) + s.slice(1)
+  let parsed = m.speed.split(", ").map(seg => {
+    // A segment is "<mode words> <value>" with an optional "(...)" note.
+    let body = seg
+    let note = none
+    if "(" in body {
+      let halves = body.split("(")
+      body = halves.first().trim()
+      note = halves.last().trim(")").trim()
+    }
+    let words = body.split(" ")
+    // The value is the "N ft" tail; the mode is the words before it, if any.
+    let value = words.at(-2) + " " + words.last()
+    let mode = if words.len() > 2 { words.slice(0, words.len() - 2).join(" ") } else { none }
+    // "hover" reads plain; other qualifiers keep their parentheses
+    // ("Fly 30 ft, hover (Flyer only)", "Fly 30 ft (Flyer only)").
+    let note-out = if note == none { "" } else {
+      let qual = note.split(";").map(q => q.trim())
+      let hover = qual.find(q => lower(q) == "hover")
+      let rest = qual.filter(q => lower(q) != "hover")
+      if hover != none and rest.len() == 0 { "hover" }
+      else if hover != none { "hover (" + rest.join("; ") + ")" }
+      else if rest.len() > 0 { "(" + rest.join("; ") + ")" }
+      else { "" }
+    }
+    (mode: mode, value: value, note: note-out)
+  })
+  let walk = parsed.find(p => p.mode == none)
+  let specials = parsed.filter(p => p.mode != none and p.value != "0 ft")
+  // Primary: walk when present and non-zero, else the first special speed.
+  let speed-main = if walk != none and walk.value != "0 ft" { walk.value }
+    else if specials.len() > 0 { specials.first().value + " " + cap(specials.first().mode) }
+    else if walk != none { walk.value }
+    else { m.speed }
+  // All speeds, walk first; shown whenever the monster has more than one.
+  let speed-rest = if parsed.len() > 1 {
+    let items = ()
+    if walk != none and walk.value != "0 ft" { items.push(walk.value) }
+    for p in specials {
+      items.push(cap(p.mode) + " " + p.value + if p.note != "" { ", " + p.note } else { "" })
+    }
+    items.join("; ")
+  } else { none }
   grid(
     columns: 4 * (1fr,),
     rows: 25 * u,
@@ -538,7 +587,7 @@
       "HP", width: 100%
     ),
     stat-cell(fmt-mod(m.initiative), "Init", width: 100%),
-    stat-cell(text(size: 7.5 * u, weight: "bold")[#m.speed], "Speed", width: 100%),
+    stat-cell(text(size: 7.5 * u, weight: "bold")[#speed-main], "Speed", width: 100%),
   )
   v(2.5 * u)
 
@@ -569,6 +618,9 @@
   v(2 * u)
 
   let sec-lines = ()
+  if speed-rest != none {
+    sec-lines.push([#eyebrow([Speeds: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#speed-rest]])
+  }
   if m.skills != none and m.skills.len() > 0 {
     let skill-strs = if type(m.skills) == dictionary {
       m.skills.pairs().map(((k, v)) => titly(k) + " " + fmt-mod(v))
@@ -642,7 +694,56 @@
       ])),
     )
   }
+  if m.desc != none {
+    v(5 * u)
+    text(font: body-font, size: 6.5 * u)[#m.desc]
+  }
 }
+
+// A monster's identity line: size, type, alignment — the single-card masthead
+// subtitle, shared with the packed-card column header.
+#let _monster-sub(m) = m.size + " " + m.creature-type + if m.alignment != none { ", " + m.alignment } else { "" }
+
+// A monster's CR/PB masthead note. A summon without a CR (`cr: none`) carries
+// neither: both numbers derive from the CR, and a spell summon has none.
+#let _monster-cr-note(m) = if m.cr != none { [CR #m.cr] } else { none }
+#let _monster-pb-note(m) = if m.cr != none { [PB #fmt-mod(m.pb)] } else { none }
+
+// A monster column: the stat block under its own compact header (name, type
+// line, CR/PB) for cards that pack two stat blocks side by side.
+#let _monster-column(m) = {
+  block(breakable: false, {
+    grid(
+      columns: (1fr, auto),
+      column-gutter: grid-gutter,
+      align: (left + bottom, right + bottom),
+      {
+        text(font: body-font, size: 10 * u, weight: "bold", fill: accent)[#m.name]
+        linebreak()
+        text(font: body-font, size: 6.5 * u, style: "italic")[#_monster-sub(m)]
+      },
+      if m.cr != none {
+        text(font: label-font, size: 5.5 * u, weight: "medium")[CR #m.cr, PB #fmt-mod(m.pb)]
+      },
+    )
+  })
+  v(4 * u)
+  line(length: 100%, stroke: 0.4 * u + rule-color)
+  v(4 * u)
+  _monster-card(m)
+}
+
+// Two stat blocks on one card, side by side, with a rule between them.
+// - The first column carries the separator as its right stroke, inset so its
+//   text keeps off the rule; the fit measurement charges both columns that
+//   width (see the deck's monster section).
+#let _monster-pair(a, b) = grid(
+  columns: (1fr, 1fr),
+  column-gutter: grid-gutter,
+  align: top,
+  box(width: 100%, stroke: (right: 0.4 * u + rule-color), inset: (right: 8 * u), _monster-column(a)),
+  _monster-column(b),
+)
 
 // --- Deck assembly ---------------------------------------------------------
 
@@ -720,29 +821,83 @@
   }
   if b.has-gear { pagebreak(); _card-marker(c.name, none, [Gear], none, numbered: false); _gear-card(c) }
   if c.monsters.len() > 0 {
-    for m in c.monsters {
-      let sub = m.size + " " + m.creature-type + if m.alignment != none { ", " + m.alignment } else { "" }
-      if L.width != landscape-w {
-        page(
-          width: landscape-w, height: landscape-h,
-          margin: (
-            left: L.margin.at("left") + card-border.at("left") * (L.scale - 1),
-            right: L.margin.at("right") + card-border.at("right") * (L.scale - 1),
-            top: L.margin.at("top") + card-border.at("top") * (L.scale - 1),
-            bottom: L.margin.at("bottom") + card-border.at("bottom") * (L.scale - 1),
-          ),
-          fill: white,
-          header-ascent: _header-gap,
-          header: _running-head,
-          footer-descent: _footer-gap,
-          footer: _page-footer,
-        )[
-          #_card-marker(m.name, sub, [CR #m.cr], [PB #fmt-mod(m.pb)], numbered: false)
+    // Monster stat blocks pack adaptively: two share one card when both fit
+    // measured side by side at half the card's body width (a summon beside a
+    // companion beast, the tiny Wild Shape forms); anything too tall for a
+    // column keeps one-per-card, spilling across pages as before.
+    // - On portrait decks each monster card is its own landscape page; on
+    //   landscape decks it uses the page as set.
+    // - The whole section runs in one `context`: the fit decision reads
+    //   `measure`, which needs layout styles, and the pages it emits stay in
+    //   flow order.
+    context {
+      let mpage-w = if is-portrait { landscape-w } else { L.width }
+      let mpage-h = if is-portrait { landscape-h } else { L.height }
+      let mmargin(e) = L.margin.at(e) + card-border.at(e) * (L.scale - 1)
+      let mbody-h = mpage-h - mmargin("top") - mmargin("bottom")
+      // Column a's inset shaves its width, so measure both columns there.
+      let col-w = (mpage-w - mmargin("left") - mmargin("right") - grid-gutter) / 2
+      let col-h(m) = measure(width: col-w - 8 * u, block(_monster-column(m))).height
+      // Fit-or-shrink: pair at natural size when both columns fit the body
+      // height, else scale the whole pair by just enough to make the taller
+      // column fit (a wider reflow layout is what a smaller type size buys).
+      // Never below 80% — under that the stat text turns to dust and the
+      // blocks fall back to one per card.
+      let pair-scale(a, b) = calc.min(1.0, (mbody-h - 4 * u) / calc.max(col-h(a), col-h(b)))
+
+      let mpage(body) = page(
+        width: landscape-w, height: landscape-h,
+        margin: (
+          left: L.margin.at("left") + card-border.at("left") * (L.scale - 1),
+          right: L.margin.at("right") + card-border.at("right") * (L.scale - 1),
+          top: L.margin.at("top") + card-border.at("top") * (L.scale - 1),
+          bottom: L.margin.at("bottom") + card-border.at("bottom") * (L.scale - 1),
+        ),
+        fill: white,
+        header-ascent: _header-gap,
+        header: _running-head,
+        footer-descent: _footer-gap,
+        footer: _page-footer,
+        body,
+      )
+      let single(m) = if is-portrait {
+        mpage[
+          #_card-marker(m.name, _monster-sub(m), _monster-cr-note(m), _monster-pb-note(m), numbered: false)
           #_monster-card(m)
         ]
       } else {
-        pagebreak(); _card-marker(m.name, sub, [CR #m.cr], [PB #fmt-mod(m.pb)], numbered: false)
+        pagebreak()
+        _card-marker(m.name, _monster-sub(m), _monster-cr-note(m), _monster-pb-note(m), numbered: false)
         _monster-card(m)
+      }
+      let pair(a, b, f) = if is-portrait {
+        mpage[
+          #_card-marker("Creatures", none, none, none, numbered: false)
+          #if f == 1.0 { _monster-pair(a, b) } else {
+            std.scale(x: f * 100%, y: f * 100%, origin: top + left, reflow: true,
+              box(width: (2 * col-w) / f, _monster-pair(a, b)))
+          }
+        ]
+      } else {
+        pagebreak()
+        _card-marker("Creatures", none, none, none, numbered: false)
+        if f == 1.0 { _monster-pair(a, b) } else {
+          std.scale(x: f * 100%, y: f * 100%, origin: top + left, reflow: true,
+            box(width: (2 * col-w) / f, _monster-pair(a, b)))
+        }
+      }
+
+      let i = 0
+      while i < c.monsters.len() {
+        let m = c.monsters.at(i)
+        let nxt = if i + 1 < c.monsters.len() { c.monsters.at(i + 1) } else { none }
+        if nxt != none and pair-scale(m, nxt) >= 0.8 {
+          pair(m, nxt, pair-scale(m, nxt))
+          i += 2
+        } else {
+          single(m)
+          i += 1
+        }
       }
     }
   }

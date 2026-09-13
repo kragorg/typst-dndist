@@ -19,20 +19,20 @@
 #let empowered-spell = _option(
   "Empowered Spell",
   cost: "1 SP",
-  notes: [Spend 1 SP to reroll up to 3 damage dice of a spell; use the new rolls.],
+  notes: [Reroll up to 3 damage dice of a spell; use the new rolls.],
   desc: [When you roll damage for a spell, you can spend 1 Sorcery Point to reroll up to 3 damage dice and you must use the new rolls. You can use Empowered Spell even if you've already used a different Metamagic option during the casting of the spell.],
 )
 
 #let seeking-spell = _option(
   "Seeking Spell",
   cost: "1 SP",
-  notes: [Spend 1 SP to reroll a missed spell attack d20; use the new roll.],
+  notes: [Reroll a missed spell attack d20; use the new roll.],
   desc: [If you make an attack roll for a spell and miss, you can spend 1 Sorcery Point to reroll the d20, and you must use the new roll. You can use Seeking Spell even if you've already used a different Metamagic option during the casting of the spell.],
 )
 
 #let heightened-spell = _option(
   "Heightened Spell",
   cost: "2 SP",
-  notes: [Spend 2 SP to give one target of a saving-throw spell Disadvantage on saves against it.],
+  notes: [Give one target of a saving-throw spell Disadvantage on saves against it.],
   desc: [When you cast a spell that forces a creature to make a saving throw, you can spend 2 Sorcery Points to give one target of the spell Disadvantage on saves against the spell.],
 )

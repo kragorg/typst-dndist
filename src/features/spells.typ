@@ -237,7 +237,7 @@
   "Mage Armor", 1, school: "Abjuration",
   casting-time: "Action", range: "Touch", components: "V, S, M",
   duration: "8 hr",
-  notes: [Target's base AC becomes $13$ + Dex while it wears no armor. Ends if it dons armor.],
+  notes: [Target's base AC becomes $13$ + Dex while it wears no armor.],
   effects: (eff-ac-formula(13, abilities: (ability.dex,), source: "Mage Armor"),),
 )
 #let chromatic-orb = _spell(
@@ -457,7 +457,7 @@
   "Sleep", 1, school: "Enchantment",
   casting-time: "Action", range: "60 ft", area: (shape: "sphere", size: "5 ft"),
   components: "V, S, M", duration: "1 min", concentration: true, save: "WIS",
-  notes: [Creatures in the Sphere that fail the save have the Incapacitated condition until the spell ends, ending early for a creature that takes damage or is shaken awake.],
+  notes: [Incapacited until EoNT on failed save, and must then repeat the save or become Unconscious for the duration. Ends if target takes damage or someone within 5 ft takes an action to wake them.],
 )
 #let silvery-barbs = _spell(
   "Silvery Barbs", 1, school: "Enchantment",
@@ -507,7 +507,7 @@
   casting-time: "Action", range: "30 ft", area: (shape: "square", size: "5 ft"),
   components: "V, S, M", duration: "1 min", concentration: true, save: "STR",
   damage: ((1, 2, "d6", "Bludgeoning"),),
-  notes: [A Medium hand of compacted soil rises from a 5-ft Square on the ground and grabs one creature you can see within 5 ft of it. Failed save: $2d 6$ Bludgeoning and Restrained for the duration. _Magic Action_: crush the grasped target (STR save; $2d 6$ Bludgeoning, half on a success), or move the hand or grab a different creature. Escape: STR check vs. spell save DC.],
+  notes: [Hand of earth rises from the ground and grabs one creature you can see within 5 ft of the area. Failed save: $2d 6$ Bludgeoning and Restrained for the duration. _Magic Action_: crush the grasped target (STR save; $2d 6$ Bludgeoning, half on a success), or move the hand, or grab a different creature. Escape: STR check vs. spell save DC.],
 )
 
 // Magic Initiate (Wizard) 1st-level spell

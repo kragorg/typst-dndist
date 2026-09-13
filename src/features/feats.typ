@@ -148,7 +148,13 @@
 // - Choose a spell list, a casting ability (Int/Wis/Cha), two cantrips, and one 1st-level spell.
 // - The feat grants one spellcasting source.
 // - `eff-spell-any-slot` projects the 1st-level spell into every other spellcasting source (resolve.typ).
-#let magic-initiate(spell-list, casting-ability: ability.int, cantrips: (), spell: none) = {
+// - `pre-cast: true` says the free cast is spent before it can matter — a
+//   long-duration self-buff (Mage Armor) the character re-casts every morning.
+//   The spell's own effects then ride the feat, so the AC box reads the
+//   protected value. Opt-in: a known spell is not an active one (Shield would
+//   otherwise add its +2 permanently), so this only ever forwards a spell the
+//   sheet author has judged effectively always on.
+#let magic-initiate(spell-list, casting-ability: ability.int, cantrips: (), spell: none, pre-cast: false) = {
   let ab = id-of(casting-ability)
   assert(
     ("int", "wis", "cha").contains(ab),
@@ -176,6 +182,6 @@
       // The pool tracks the free once-per-Long-Rest cast of the granted spell.
       eff-limited-use(spell, 1, source: name),
       eff-spell-any-slot(spell, casting-ability, name),
-    ),
+    ) + if pre-cast { spell.at("effects", default: ()) } else { () },
   )
 }

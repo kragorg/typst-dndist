@@ -1079,8 +1079,29 @@
 #assert(fairy-src.cantrips.contains("Druidcraft"))
 // Magic Initiate's granted 1st-level spell is tracked as a free 1/Long Rest cast.
 #assert(fae.limited-uses.any(r => r.name == "Mage Armor"))
-
-// --- Limited-use resources -----------------------------------------------------
+// With `pre-cast: true` the free cast's spell effects ride the feat: Mage
+// Default stays off — a known spell is not an active one — so `fae` above
+// still resolves to the bare 13.
+#let fae-prec = resolve(character(
+  abilities: (str: 8, dex: 15, con: 14, int: 8, wis: 10, cha: 15),
+  features: (
+    species.fairy(casting-ability: ability.cha),
+    background.genie-touched(
+      ability.cha, ability.dex,
+      origin-feat: feat.magic-initiate(
+        "Wizard",
+        casting-ability: ability.cha,
+        cantrips: (spell.message, spell.true-strike),
+        spell: spell.mage-armor,
+        pre-cast: true,
+      ),
+    ),
+    class.sorcerer(level: 1, skills: (skill.arcana, skill.persuasion)),
+  ),
+))
+#assert.eq(fae-prec.ac, 16)
+// The free-cast tracker survives: the pool still marks the daily spend.
+#assert(fae-prec.limited-uses.any(r => r.name == "Mage Armor"))
 // An Orc Sorcerer 5 (PB 3): Adrenaline Rush (PB uses, Short-or-Long Rest) and
 // Relentless Endurance (1, Long Rest) from the species, Innate Sorcery (2) from
 // the class. Declaration order is preserved (species traits first).

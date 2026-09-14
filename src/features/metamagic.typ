@@ -19,8 +19,8 @@
 #let empowered-spell = _option(
   "Empowered Spell",
   cost: "1 SP",
-  notes: [Reroll up to 3 damage dice of a spell; use the new rolls.],
-  desc: [When you roll damage for a spell, you can spend 1 Sorcery Point to reroll up to 3 damage dice and you must use the new rolls. You can use Empowered Spell even if you've already used a different Metamagic option during the casting of the spell.],
+  notes: ctx => [Reroll up to #calc.max(1, ctx.ability-mods.cha) damage dice of a spell; use the new rolls.],
+  desc: ctx => [When you roll damage for a spell, you can spend 1 Sorcery Point to reroll up to #calc.max(1, ctx.ability-mods.cha) damage dice (your Charisma modifier, minimum of one) and you must use the new rolls. You can use Empowered Spell even if you've already used a different Metamagic option during the casting of the spell.],
 )
 
 #let seeking-spell = _option(

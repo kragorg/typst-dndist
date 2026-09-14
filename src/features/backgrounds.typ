@@ -95,8 +95,8 @@
 // Feywild-genie origin background.
 #let genie-touched(..abilities, origin-feat: none) = _background(
   "Genie Touched",
-  (ability.dex, ability.con, ability.cha),
-  skills: (skill.deception, skill.perception),
+  (ability.dex, ability.wis, ability.cha),
+  skills: (skill.perception, skill.persuasion),
   tools: (tool.glassblowers-tools,),
   origin-feat: origin-feat,
   abilities: abilities.pos(),

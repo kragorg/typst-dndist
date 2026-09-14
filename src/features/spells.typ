@@ -105,7 +105,7 @@
   "Light", 0, school: "Evocation",
   casting-time: "Action", range: "Touch", components: "V, M",
   duration: "1 hr",
-  notes: [Touched object sheds Bright Light 20 ft, Dim Light 40 ft more, choose color. Opaque cover blocks it; ends if recast.],
+  notes: [Touched object sheds Bright Light 20 ft, Dim Light 20 ft more (40 ft total), choose color. Opaque cover blocks it; ends if recast.],
 )
 #let prestidigitation = _spell("Prestidigitation", 0, school: "Transmutation", casting-time: "Action")
 #let dancing-lights = _spell(

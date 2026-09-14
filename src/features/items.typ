@@ -232,6 +232,9 @@
 // - Casting uses the spell's normal casting time; when the spell is on the
 //   character's class's spell list, it uses their own save DC and spell attack
 //   bonus — which `resolve-item-spells` computes from the character's sources.
+// - No `desc`: the table is the scroll reference, so the aggregate stays out of
+//   the Features & Traits Magic Items list (`_partition-features` lists a
+//   trait only when it carries prose).
 #let spell-scrolls(..scrolls) = feature(
   "Spell Scrolls",
   kind: "magic-item",
@@ -241,7 +244,6 @@
   } else {
     (spell: s, charges: 1)
   }),
-  desc: [A spell scroll bears a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can read the scroll and cast its spell without providing any Material components: the casting takes the spell's normal casting time, using your spell save DC and spell attack bonus. The scroll crumbles to dust once the spell is cast.],
 )
 
 // - Source: DMG 2024 (not SRD), common wondrous item, requires Attunement.

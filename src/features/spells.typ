@@ -309,8 +309,8 @@
   "Absorb Elements", 1, school: "Abjuration",
   casting-time: "Reaction", range: "Self", components: "S",
   duration: "1 round",
-  trigger: [You take acid, cold, fire, lightning, or thunder damage.],
-  notes: [Resistance to triggering damage. $+1d 6$ of triggering type on next melee hit.],
+  trigger: [You take Acid/Cold/Fire/Lightning/Thunder damage.],
+  notes: [Resistance to triggering damage. $+1d 6$ of triggering type on the first melee hit on your next turn.],
 )
 #let entangle = _spell(
   "Entangle", 1, school: "Conjuration",
@@ -694,7 +694,7 @@
     (5, 5, "d10", "Radiant"), (6, 6, "d10", "Radiant"), (7, 7, "d10", "Radiant"),
     (8, 8, "d10", "Radiant"), (9, 9, "d10", "Radiant"),
   ),
-  notes: [5-ft radius, 40-ft high Cylinder of Dim Light, damage once per turn when it appears, is moved, creature enters or ends its turn in area. Save: half damage. Cancels shape-shift. _Magic Action_: move Cylinder 60 ft.],
+  notes: [5-ft radius, 40-ft high Cylinder of Dim Light, damage once per turn when it appears, is moved, creature enters or ends its turn in area. Save: half damage. On a failed save, a shape-shifted creature reverts and can't shape-shift while in the Cylinder. _Magic Action_: move Cylinder 60 ft.],
   scaling: [$+1d 10$/slot above 2nd.],
 )
 #let pass-without-trace = _spell(
@@ -867,7 +867,7 @@
   "Barkskin", 2, school: "Transmutation",
   casting-time: "Bonus Action", range: "Touch", components: "V, S, M",
   duration: "1 hour",
-  notes: [Give a willing creature AC 17.],
+  notes: [Give a willing creature a minimum AC of 17.],
 )
 #let locate-animals-or-plants = _spell(
   "Locate Animals/Plants", 2, school: "Divination",
@@ -889,7 +889,7 @@
     (6, 7, "d8", "Piercing"), (7, 8, "d8", "Piercing"), (8, 9, "d8", "Piercing"),
     (9, 10, "d8", "Piercing"),
   ),
-  notes: [60×10×5 ft wall or 20 ft diameter/height circle. Save: half damage. 1 ft move costs 4 ft. Creature entering/ending turn in wall takes $7d 8$ Slashing (DEX save: half damage).],
+  notes: [60×10×5 ft wall or 20 ft diameter/height circle. Save: half damage. 1 ft move costs 4 ft. Creature entering/ending turn in wall takes $7d 8$ Slashing (DEX save: half damage), 1/turn.],
   scaling: [$+1d 8$ Piercing & Slashing/slot above 6th.],
 )
 #let cone-of-cold = _spell(
@@ -964,7 +964,7 @@
     (4, 7, "d6", "Radiant"), (5, 8, "d6", "Radiant"), (6, 9, "d6", "Radiant"),
     (7, 10, "d6", "Radiant"), (8, 11, "d6", "Radiant"), (9, 12, "d6", "Radiant"),
   ),
-  notes: [Until EoYN, the hit target emits Dim Light in a 10-ft radius and attack rolls against it have Advantage.],
+  notes: [The next attack roll made against the target before EoYN has Advantage.],
   scaling: [$+1d 6$/slot above 1st.],
 )
 #let battle-familiar = _spell(

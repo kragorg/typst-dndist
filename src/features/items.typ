@@ -218,7 +218,7 @@
   source: "Magic Item",
   activation: "Action",
   casts: spell.detect-magic,
-  desc: [3 charges, regaining $1d 3$ at dawn. While holding it, you can take a Magic Action to expend 1 charge to cast _Detect Magic_ from it. If you expend the last charge, roll a $d 20$; on a $1$, the wand is destroyed.],
+  desc: [3 charges, regaining $1d 3$ at dawn. While holding it, you can take a Magic Action to expend 1 charge to cast _Detect Magic_ from it.],
   notes: [Expend 1 charge.],
 )
 

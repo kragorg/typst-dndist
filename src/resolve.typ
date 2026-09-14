@@ -930,8 +930,8 @@
   )
 
   // Gear splits into two lists by whether its effects are live.
-  // - The split carries meaning: EQUIPPED gear shapes the sheet (armor sets AC, a rod raises DCs, a weapon makes an attack line); INVENTORY gear is inert cargo.
-  // - A bare gear feature is equipped (its effects apply); `carried(...)` marks the inert case (skipped by `flatten-features`, so nothing about it is live); the declared `equipment:` strings are inert by construction.
+  // - The split carries meaning: EQUIPPED gear shapes the sheet (armor sets AC, a rod raises DCs, a weapon makes an attack line); INVENTORY gear is stowed or inert cargo.
+  // - A bare gear feature is equipped (its effects apply); `carried(...)` marks the inert case (skipped by `flatten-features`, so nothing about it is live); `stowed(...)` gear stays live but lists under INVENTORY; the declared `equipment:` strings are inert by construction.
   // - Top-level features only; a nested magic-item child (the Rod's activated power) is a sub-feature of its item, separate from an item itself.
   // - Magic gear carries the `*` marker in both lists: any magic-item feature, or a weapon with a magic attack bonus.
   let gear-entry = f => {
@@ -941,10 +941,12 @@
   }
   let is-gear = f => ("weapon", "armor", "shield", "magic-item").contains(f.at("kind", default: none))
   let equipped = char.features
-    .filter(f => is-gear(f) and not f.at("carried", default: false))
+    .filter(f => is-gear(f) and not f.at("carried", default: false)
+      and not f.at("stowed", default: false))
     .map(gear-entry)
-  let carried-gear = char.features
-    .filter(f => is-gear(f) and f.at("carried", default: false))
+  let inventory-gear = char.features
+    .filter(f => is-gear(f)
+      and (f.at("carried", default: false) or f.at("stowed", default: false)))
     .map(gear-entry)
 
   // Monsters can be declared directly in character features (like gear/items) or via character(monsters: ...)
@@ -1003,7 +1005,7 @@
     attacks: attacks,
     attacks-per-action: resolve-attacks-per-action(effects),
     equipped: equipped,
-    equipment: carried-gear + char.at("equipment", default: ()),
+    equipment: inventory-gear + char.at("equipment", default: ()),
     currency: char.at("currency", default: none),
     backstory: char.at("backstory", default: none),
     // The display-only collections (see the collectors above).

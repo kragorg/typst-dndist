@@ -16,6 +16,12 @@ the public API means a major version bump.
   layout is one entry (page geometry, scale, margin decomposition), and every
   absolute length in a layout is authored as a multiple of `u`, so one scalar
   rescales a whole sheet. At scale 1 the rendering is bit-identical to before.
+- A `stowed(f)` gear marker: the feature stays live (effects, spell tables,
+  attack lines) but lists under INVENTORY instead of EQUIPPED. Complements
+  `carried(f)`, whose gear is fully inert.
+- `item.spell-scrolls` is stowed, not equipped, and carries no `desc`: the
+  scroll table on the Spells card is the reference, so the aggregate joins
+  neither the Features & Traits Magic Items list nor EQUIPPED.
 
 ## [1.0.0] — 2026-08-04
 

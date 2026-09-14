@@ -3,7 +3,7 @@
 // - Armor and shields come from SRD 5.2.1. Each magic item cites its own
 //   source; NOTICE records which entries are SRD and which are not.
 
-#import "../model.typ": feature, limited-use-feature, eff-ac-base, eff-ac-bonus, eff-check-advantage, eff-prof, eff-save-bonus, eff-sense, eff-spellcasting-bonus, eff-weapon, eff-limited-use
+#import "../model.typ": feature, limited-use-feature, stowed, eff-ac-base, eff-ac-bonus, eff-check-advantage, eff-prof, eff-save-bonus, eff-sense, eff-spellcasting-bonus, eff-weapon, eff-limited-use
 #import "../data/abilities.typ": ability
 #import "../data/constants.typ": armor-table, armor-dex-cap
 #import "../data/skills.typ": skill
@@ -235,7 +235,9 @@
 // - No `desc`: the table is the scroll reference, so the aggregate stays out of
 //   the Features & Traits Magic Items list (`_partition-features` lists a
 //   trait only when it carries prose).
-#let spell-scrolls(..scrolls) = feature(
+// - `stowed(...)`: the aggregate lists under INVENTORY, not EQUIPPED — scrolls
+//   are pack cargo, and the spell table is live regardless.
+#let spell-scrolls(..scrolls) = stowed(feature(
   "Spell Scrolls",
   kind: "magic-item",
   source: "Spell Scroll",
@@ -244,7 +246,7 @@
   } else {
     (spell: s, charges: 1)
   }),
-)
+))
 
 // - Source: DMG 2024 (not SRD), common wondrous item, requires Attunement.
 // - 1 use per dawn: forgo the d20, treat the attack roll as a 10.

@@ -6,7 +6,7 @@
 // - Card 2 Actions: attacks, Mastery, Cunning Strike, Action / Bonus Action / Reaction / Other, then the Short Rest / Long Rest resource tables.
 // - Card 3 Spells: spellcasting header, slots, spells by level.
 // - Card 4 Features & Traits: one source-grouped section. Species, classes, invocations, Feats and magic items are eyebrow subsections.
-// - Card 5 Gear: currency, EQUIPPED (live gear: every non-carried modelled item) and INVENTORY (inert cargo: carried gear + declared kit). Magic items are starred in both lists.
+// - Card 5 Gear: currency, EQUIPPED (live gear: every non-carried, non-stowed modelled item) and INVENTORY (carried inert cargo, stowed live gear, and declared kit). Magic items are starred in both lists.
 // - Takes a declared character. Resolves it internally.
 
 #import "../resolve.typ": resolve, modifier
@@ -515,8 +515,8 @@
     v(section-gap)
   }
   // - Two lists with different meanings. Keep them separate.
-  // - EQUIPPED (`c.equipped`) is the gear whose effects are live on this sheet: every non-`carried` weapon/armor/shield/magic-item feature.
-  // - INVENTORY (`c.equipment`) is the inert cargo: `carried(...)` gear plus the declared strings.
+  // - EQUIPPED (`c.equipped`) is the gear whose effects are live on this sheet: every non-`carried`, non-`stowed` weapon/armor/shield/magic-item feature.
+  // - INVENTORY (`c.equipment`) is stowed gear (live, `stowed(...)`) or inert cargo (`carried(...)` gear plus the declared strings).
   // - Magic gear is starred in both lists.
   // - Each heading stays sticky to its list, so neither orphans at a card foot.
   if c.equipped.len() > 0 {

@@ -265,7 +265,7 @@
     {
       framed-box("Equipment", {
         // - Two labelled groups, stacked as the Resources box stacks its recharge groups.
-        // - EQUIPPED (`c.equipped`) is live gear; INVENTORY (`c.equipment`) is inert cargo.
+        // - EQUIPPED (`c.equipped`) is live gear; INVENTORY (`c.equipment`) is stowed live gear or inert cargo.
         // - Keep the two lists separate: the split carries meaning.
         if c.equipped.len() > 0 {
           eyebrow([Equipped], size: 6 * u)

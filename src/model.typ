@@ -350,6 +350,11 @@
 // - EQUIPPED is the default; a bare gear feature applies its effects. Remove the wrapper to equip.
 #let carried(f) = f + (carried: true)
 
+// Mark a gear feature as stowed (live gear that lists in INVENTORY, not EQUIPPED).
+// - Nothing is skipped, unlike `carried(...)`: effects, spell tables, and attack lines stay live.
+// - For gear that works from the pack — the Spell Scrolls aggregate casts from anywhere.
+#let stowed(f) = f + (stowed: true)
+
 // ---------------------------------------------------------------------------
 // Monster constructor
 // ---------------------------------------------------------------------------
@@ -429,7 +434,7 @@
 // - 2024 PHB "Choose Languages": species and background grant no language; only a class or feat feature grants one (Druidic, Thieves' Cant, a granted spell's free cast).
 // - Author the character's other chosen languages with `languages:`.
 // - `equipment` (list of strings) and `currency` are display-only inventory; the engine reads neither.
-// - The resolver prepends `carried(...)` gear to `equipment`; declare only unmodelled kit here.
+// - The resolver prepends `carried(...)` and `stowed(...)` gear to `equipment`; declare only unmodelled kit here.
 // - `backstory`: display-only roleplay prose, given as the trailing content block (`character(...)[…]`).
 // - The block may carry emphasis, lists, and inline math.
 // - Omit the block for a character with no backstory.

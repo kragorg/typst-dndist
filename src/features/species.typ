@@ -13,7 +13,7 @@
 // - An elf character must not break because someone modelled the dragonborn.
 // - A uniform function shape makes each later addition a *named parameter with a default*, which is additive and breaks nothing.
 
-#import "../model.typ": feature, eff-stat, eff-prof, eff-ac-formula, eff-unarmed, eff-spellcasting, eff-reach, eff-save-advantage, eff-sense, eff-resistance, eff-limited-use, id-of
+#import "../model.typ": feature, eff-stat, eff-prof, eff-ac-formula, eff-unarmed, eff-spellcasting, eff-spell-any-slot, eff-reach, eff-save-advantage, eff-sense, eff-resistance, eff-limited-use, id-of
 #import "../data/abilities.typ": ability
 #import "../data/skills.typ": skill as skills
 #import "spells.typ" as spell
@@ -232,8 +232,10 @@
 // - Fairy is a function: the player chooses the Fairy Magic ability
 //   (Int/Wis/Cha).
 // - Fairy Magic gives the Druidcraft cantrip.
-// - The higher-level Faerie Fire and Enlarge/Reduce casts stay prose: they are
-//   gated on total character level, which a species builder cannot see.
+// - The 3rd/5th-level innate casts (_Faerie Fire_, _Enlarge/Reduce_) ride the
+//   Magic Initiate pattern: a free-cast pool plus an any-slot projection, both
+//   gated on total character level at resolve time (`at-level` / a 0-use pool),
+//   so the species builder still never sees a level.
 // - Flight emits a `fly-speed` stat (resolved to the walking speed), so the
 //   Speed cell shows it alongside the walk speed.
 #let fairy(casting-ability: ability.cha) = feature(
@@ -247,7 +249,13 @@
   ),
   features: (
     _trait("Fairy", "Fairy Magic", [You know the _Druidcraft_ cantrip. Starting at 3rd level, you can cast _Faerie Fire_ with this trait, and starting at 5th level, _Enlarge/Reduce_ as well. Once you cast either spell with this trait, you can't cast that spell with it again until you finish a Long Rest. You can also cast either using any spell slots you have of the appropriate level. #ability.at(id-of(casting-ability)).name is your spellcasting ability for these spells.],
-      effects: (eff-spellcasting("Fairy Magic", casting-ability, cantrips: (spell.druidcraft,)),)),
+      effects: (
+        eff-spellcasting("Fairy Magic", casting-ability, cantrips: (spell.druidcraft,)),
+        eff-spell-any-slot(spell.faerie-fire, casting-ability, "Fairy Magic", at-level: 3),
+        eff-spell-any-slot(spell.enlarge-reduce, casting-ability, "Fairy Magic", at-level: 5),
+        eff-limited-use(spell.faerie-fire, ctx => if ctx.level >= 3 { 1 } else { 0 }, recharge: "long", source: "Fairy Magic"),
+        eff-limited-use(spell.enlarge-reduce, ctx => if ctx.level >= 5 { 1 } else { 0 }, recharge: "long", source: "Fairy Magic"),
+      )),
     _trait("Fairy", "Flight", [Thanks to your wings you have a flying speed equal to your walking speed. You can't use it while wearing Medium or Heavy armor.],
       effects: (eff-stat("fly-speed", 30, kind: "set"),)),
   ),

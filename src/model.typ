@@ -278,11 +278,14 @@
 // - `source` scopes a matching `eff-spellcasting-bonus` item bonus only; the ability stays the feat's own.
 // - The resolver projects `spell` into every other spellcasting source that has slots, at that source's own default cast level.
 // - The cast behaves like any other prepared spell of that source, not like a pinned one.
-#let eff-spell-any-slot(spell, ability, source) = (
+// - `at-level`: total character level at which the projection joins (Fairy Magic's
+//   _Faerie Fire_ at 3rd, _Enlarge/Reduce_ at 5th); `none` = ungated.
+#let eff-spell-any-slot(spell, ability, source, at-level: none) = (
   effect: "spell-any-slot",
   spell: spell,
   ability: id-of(ability),
   source: source,
+  at-level: at-level,
 )
 
 // Number of attacks per Attack action (Extra Attack).

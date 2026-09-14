@@ -493,7 +493,11 @@
   //   matches the host source's name — e.g., Magic Initiate via Lessons of the
   //   First Ones). Background/origin-feat spells have no class-source and keep
   //   the feat's own numbers.
-  let any-slot = effects.filter(e => e.effect == "spell-any-slot")
+  // A feat- or species-granted spell can also be cast with any spell slot the character has (Magic Initiate, Fey Touched, Fairy Magic).
+  let any-slot = effects.filter(e => e.effect == "spell-any-slot").filter(e => {
+    let gate = e.at("at-level", default: none)
+    gate == none or level >= gate
+  })
   if any-slot.len() == 0 { sources } else {
     sources.map(src => {
       if src.slots.len() == 0 { return src }
@@ -845,6 +849,9 @@
       source: e.source,
       note: e.at("note", default: none),
     ))
+    // - A 0-use pool is a level gate (Fairy Magic's free casts before 3rd/5th):
+    //   it does not exist yet and must not render as an empty tracker.
+    .filter(e => e.uses > 0)
     .sorted(key: e => (
       str(rank.at(e.recharge, default: 9))
         + "-" + (if e.uses < 10 { "0" } else { "" }) + str(e.uses)

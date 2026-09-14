@@ -238,7 +238,7 @@
       stat-cell([#str(c.ac)#_ac-note-mark(c)], "Armor Class", big: true, width: 100%),
       stat-cell(hp-cell, "Hit Points", big: true, width: 100%),
       stat-cell(fmt-mod(c.initiative), "Initiative", width: 100%),
-      stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft]], "Speed", width: 100%),
+      stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft#if c.at("fly-speed", default: none) != none [, Fly #bold-num(c.at("fly-speed")) ft]]], "Speed", width: 100%),
       stat-cell(c.passives.perception, "Passive Perception", width: 100%),
       stat-cell(checkbox(size: 9 * u), "Heroic Inspiration", width: 100%),
     )
@@ -306,7 +306,7 @@
       stat-cell([#str(c.ac)#_ac-note-mark(c)], "AC", big: true, width: 100%),
       stat-cell(hp-cell, "HP", big: true, width: 100%),
       stat-cell(fmt-mod(c.initiative), "Init", width: 100%),
-      stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft]], "Speed", width: 100%),
+      stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft#if c.at("fly-speed", default: none) != none [, Fly #bold-num(c.at("fly-speed")) ft]]], "Speed", width: 100%),
       stat-cell(c.passives.perception, "Pas. Per", width: 100%),
       // The diamond marks resource tracking. Check it off in play.
       stat-cell(checkbox(size: 10 * u), "Heroic Insp.", width: 100%),

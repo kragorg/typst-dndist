@@ -964,6 +964,13 @@
   }
 
   let ac-res = resolve-ac-with-source(scores, effects)
+  // Fly speed: only when some effect targets it (Fairy's Flight).
+  // - Defaults to the resolved walking speed: the trait text is "a flying
+  //   speed equal to your walking speed", so Fairy emits a plain set.
+  let walk-speed = resolve-stat(effects, "speed", char.at("speed", default: 30), ctx: ctx)
+  let fly-speed = if effects.any(e => e.effect == "stat" and e.which == "fly-speed") {
+    resolve-stat(effects, "fly-speed", walk-speed, ctx: ctx)
+  } else { none }
   (
     name: char.name,
     player: char.at("player", default: none),
@@ -985,7 +992,8 @@
     ac: ac-res.value,
     ac-source: ac-res.source,
     initiative: resolve-stat(effects, "initiative", mods.dex, pb: pb, ctx: ctx),
-    speed: resolve-stat(effects, "speed", char.at("speed", default: 30), ctx: ctx),
+    speed: walk-speed,
+    fly-speed: fly-speed,
     max-hp: resolve-stat(effects, "hp", base-hp, ctx: ctx),
     temp-hp: resolve-stat(effects, "temp-hp", 0, ctx: ctx),
     skills: skills,

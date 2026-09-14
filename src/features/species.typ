@@ -234,6 +234,8 @@
 // - Fairy Magic gives the Druidcraft cantrip.
 // - The higher-level Faerie Fire and Enlarge/Reduce casts stay prose: they are
 //   gated on total character level, which a species builder cannot see.
+// - Flight emits a `fly-speed` stat (resolved to the walking speed), so the
+//   Speed cell shows it alongside the walk speed.
 #let fairy(casting-ability: ability.cha) = feature(
   "Fairy",
   kind: "species",
@@ -244,9 +246,10 @@
     eff-stat("speed", 30, kind: "set"),
   ),
   features: (
-    _trait("Fairy", "Fairy Magic", [You know the _Druidcraft_ cantrip. At 3rd level you can cast _Faerie Fire_, and at 5th level _Enlarge/Reduce_, once each per Long Rest without a slot (or with any slot of the appropriate level).],
+    _trait("Fairy", "Fairy Magic", [You know the _Druidcraft_ cantrip. Starting at 3rd level, you can cast _Faerie Fire_ with this trait, and starting at 5th level, _Enlarge/Reduce_ as well. Once you cast either spell with this trait, you can't cast that spell with it again until you finish a Long Rest. You can also cast either using any spell slots you have of the appropriate level. #ability.at(id-of(casting-ability)).name is your spellcasting ability for these spells.],
       effects: (eff-spellcasting("Fairy Magic", casting-ability, cantrips: (spell.druidcraft,)),)),
-    _trait("Fairy", "Flight", [Thanks to your wings you have a flying speed equal to your walking speed. You can't use it while wearing Medium or Heavy armor.]),
+    _trait("Fairy", "Flight", [Thanks to your wings you have a flying speed equal to your walking speed. You can't use it while wearing Medium or Heavy armor.],
+      effects: (eff-stat("fly-speed", 30, kind: "set"),)),
   ),
 )
 

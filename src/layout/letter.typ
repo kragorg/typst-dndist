@@ -182,7 +182,7 @@
         column-gutter: 5 * u,
         rows: 38 * u,
         stat-box("Initiative", fmt-mod(c.initiative), height: 100%),
-        stat-box("Speed", [#bold-num(c.speed)#text(size: 6 * u)[ ft]], height: 100%),
+        stat-box("Speed", [#bold-num(c.speed)#text(size: 6 * u)[ ft#if c.at("fly-speed", default: none) != none [, Fly #bold-num(c.at("fly-speed")) ft]]], height: 100%),
         stat-box("Size", or-dash(c.size), height: 100%),
         stat-box("Passive Perception", c.passives.perception, height: 100%),
       )

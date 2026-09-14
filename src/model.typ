@@ -246,7 +246,7 @@
 )
 
 // Miscellaneous numeric stat.
-// - `which`: "hp" | "temp-hp" | "speed" | "initiative".
+// - `which`: "hp" | "temp-hp" | "speed" | "fly-speed" | "initiative".
 // - `kind`: "bonus" (adds) | "set" (overrides) | "proficiency" (adds the proficiency bonus and ignores `value`; Alert's +PB Initiative).
 // - `value`: int or function `(ctx) => int` of the computed context (Tough's HP bonus is `ctx => 2 * ctx.level`).
 #let eff-stat(which, value, kind: "bonus") = (

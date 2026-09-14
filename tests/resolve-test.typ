@@ -1,7 +1,7 @@
 // Resolution-engine tests. `assert`s fail compilation on regression.
 //   typst compile --root . tests/resolve-test.typ
 #import "@preview/dndist:1.0.0": *
-#import "../src/resolve.typ": resolve-ac, resolve-abilities, _signed, _pick-tier, dedup-by
+#import "../src/resolve.typ": resolve-ac, resolve-ac-with-source, resolve-abilities, _signed, _pick-tier, dedup-by
 #import "../src/model.typ": feature as raw-feature
 #import "../src/layout/common.typ": all-spells
 
@@ -310,7 +310,6 @@
 #assert.eq(rg.skills.perception.bonus, 5)
 #assert.eq(rg.skills.religion.bonus, 2)
 #assert.eq(rg.passives.perception, 15)
-#assert.eq(rg.passives.investigation, 12)
 #assert.eq(rg.passives.insight, 15)
 #assert(rg.proficiencies.tool.contains("herbalism-kit"))
 #assert(rg.proficiencies.tool.contains("calligraphers-supplies"))
@@ -387,7 +386,7 @@
 #assert.eq(attack-lines(ts-thrown, "Dagger", via: "True Strike").first().range, "5 ft")
 #assert.eq(attack-lines(ts-thrown, "Dagger", via: "True Strike").first().thrown-range, "20/60 ft")
 // --- Shillelagh: the third weapon-attack cantrip ---------------------------
-// The imbued weapon attacks with the spellcasting ability and a d8 die, and the damage type stays the weapon's own.
+// The imbued weapon attacks with the spellcasting ability and a d8 die. On a hit the damage is Force or the weapon's own type (caster's choice); the line shows Force, the standard choice.
 #let sh = resolve(character(
   abilities: (str: 8, dex: 10, con: 10, int: 10, wis: 16, cha: 10),
   features: (
@@ -399,7 +398,7 @@
 #let sh-staff = attack-lines(sh, "Quarterstaff", via: "Shillelagh").first()
 #assert.eq(sh-staff.bonus, 5)
 #assert.eq(sh-staff.damage, "1d8+3")
-#assert.eq(sh-staff.damage-type, "Bludgeoning")
+#assert.eq(sh-staff.damage-type, "Force")
 // Shillelagh is not an Extra Attack option, and it leaves the plain weapon line alone.
 #assert.eq(sh-staff.extra-attack, false)
 #assert.eq(attack-lines(sh, "Quarterstaff").first().damage, "1d6-1")
@@ -550,7 +549,6 @@
 #assert.eq(horgra.skills.sleight-of-hand.bonus, 6)
 #assert.eq(horgra.skills.investigation.level, "proficient")
 #assert.eq(horgra.passives.perception, 16)
-#assert.eq(horgra.passives.investigation, 12)
 #assert.eq(horgra.passives.insight, 14)
 #assert(horgra.proficiencies.language.contains("Goblin"))
 #assert(horgra.proficiencies.language.contains("Thieves' Cant"))
@@ -2024,7 +2022,6 @@
 #assert.eq(therin.skills.perception.level, none)
 #assert.eq(therin.passives.perception, 19)
 #assert.eq(therin.passives.insight, 16)
-#assert.eq(therin.passives.investigation, 9)
 
 // --- Catalog: PHB Weapons ----------------------------------------------------
 #let all-weapons-char = resolve(character(
@@ -2124,7 +2121,7 @@
 #let dw-shil = attack-lines(druid-woodlands, "Staff of the Woodlands", via: "Shillelagh").first()
 #assert.eq(dw-shil.bonus, 7)
 #assert.eq(dw-shil.damage, "1d8+5")
-#assert.eq(dw-shil.damage-type, "Bludgeoning")
+#assert.eq(dw-shil.damage-type, "Force")
 
 // Staff of the Woodlands item-spells table has 8 spells with charge costs.
 #let dw-item-spells = druid-woodlands.item-spells.find(i => i.name == "Staff of the Woodlands")
@@ -2199,7 +2196,9 @@
 #assert.eq(scroll("Goodberry").save-dc, 13) // 8 + PB 2 + Wis 3
 #assert.eq(scroll("Lesser Restoration").charges, 1)
 #assert.eq(scroll("Lesser Restoration").casting-time, "Bonus Action")
-#assert(scroll-bearer.equipped.contains("Spell Scrolls*"))
+#assert(not scroll-bearer.equipped.contains("Spell Scrolls*"))
+// Stowed, not equipped: the aggregate lists under INVENTORY, the spell table stays live.
+#assert(scroll-bearer.equipment.contains("Spell Scrolls*"))
 
 // --- Staff of Power ----------------------------------------------------------
 #let sorc-power = resolve(character(

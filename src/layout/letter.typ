@@ -321,7 +321,7 @@
       if c.spellcasting.len() > 0 or i > 0 { v(letter-section-gap) }
       framed-box(
         item.name,
-        item-spell-table(none, item.spells, size: 8.5 * u, atomic-rows: true),
+        item-spell-table(none, item.spells, size: 8.5 * u, atomic-rows: true, stored: item.stored),
         repeat-header: true,
       )
     }

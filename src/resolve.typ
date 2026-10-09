@@ -565,12 +565,18 @@
         (entry, none, 1)
       }
       let eff-slot = if slot != none { slot } else { s.at("level", default: 1) }
-      let detail = _spell-detail(s, f.name, dc, atk, level, spell-bonuses, slot: eff-slot, fixed-slot: true)
+      // An entry may carry its own caster's numbers (a Ring of Spell Storing's spell keeps the original caster's DC and attack bonus).
+      let (e-dc, e-atk) = if type(entry) == dictionary {
+        (entry.at("save-dc", default: dc), entry.at("attack", default: atk))
+      } else { (dc, atk) }
+      let detail = _spell-detail(s, f.name, e-dc, e-atk, level, spell-bonuses, slot: eff-slot, fixed-slot: true)
       detail + (charges: charges, ritual: false)
     })
     (
       name: f.name,
       spells: projected,
+      // A spell store (Ring of Spell Storing): each row is one stored cast, tracked by its slot level rather than a charge cost.
+      stored: f.at("spell-store", default: false),
     )
   })
 }

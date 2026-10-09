@@ -22,6 +22,11 @@ the public API means a major version bump.
 - `item.spell-scrolls` is stowed, not equipped, and carries no `desc`: the
   scroll table on the Spells card is the reference, so the aggregate joins
   neither the Features & Traits Magic Items list nor EQUIPPED.
+- `item.ring-of-spell-storing(..spells)`: each stored spell is a bare spell or
+  `(spell: s, slot: N)` for an upcast one, with optional `save-dc:`/`attack:`
+  for the original caster's numbers. Construction asserts levels 1–5 and the
+  5-level capacity. Its spell table swaps the Charges column for Slot: the
+  stored slot level plus a diamond to check off the single cast.
 
 ## [1.0.0] — 2026-08-04
 

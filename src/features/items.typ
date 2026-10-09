@@ -211,6 +211,35 @@
   desc: [While wearing this ring, you can cast _Telekinesis_ from it (requires Attunement).],
 )
 
+// - Source: DMG 2024 / SRD 5.1, rare ring (requires Attunement).
+// - Stores up to 5 levels of spells (levels 1-5); the slot each was cast with sets the space it takes and the level it is cast at.
+// - A stored spell uses the original caster's slot level, spell save DC, spell attack bonus, and spellcasting ability; casting it frees its space.
+// - Declare each stored spell as a bare spell (stored at its own level) or `(spell: s, slot: N)` for an upcast one. `save-dc:`/`attack:` give the original caster's numbers; omitted, they default to the wearer's own, as for any magic item.
+// - `spell-store: true` makes the item's spell table a one-cast-per-row list: its fourth column shows each spell's slot level with a diamond to check off when cast, in place of a charge cost.
+#let ring-of-spell-storing(..stored) = {
+  let entries = stored.pos().map(e => if type(e) == dictionary and "spell" in e { e } else { (spell: e) })
+  let total = 0
+  for e in entries {
+    let base = e.spell.at("level", default: 0)
+    let slot = e.at("slot", default: base)
+    assert(base >= 1, message: "Ring of Spell Storing holds only spells of level 1 through 5; " + e.spell.name + " is a cantrip")
+    assert(
+      slot >= base and slot <= 5,
+      message: "Ring of Spell Storing: " + e.spell.name + " must be stored with a slot of level " + str(base) + " through 5; got " + str(slot),
+    )
+    total += slot
+  }
+  assert(total <= 5, message: "Ring of Spell Storing holds at most 5 levels of spells; got " + str(total))
+  feature(
+    "Ring of Spell Storing",
+    kind: "magic-item",
+    source: "Magic Item",
+    spell-store: true,
+    spells: entries.map(e => e + (slot: e.at("slot", default: e.spell.level), charges: 1)),
+    desc: [This ring stores up to 5 levels of spells (requires Attunement). Any creature can cast a spell of level 1 through 5 into it by touching the ring as the spell is cast; the slot level used sets the space the spell takes. While wearing the ring, you can cast any stored spell, using the original caster's slot level, spell save DC, spell attack bonus, and spellcasting ability; the cast frees its space.],
+  )
+}
+
 // Source: DMG 2024.
 #let wand-of-magic-detection = limited-use-feature(
   "Wand of Magic Detection", 3,

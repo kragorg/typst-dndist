@@ -490,7 +490,7 @@
     (c.metamagic.len() > 0, keep(metamagic-table(c.metamagic, size: 7.5 * u, atomic-rows: true))),
     ..c.at("item-spells", default: ()).map(item => (
       item.spells.len() > 0,
-      keep(item-spell-table(item.name, item.spells, size: 7.5 * u, atomic-rows: true)),
+      keep(item-spell-table(item.name, item.spells, size: 7.5 * u, atomic-rows: true, stored: item.stored)),
     )),
     // - Limited-use resource pools form the tail: two side-by-side tables of diamonds, Short Rest and Long Rest.
     // - The pair travels together, so neither bucket orphans at a card break.

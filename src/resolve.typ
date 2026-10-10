@@ -540,14 +540,19 @@
 
   let item-features = features.filter(f => f.at("kind", default: none) == "magic-item" and f.at("spells", default: ()).len() > 0)
   item-features.map(f => {
-    let (dc, atk) = if sources.len() > 0 {
+    // The caster's numbers: save DC, attack bonus, and spellcasting ability modifier (Cure Wounds heals 2d8 + that modifier).
+    let (dc, atk, cmod) = if sources.len() > 0 {
       let src = if f.at("source-name", default: none) != none {
         sources.find(s => s.source == f.source-name)
       } else { none }
       if src != none {
-        (src.save-dc, src.attack)
+        (src.save-dc, src.attack, src.modifier)
       } else {
-        (sources.map(s => s.save-dc).fold(0, calc.max), sources.map(s => s.attack).fold(0, calc.max))
+        (
+          sources.map(s => s.save-dc).fold(0, calc.max),
+          sources.map(s => s.attack).fold(0, calc.max),
+          sources.map(s => s.modifier).fold(0, calc.max),
+        )
       }
     } else {
       let max-mod = mods.values().fold(0, calc.max)
@@ -555,6 +560,7 @@
       (
         8 + pb + max-mod + b.map(x => x.dc).sum(default: 0),
         pb + max-mod + b.map(x => x.attack).sum(default: 0),
+        max-mod,
       )
     }
 
@@ -565,11 +571,7 @@
         (entry, none, 1)
       }
       let eff-slot = if slot != none { slot } else { s.at("level", default: 1) }
-      // An entry may carry its own caster's numbers (a Ring of Spell Storing's spell keeps the original caster's DC and attack bonus).
-      let (e-dc, e-atk) = if type(entry) == dictionary {
-        (entry.at("save-dc", default: dc), entry.at("attack", default: atk))
-      } else { (dc, atk) }
-      let detail = _spell-detail(s, f.name, e-dc, e-atk, level, spell-bonuses, slot: eff-slot, fixed-slot: true)
+      let detail = _spell-detail(s, f.name, dc, atk, level, spell-bonuses, slot: eff-slot, fixed-slot: true, cast-mod: cmod)
       detail + (charges: charges, ritual: false)
     })
     (

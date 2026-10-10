@@ -214,7 +214,7 @@
 // - Source: DMG 2024 / SRD 5.1, rare ring (requires Attunement).
 // - Stores up to 5 levels of spells (levels 1-5); the slot each was cast with sets the space it takes and the level it is cast at.
 // - A stored spell uses the original caster's slot level, spell save DC, spell attack bonus, and spellcasting ability; casting it frees its space.
-// - Declare each stored spell as a bare spell (stored at its own level) or `(spell: s, slot: N)` for an upcast one. `save-dc:`/`attack:` give the original caster's numbers; omitted, they default to the wearer's own, as for any magic item.
+// - Declare each stored spell as a bare spell (stored at its own level) or `(spell: s, slot: N)` for an upcast one. The wearer is taken to be the original caster, so stored spells use the wearer's save DC, spell attack bonus, and spellcasting ability modifier.
 // - `spell-store: true` makes the item's spell table a one-cast-per-row list: its fourth column shows each spell's slot level with a diamond to check off when cast, in place of a charge cost.
 #let ring-of-spell-storing(..stored) = {
   let entries = stored.pos().map(e => if type(e) == dictionary and "spell" in e { e } else { (spell: e) })

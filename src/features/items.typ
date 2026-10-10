@@ -256,8 +256,9 @@
 //   "Spell Scrolls" table beside the other magic items' spell tables
 //   (`resolve-item-spells` projects each `spells:` entry).
 // - Declare each scroll as `(spell: s, count: n)`; a bare spell counts as one.
-// - The table's Charges column shows the scrolls held; each crumbles to dust
-//   once its spell is cast, so there is no recharge and no resource pool.
+// - `consumable: true`: the table's Uses column shows one diamond per scroll
+//   held, to check off as each crumbles to dust once its spell is cast — no
+//   recharge and no resource pool.
 // - Casting uses the spell's normal casting time; when the spell is on the
 //   character's class's spell list, it uses their own save DC and spell attack
 //   bonus — which `resolve-item-spells` computes from the character's sources.
@@ -270,6 +271,7 @@
   "Spell Scrolls",
   kind: "magic-item",
   source: "Spell Scroll",
+  consumable: true,
   spells: scrolls.pos().map(s => if type(s) == dictionary and "spell" in s {
     (spell: s.spell, charges: s.at("count", default: 1))
   } else {

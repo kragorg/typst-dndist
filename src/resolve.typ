@@ -579,6 +579,8 @@
       spells: projected,
       // A spell store (Ring of Spell Storing): each row is one stored cast, tracked by its slot level rather than a charge cost.
       stored: f.at("spell-store", default: false),
+      // A consumable (Spell Scrolls): each row's `charges` counts single-use copies, tracked as diamonds rather than a charge cost.
+      consumable: f.at("consumable", default: false),
     )
   })
 }

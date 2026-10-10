@@ -1135,17 +1135,20 @@
 // - Columns: <title or Spell> / Range / Hit/Save / Charges / Damage/Effect.
 // - Magic item spells require no material components; the fourth column lists the charge cost instead.
 // - `stored` (a spell store, the Ring of Spell Storing): each row is one cast held in the item, so the fourth column is "Slot" — the slot level it was stored at, with a diamond to check off once cast.
-#let item-spell-table(title, spells, size: 8 * u, atomic-rows: false, stored: false) = {
+// - `consumable` (Spell Scrolls): each row's `charges` counts single-use copies, so the fourth column is "Uses" — one diamond per copy to check off as it is spent.
+#let item-spell-table(title, spells, size: 8 * u, atomic-rows: false, stored: false, consumable: false) = {
   if spells.len() == 0 { return }
   sheet-table(
     (auto, auto, auto, auto, 1fr),
-    (if title != none { title } else { "Spell" }, "Range", "Hit/Save", if stored { "Slot" } else { "Charges" }, "Damage/Effect"),
+    (if title != none { title } else { "Spell" }, "Range", "Hit/Save", if stored { "Slot" } else if consumable { "Uses" } else { "Charges" }, "Damage/Effect"),
     spells.map(s => (
       _spell-name-cell(s, size),
       _spell-range-cell(s, size * 0.9),
       _spell-hit-cell(s),
       if stored {
         text(size: size)[#s.cast-level#h(2 * u)#checkbox(size: size * 0.82)]
+      } else if consumable {
+        box[#for i in range(s.charges) [#h(if i > 0 { 3 * u } else { 0 * u })#checkbox(size: size * 0.82)]]
       } else {
         text(size: size)[#s.charges]
       },

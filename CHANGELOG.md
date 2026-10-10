@@ -29,6 +29,8 @@ the public API means a major version bump.
   stored slot level plus a diamond to check off the single cast.
 - Magic-item spell tables add the caster's spellcasting ability modifier where
   a spell does (Cure Wounds heals 2d8 + modifier), as class spell tables do.
+- The Spell Scrolls table's Charges column is now Uses: one diamond per scroll
+  held, to check off as each is cast.
 
 ## [1.0.0] — 2026-08-04
 

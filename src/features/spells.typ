@@ -972,5 +972,5 @@
   casting-time: "Action", range: "10 ft",
   components: "V, S, M", material-cost: true,
   duration: "1 hour",
-  notes: [Summon a combat-ready familiar (Celestial, Fey, or Fiend) in an unoccupied space; it rolls initiative and acts as an ally. Choose a form: *Brute* (high AC and HP), *Flyer* (Fly speed, Flyby), or *Stalker* (Prowl before Hide). Its Rend attack uses your spell attack modifier and deals Force damage.],
+  notes: [Summon an allied familiar in Brute, Flyer, or Stalker form; it rolls its own Initiative. See its stat block.],
 )

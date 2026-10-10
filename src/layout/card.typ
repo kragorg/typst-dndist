@@ -488,10 +488,15 @@
     (reaction-all.len() > 0, keep(activation-table("Reaction", reaction-all, size: 7.5 * u, atomic-rows: true))),
     (b.other.len() > 0, keep(activation-table("Other", b.other, size: 7.5 * u, atomic-rows: true))),
     (c.metamagic.len() > 0, keep(metamagic-table(c.metamagic, size: 7.5 * u, atomic-rows: true))),
-    ..c.at("item-spells", default: ()).map(item => (
-      item.spells.len() > 0,
-      keep(item-spell-table(item.name, item.spells, size: 7.5 * u, atomic-rows: true, stored: item.stored, consumable: item.consumable)),
-    )),
+    // - Single-use item spells (a Ring of Spell Storing's stored casts, Spell Scrolls) come first and travel as one unit, so the one-shot tables sit together on one card; charged items (staffs) follow.
+    ..{
+      let items = c.at("item-spells", default: ()).filter(item => item.spells.len() > 0)
+      let table = item => item-spell-table(item.name, item.spells, size: 7.5 * u, atomic-rows: true, stored: item.stored, consumable: item.consumable)
+      let single = items.filter(item => item.stored or item.consumable)
+      let charged = items.filter(item => not (item.stored or item.consumable))
+      ((single.len() > 0, keep(single.map(table).join(v(section-gap)))),)
+      charged.map(item => (true, keep(table(item))))
+    },
     // - Limited-use resource pools form the tail: two side-by-side tables of diamonds, Short Rest and Long Rest.
     // - The pair travels together, so neither bucket orphans at a card break.
     // - A character with resources but no actions still emits this card, titled "Actions": `has-actions` above includes `c.limited-uses`.

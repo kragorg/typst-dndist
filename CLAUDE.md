@@ -743,7 +743,9 @@ armor is setting the AC, a rod its DCs, a weapon its attack line), while
 `equipment` is the **inert cargo** (`carried(...)` gear first, then the
 declared `equipment:` strings --- authored as the unmodelled kit only).
 Magic gear is suffixed `*` in both lists (any magic-item, or a weapon
-with a nonzero magic `bonus`). `carried(f)` (model.typ) marks a gear
+with a nonzero magic `bonus`), or `☆` for a `consumable: true` magic item
+(potions, scrolls); `bullet-lines` draws them as a filled / outlined accent
+star (`magic-star`), and declared strings may carry either suffix. `carried(f)` (model.typ) marks a gear
 feature as in-the-pack: `flatten-features` skips it and everything
 nested in it, so it contributes **nothing** (no effects, traits, attack
 lines, or pools) and lists under INVENTORY --- the affordance for a

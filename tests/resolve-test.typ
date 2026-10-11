@@ -2196,9 +2196,9 @@
 #assert.eq(scroll("Goodberry").save-dc, 13) // 8 + PB 2 + Wis 3
 #assert.eq(scroll("Lesser Restoration").charges, 1)
 #assert.eq(scroll("Lesser Restoration").casting-time, "Bonus Action")
-#assert(not scroll-bearer.equipped.contains("Spell Scrolls*"))
-// Stowed, not equipped: the aggregate lists under INVENTORY, the spell table stays live.
-#assert(scroll-bearer.equipment.contains("Spell Scrolls*"))
+#assert.eq(scroll-bearer.equipped, ())
+// Stowed, not equipped: each scroll lists under INVENTORY by name, with the consumable mark; the spell table stays live.
+#assert.eq(scroll-bearer.equipment, ("Scroll of Goodberry ×2☆", "Scroll of Lesser Restoration☆"))
 
 // --- Staff of Power ----------------------------------------------------------
 #let sorc-power = resolve(character(

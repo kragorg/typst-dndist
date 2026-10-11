@@ -950,12 +950,12 @@
   // - The split carries meaning: EQUIPPED gear shapes the sheet (armor sets AC, a rod raises DCs, a weapon makes an attack line); INVENTORY gear is stowed or inert cargo.
   // - A bare gear feature is equipped (its effects apply); `carried(...)` marks the inert case (skipped by `flatten-features`, so nothing about it is live); `stowed(...)` gear stays live but lists under INVENTORY; the declared `equipment:` strings are inert by construction.
   // - Top-level features only; a nested magic-item child (the Rod's activated power) is a sub-feature of its item, separate from an item itself.
-  // - Magic gear carries the `*` marker in both lists: any magic-item feature, or a weapon with a magic attack bonus.
+  // - Magic gear carries a marker in both lists: `*` for any magic-item feature or a weapon with a magic attack bonus; `☆` instead for a `consumable` magic item (potions, scrolls).
   // - A feature with an `inventory` list (Spell Scrolls) lists those entries in its place, one per held item.
   let gear-entry = f => {
     let magic = (f.at("kind", default: none) == "magic-item"
       or f.at("effects", default: ()).any(e => e.effect == "weapon" and e.at("bonus", default: 0) != 0))
-    let mark = if magic { "*" } else { "" }
+    let mark = if not magic { "" } else if f.at("consumable", default: false) { "☆" } else { "*" }
     f.at("inventory", default: (f.name,)).map(n => n + mark)
   }
   let is-gear = f => ("weapon", "armor", "shield", "magic-item").contains(f.at("kind", default: none))

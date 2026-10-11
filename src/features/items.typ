@@ -166,11 +166,12 @@
 )
 
 // - Source: PHB 2024 / DMG 2024.
-// - The potion is consumed on use.
+// - The potion is consumed on use: `consumable` gives it the outlined gear-list star.
 #let potion-of-healing = feature(
   "Potion of Healing",
   kind: "magic-item",
   source: "Potion",
+  consumable: true,
   activation: "Bonus Action",
   desc: [As a Bonus Action, you can drink this potion or administer it to another creature within 5 feet. The creature regains $2d 4 + 2$ Hit Points.],
   notes: [Drink or administer to regain $2d 4 + 2$ HP.],

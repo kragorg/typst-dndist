@@ -170,6 +170,8 @@ A few authoring rules worth knowing up front:
   saving-throw proficiencies and the maximum-roll first hit die.
 - **Gear declared as a feature is equipped** and its effects are live (it lists under EQUIPPED).
   `carried(item.…)` puts a modelled item in the pack instead: inert, listed under INVENTORY.
+  `stowed(item.…)` also lists it under INVENTORY but keeps it live (a Potion of Healing still
+  gets its Bonus Action row).
   `equipment:` is for unmodelled kit only.
 - **A Versatile weapon is wielded in one hand** unless you say otherwise.
   `two-handed(weapon.longsword)` rolls its bigger die instead; either way the attack line

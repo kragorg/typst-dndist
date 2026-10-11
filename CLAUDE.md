@@ -155,7 +155,8 @@ renderers.
     src/model.typ           character(), monster(), feature(), limited-use-feature() (a feature whose
                             one effect is a pool named after itself), asi() (an Ability
                             Score Improvement as a named, non-rendering feature), carried()
-                            (marks gear as inert pack cargo — INVENTORY, no effects),
+                            (marks gear as inert pack cargo — INVENTORY, no effects), stowed()
+                            (pack gear that stays live — INVENTORY, effects kept),
                             id-of(), and the eff-* effect constructors
     src/resolve.typ         The computation engine (see below)
     src/data/abilities.typ  ability objects (id, abbr, name); ability-ids, ability-names
@@ -1162,6 +1163,8 @@ silent-movement half changes no value and stays prose),
 `goggles-of-night` (an `eff-sense` Darkvision 60 ft --- the resolver's
 dedupe already keeps the longest range, so the item's "+60 ft on existing
 Darkvision" half stays prose),
+`ring-of-resistance(damage-type)` (displays as "Ring of <Type> Resistance";
+one `eff-resistance` of that type; no Attunement in the 2024 DMG),
 `sentinel-shield` (a Shield *and* a magic item, so it carries both halves
 that compute: `eff-ac-bonus(2)` and an `eff-check-advantage` on Perception,
 which also raises the passive score by 5 --- the Advantage-on-Initiative half

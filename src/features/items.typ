@@ -3,7 +3,7 @@
 // - Armor and shields come from SRD 5.2.1. Each magic item cites its own
 //   source; NOTICE records which entries are SRD and which are not.
 
-#import "../model.typ": feature, limited-use-feature, stowed, eff-ac-base, eff-ac-bonus, eff-check-advantage, eff-prof, eff-save-bonus, eff-sense, eff-spellcasting-bonus, eff-weapon, eff-limited-use
+#import "../model.typ": feature, limited-use-feature, stowed, eff-ac-base, eff-ac-bonus, eff-check-advantage, eff-prof, eff-resistance, eff-save-bonus, eff-sense, eff-spellcasting-bonus, eff-weapon, eff-limited-use
 #import "../data/abilities.typ": ability
 #import "../data/constants.typ": armor-table, armor-dex-cap
 #import "../data/skills.typ": skill
@@ -237,6 +237,20 @@
     spell-store: true,
     spells: entries.map(e => e + (slot: e.at("slot", default: e.spell.level), charges: 1)),
     desc: [This ring stores up to 5 levels of spells (requires Attunement). Any creature can cast a spell of level 1 through 5 into it by touching the ring as the spell is cast; the slot level used sets the space the spell takes. While wearing the ring, you can cast any stored spell, using the original caster's slot level, spell save DC, spell attack bonus, and spellcasting ability; the cast frees its space.],
+  )
+}
+
+// - Source: DMG 2024, rare ring; no Attunement.
+// - Resistance to one damage type, set by the ring's gemstone: Acid, Cold, Fire, Force, Lightning, Necrotic, Poison, Psychic, Radiant, or Thunder.
+// - Displays as "Ring of <Type> Resistance".
+#let ring-of-resistance(damage-type) = {
+  let name = "Ring of " + damage-type + " Resistance"
+  feature(
+    name,
+    kind: "magic-item",
+    source: "Magic Item",
+    effects: (eff-resistance(damage-type, source: name),),
+    desc: [You have Resistance to #damage-type damage while wearing this ring.],
   )
 }
 

@@ -4,7 +4,7 @@
 // - Card 0 Placard: a foldable table-tent on its own portrait 4x6 page, with no running masthead. Name/player and at-a-glance stats sit in the lower half.
 // - Card 1 Core: identity, abilities, stats, skills, proficiencies.
 // - Card 2 Actions: attacks, Mastery, Cunning Strike, Action / Bonus Action / Reaction / Other, then the Short Rest / Long Rest resource tables (on 5x8 those sit at the foot of the core card instead).
-// - Card 3 Spells: spellcasting header, slots, spells by level; then the Item Spells card (stored casts, scrolls, charged items).
+// - Card 3 Spells: spellcasting header, slots, spells by level, then the item spell tables (stored casts, scrolls, charged items), sharing the last spell card when they fit.
 // - Card 4 Features & Traits: one source-grouped section. Species, classes, invocations, Feats and magic items are eyebrow subsections.
 // - Card 5 Gear: currency, EQUIPPED (live gear: every non-carried, non-stowed modelled item) and INVENTORY (carried inert cargo, stowed live gear, and declared kit). Magic items are starred in both lists.
 // - Takes a declared character. Resolves it internally.
@@ -841,17 +841,20 @@
     pagebreak(); _card-marker(c.name, none, [Actions], none)
     _actions-card(c, b)
   }
-  if c.spellcasting.len() > 0 { pagebreak(); _card-marker(c.name, none, [Spells], none); _spells-card(c) }
+  // - Item spell tables flow straight on from the last spell table, sharing its card when there is room; without spellcasting they open their own Item Spells card.
+  let has-items = _item-spells(c).len() > 0
+  if c.spellcasting.len() > 0 {
+    pagebreak(); _card-marker(c.name, none, [Spells], none); _spells-card(c)
+    if has-items { v(section-gap); _item-spells-card(c) }
+  } else if has-items {
+    pagebreak(); _card-marker(c.name, none, [Item Spells], none); _item-spells-card(c)
+  }
   // - Wild Magic Sorcery carries the PHB's d100 Wild Magic Surge table as an
   //   in-play reference; it follows the Spells card. The subclass's features
   //   only name the table — the sheet itself lives in data/wild-magic-surge.typ.
   if c.classes.any(cl => cl.at("subclass", default: none) == "Wild Magic Sorcery") {
     pagebreak(); _card-marker(c.name, none, [Wild Magic Surge], none)
     wild-magic-surge-table(size: 7.5 * u, atomic-rows: true)
-  }
-  if _item-spells(c).len() > 0 {
-    pagebreak(); _card-marker(c.name, none, [Item Spells], none)
-    _item-spells-card(c)
   }
   if b.has-features {
     pagebreak(); _card-marker(c.name, none, [Features & Traits], none)

@@ -3,8 +3,8 @@
 // - Each card is its own page. A card is emitted only when it has content.
 // - Card 0 Placard: a foldable table-tent on its own portrait 4x6 page, with no running masthead. Name/player and at-a-glance stats sit in the lower half.
 // - Card 1 Core: identity, abilities, stats, skills, proficiencies.
-// - Card 2 Actions: attacks, Mastery, Cunning Strike, Action / Bonus Action / Reaction / Other, then the Short Rest / Long Rest resource tables.
-// - Card 3 Spells: spellcasting header, slots, spells by level.
+// - Card 2 Actions: attacks, Mastery, Cunning Strike, Action / Bonus Action / Reaction / Other, then the Short Rest / Long Rest resource tables (on 5x8 those sit at the foot of the core card instead).
+// - Card 3 Spells: spellcasting header, slots, spells by level; then the Item Spells card (stored casts, scrolls, charged items).
 // - Card 4 Features & Traits: one source-grouped section. Species, classes, invocations, Feats and magic items are eyebrow subsections.
 // - Card 5 Gear: currency, EQUIPPED (live gear: every non-carried, non-stowed modelled item) and INVENTORY (carried inert cargo, stowed live gear, and declared kit). Magic items are starred in both lists.
 // - Takes a declared character. Resolves it internally.
@@ -216,6 +216,14 @@
   }
 }
 
+// Limited-use resource pools; spell slots (one row per level) join the Long Rest column, before the other pools.
+#let _all-resources(c) = if c.spellcasting.len() > 0 {
+  slot-resource-items(merge-slots(c.spellcasting)) + c.limited-uses
+} else { c.limited-uses }
+
+// The 5x8 core card has room below the footer for the resource tables; every other layout keeps them on the Actions card.
+#let _resources-on-core = active-layout == "5x8"
+
 #let _core-card(c, is-portrait: false) = {
   if is-portrait {
     grid(
@@ -282,6 +290,10 @@
       column-gutter: grid-gutter,
       ..foot-items,
     )
+    if _resources-on-core and _all-resources(c).len() > 0 {
+      v(section-gap)
+      resource-tables(_all-resources(c), size: 7.5 * u)
+    }
   } else {
     grid(
       columns: 6 * (1fr,),
@@ -438,14 +450,13 @@
     masteries: masteries,
     other: other,
     // - Flags which optional cards have content.
-    // - The Actions card holds the action-economy tables plus the limited-use resource tables, so it also emits for a resources-only character.
+    // - The Actions card holds the action-economy tables plus (off the 5x8 core card) the limited-use resource tables, so it also emits for a resources-only character.
     // - The Features & Traits card holds the grouped passive list.
     // - The Gear card holds the EQUIPPED and INVENTORY lists.
     has-actions: (c.attacks, actions, bonus-actions, reactions,
       c.cunning-strikes, c.metamagic, spell-attacks, spell-bonus-items,
-      spell-reaction-items, masteries, other, c.limited-uses,
-      c.at("item-spells", default: ())).any(l => l.len() > 0)
-      or c.spellcasting.any(s => s.slots.values().any(v => v > 0)),
+      spell-reaction-items, masteries, other).any(l => l.len() > 0)
+      or (not _resources-on-core and _all-resources(c).len() > 0),
     has-features: (traits, feats).any(l => l.len() > 0),
     has-gear: c.equipped.len() > 0 or c.equipment.len() > 0 or c.currency != none,
   )
@@ -468,10 +479,7 @@
   // - Each table lists the features first, then the spells.
   let bonus-all = b.bonus-actions + b.spell-bonus-items
   let reaction-all = b.reactions + b.spell-reaction-items
-  // - Spell slots (one row per level) join the Long Rest column, before the other pools.
-  let _all-resources = if c.spellcasting.len() > 0 {
-    slot-resource-items(merge-slots(c.spellcasting)) + c.limited-uses
-  } else { c.limited-uses }
+  let resources = if _resources-on-core { () } else { _all-resources(c) }
   // - Every action-economy table is one atomic unit: a table that fits a whole card
   //   bumps intact to a continuation card rather than stranding its header and a row
   //   at a card foot, and one taller than a card still splits, between its rows
@@ -488,19 +496,25 @@
     (reaction-all.len() > 0, keep(activation-table("Reaction", reaction-all, size: 7.5 * u, atomic-rows: true))),
     (b.other.len() > 0, keep(activation-table("Other", b.other, size: 7.5 * u, atomic-rows: true))),
     (c.metamagic.len() > 0, keep(metamagic-table(c.metamagic, size: 7.5 * u, atomic-rows: true))),
-    // - Single-use item spells (a Ring of Spell Storing's stored casts, Spell Scrolls) come first and travel as one unit, so the one-shot tables sit together on one card; charged items (staffs) follow.
-    ..{
-      let items = c.at("item-spells", default: ()).filter(item => item.spells.len() > 0)
-      let table = item => item-spell-table(item.name, item.spells, size: 7.5 * u, atomic-rows: true, stored: item.stored, consumable: item.consumable)
-      let single = items.filter(item => item.stored or item.consumable)
-      let charged = items.filter(item => not (item.stored or item.consumable))
-      ((single.len() > 0, keep(single.map(table).join(v(section-gap)))),)
-      charged.map(item => (true, keep(table(item))))
-    },
     // - Limited-use resource pools form the tail: two side-by-side tables of diamonds, Short Rest and Long Rest.
     // - The pair travels together, so neither bucket orphans at a card break.
-    // - A character with resources but no actions still emits this card, titled "Actions": `has-actions` above includes `c.limited-uses`.
-    (_all-resources.len() > 0, resource-tables(_all-resources, size: 7.5 * u)),
+    // - A character with resources but no actions still emits this card, titled "Actions": `has-actions` above counts the resources.
+    (resources.len() > 0, resource-tables(resources, size: 7.5 * u)),
+  ))
+}
+
+// Item spells: one table per item. Single-use items (stored casts, Spell Scrolls) come first and travel as one unit; charged items (staffs) follow.
+#let _item-spells(c) = c.at("item-spells", default: ()).filter(item => item.spells.len() > 0)
+
+#let _item-spells-card(c) = {
+  let items = _item-spells(c)
+  let keep = body => keep-together(body)
+  let table = item => item-spell-table(item.name, item.spells, size: 7.5 * u, atomic-rows: true, stored: item.stored, consumable: item.consumable)
+  let single = items.filter(item => item.stored or item.consumable)
+  let charged = items.filter(item => not (item.stored or item.consumable))
+  _card-sections((
+    (single.len() > 0, keep(single.map(table).join(v(section-gap)))),
+    ..charged.map(item => (true, keep(table(item)))),
   ))
 }
 
@@ -833,6 +847,10 @@
   if c.classes.any(cl => cl.at("subclass", default: none) == "Wild Magic Sorcery") {
     pagebreak(); _card-marker(c.name, none, [Wild Magic Surge], none)
     wild-magic-surge-table(size: 7.5 * u, atomic-rows: true)
+  }
+  if _item-spells(c).len() > 0 {
+    pagebreak(); _card-marker(c.name, none, [Item Spells], none)
+    _item-spells-card(c)
   }
   if b.has-features {
     pagebreak(); _card-marker(c.name, none, [Features & Traits], none)

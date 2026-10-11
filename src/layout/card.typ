@@ -379,12 +379,9 @@
 // Bucket the resolved character into the card deck's sections.
 // - `activation` ("Action" / "Bonus Action" / "Reaction" / none) moves an activated ability out of the passive lists into an action-economy table, whatever its `kind`.
 // - A `magic-item` follows the same trait-kind path: activated goes to an action table, passive to the Traits list.
-// - Actionable spells route into the same tables, keyed off casting time. Every spell declares one — `_spell` asserts it.
-// - Only cantrips (level-0 spells) join the action-economy tables. A leveled spell lives on the Spells card alone, keeping the action tables tight.
-// - A cantrip Action spell that makes an attack roll, or does damage and forces a save, joins the ATTACK table with the weapons.
-// - Every Bonus Action / Reaction spell joins its table as a name+notes pseudo-item, the shape `activation-table` renders.
-// - A utility Action spell (no attack, no damage+save) shows on the Spells card only.
-// - Spells sort by level, then name.
+// - Spells route by casting time into one "Magic" row at the foot of the ACTION / BONUS ACTION / REACTION tables: a comma-separated list of every spell castable with that time, leveled or not.
+//   - Spells known through spellcasting come first, by level then name; spells available only through a magic item follow, italic, as "Spell (Item)".
+// - A cantrip Action spell that makes an attack roll, or does damage and forces a save, also joins the ATTACK table with the weapons.
 #let _partition-features(c) = {
   // - Features & Traits lists every trait/feat that has descriptive prose, whatever its activation. The letter sheet follows the same rule.
   // - An activated one also gets a terse note in its action table. The duplication is deliberate: full reference vs. quick in-play lookup.
@@ -434,9 +431,23 @@
     and s.casting-time == "Action"
     and (s.at("attack", default: false)
       or (s.at("damage", default: none) != none and s.save != none))).sorted(key: spell-key)
-  let as-item = s => (name: spell-name-cell(s), notes: spell-action-note(s, include-damage: true))
-  let spell-bonus-items = spells-all.filter(s => s.level == 0 and s.casting-time == "Bonus Action").sorted(key: spell-key).map(as-item)
-  let spell-reaction-items = spells-all.filter(s => s.level == 0 and s.casting-time == "Reaction").sorted(key: spell-key).map(as-item)
+  // One "Magic" pseudo-item per casting time, or none when nothing casts with it.
+  let known-names = spells-all.map(s => s.name)
+  let magic-row(time) = {
+    let known = spells-all.filter(s => s.casting-time == time).sorted(key: spell-key).map(s => s.name).dedup()
+    let via-item = ()
+    for item in c.at("item-spells", default: ()) {
+      for s in item.spells.filter(s => s.casting-time == time and not known-names.contains(s.name)) {
+        let label = s.name + " (" + item.name + ")"
+        if not via-item.contains(label) { via-item.push(label) }
+      }
+    }
+    let names = known.map(n => [#n]) + via-item.map(l => emph(l))
+    if names.len() > 0 { ((name: [Magic], notes: names.join([, ])),) } else { () }
+  }
+  let spell-action-items = magic-row("Action")
+  let spell-bonus-items = magic-row("Bonus Action")
+  let spell-reaction-items = magic-row("Reaction")
 
   (
     // - Passive traits and feats, partitioned into source groups: species, each class, invocations, Feats, magic items (`trait-groups`, common.typ).
@@ -446,6 +457,7 @@
     bonus-actions: bonus-actions,
     reactions: reactions,
     spell-attacks: spell-attacks,
+    spell-action-items: spell-action-items,
     spell-bonus-items: spell-bonus-items,
     spell-reaction-items: spell-reaction-items,
     masteries: masteries,
@@ -455,7 +467,7 @@
     // - The Features & Traits card holds the grouped passive list.
     // - The Gear card holds the EQUIPPED and INVENTORY lists.
     has-actions: (c.attacks, actions, bonus-actions, reactions,
-      c.cunning-strikes, c.metamagic, spell-attacks, spell-bonus-items,
+      c.cunning-strikes, c.metamagic, spell-attacks, spell-action-items, spell-bonus-items,
       spell-reaction-items, masteries, other).any(l => l.len() > 0)
       or (not _resources-on-core and _all-resources(c).len() > 0),
     has-features: (traits, feats).any(l => l.len() > 0),
@@ -476,8 +488,8 @@
 
 // `b` is `_partition-features`' bucket dict.
 #let _actions-card(c, b) = {
-  // - Actionable spells join the weapon ATTACK table and the Bonus Action and Reaction tables.
-  // - Each table lists the features first, then the spells.
+  // - Each of ACTION / BONUS ACTION / REACTION lists the features first, then its "Magic" spell row.
+  let action-all = b.actions + b.spell-action-items
   let bonus-all = b.bonus-actions + b.spell-bonus-items
   let reaction-all = b.reactions + b.spell-reaction-items
   let resources = if _resources-on-core { () } else { _all-resources(c) }
@@ -492,7 +504,7 @@
     (c.attacks.len() > 0 or b.spell-attacks.len() > 0, keep(attack-table(c.attacks, attacks-per-action: c.attacks-per-action, spells: b.spell-attacks, size: 7.5 * u, atomic-rows: true))),
     (b.masteries.len() > 0, keep(activation-table("Mastery", b.masteries, size: 7.5 * u, atomic-rows: true))),
     (c.cunning-strikes.len() > 0, keep(cunning-strike-table(c.cunning-strikes, size: 7.5 * u, atomic-rows: true))),
-    (b.actions.len() > 0, keep(activation-table("Action", b.actions, size: 7.5 * u, atomic-rows: true))),
+    (action-all.len() > 0, keep(activation-table("Action", action-all, size: 7.5 * u, atomic-rows: true))),
     (bonus-all.len() > 0, keep(activation-table("Bonus Action", bonus-all, size: 7.5 * u, atomic-rows: true))),
     (reaction-all.len() > 0, keep(activation-table("Reaction", reaction-all, size: 7.5 * u, atomic-rows: true))),
     (b.other.len() > 0, keep(activation-table("Other", b.other, size: 7.5 * u, atomic-rows: true))),

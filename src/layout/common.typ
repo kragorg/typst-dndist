@@ -486,9 +486,20 @@
   grid(columns: n * (1fr,), column-gutter: column-gutter, ..cols.map(stacked-lines))
 }
 
+// A small filled five-pointed star in the accent color: the magic-gear mark in the EQUIPPED / INVENTORY lists. Drawn, not a glyph — the text fonts carry no ★.
+#let magic-star(size: 7 * u) = box(baseline: 0.1em, polygon(
+  fill: accent,
+  ..range(10).map(i => {
+    let r = if calc.even(i) { size / 2 } else { size * 0.19 }
+    let a = -90deg + i * 36deg
+    (size / 2 + r * calc.cos(a), size / 2 + r * calc.sin(a))
+  }),
+))
+
 // A bulleted inventory list: one "• item" line per entry, as a single `stacked-lines` column or an N-up grid. Shared by the Gear card's Inventory (2 columns) and the letter's Equipment box (1 column).
+// - A trailing `*` on an entry (magic gear, from `resolve` or the declared strings) renders as the drawn `magic-star`.
 #let bullet-lines(items, size: 8 * u, columns: 1) = stacked-lines-columns(
-  items.map(e => text(font: body-font, size: size)[• #e]),
+  items.map(e => text(font: body-font, size: size)[• #if type(e) == str and e.ends-with("*") [#e.slice(0, -1)#h(0.25em)#magic-star(size: size * 0.85)] else [#e]]),
   columns: columns,
 )
 

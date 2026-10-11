@@ -432,18 +432,18 @@
     and (s.at("attack", default: false)
       or (s.at("damage", default: none) != none and s.save != none))).sorted(key: spell-key)
   // One "Magic" pseudo-item per casting time, or none when nothing casts with it.
+  // - Spells already on the ATTACK table are skipped.
+  // - Known spells first; then one "_Item_: spell, spell" group per item, for spells not otherwise known. Groups join on "; ".
   let known-names = spells-all.map(s => s.name)
+  let attack-names = spell-attacks.map(s => s.name)
   let magic-row(time) = {
-    let known = spells-all.filter(s => s.casting-time == time).sorted(key: spell-key).map(s => s.name).dedup()
-    let via-item = ()
+    let known = spells-all.filter(s => s.casting-time == time and not attack-names.contains(s.name)).sorted(key: spell-key).map(s => s.name).dedup()
+    let groups = if known.len() > 0 { ([#known.join(", ")],) } else { () }
     for item in c.at("item-spells", default: ()) {
-      for s in item.spells.filter(s => s.casting-time == time and not known-names.contains(s.name)) {
-        let label = s.name + " (" + item.name + ")"
-        if not via-item.contains(label) { via-item.push(label) }
-      }
+      let names = item.spells.filter(s => s.casting-time == time and not known-names.contains(s.name)).map(s => s.name).dedup()
+      if names.len() > 0 { groups.push([#emph(item.name): #names.join(", ")]) }
     }
-    let names = known.map(n => [#n]) + via-item.map(l => emph(l))
-    if names.len() > 0 { ((name: [Magic], notes: names.join([, ])),) } else { () }
+    if groups.len() > 0 { ((name: [Magic], notes: groups.join([; ])),) } else { () }
   }
   let spell-action-items = magic-row("Action")
   let spell-bonus-items = magic-row("Bonus Action")

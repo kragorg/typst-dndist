@@ -907,7 +907,7 @@
 // - Items arrive pre-sorted (short-rest recoverable first, then scarcest-first, then alphabetical — see resolve.typ `resolve-limited-uses`), so each bucket keeps that order. Empty → nothing.
 //
 // A pool whose recharge the column cannot fully state (`long-short-regain`, `dawn`) sits in the Long Rest column and gets a superscript marker on its row — see `_recharge-mark` — with the note rendered by the page's own footer (`recharge-footer`), a metadata anchor instead of a real Typst footnote (unsafe inside this `keep-together` — see that function's note).
-#let resource-tables(items, size: 8 * u) = if items.len() > 0 {
+#let resource-tables(items, size: 8 * u, gutter: 28 * u) = if items.len() > 0 {
   let (short, long) = recharge-buckets(items)
   let _table(bucket, title) = if bucket.len() > 0 {
     sheet-table(
@@ -924,7 +924,7 @@
   let s = _table(short, "Short Rest")
   let l = _table(long, "Long Rest")
   let body = if s != none and l != none {
-    grid(columns: (1fr, 1fr), column-gutter: 28 * u, align: top, s, l)
+    grid(columns: (1fr, 1fr), column-gutter: gutter, align: top, s, l)
   } else if s != none { s }
   else { l }
   keep-together(body)

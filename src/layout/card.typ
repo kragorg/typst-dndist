@@ -292,7 +292,8 @@
     )
     if _resources-on-core and _all-resources(c).len() > 0 {
       v(section-gap)
-      resource-tables(_all-resources(c), size: 7.5 * u)
+      // Same gutter as the footer grid above, so the two columns line up.
+      resource-tables(_all-resources(c), size: 7.5 * u, gutter: grid-gutter)
     }
   } else {
     grid(

@@ -271,6 +271,9 @@
 //   "Spell Scrolls" table beside the other magic items' spell tables
 //   (`resolve-item-spells` projects each `spells:` entry).
 // - Declare each scroll as `(spell: s, count: n)`; a bare spell counts as one.
+// - `prefix` (default "Scroll of ") reskins a scroll's INVENTORY name, e.g.
+//   `(spell: s, prefix: "Tattoo: ")` lists as "Tattoo: <Spell>"; the scroll's
+//   rules are unchanged.
 // - `consumable: true`: the table's Uses column shows one diamond per scroll
 //   held, to check off as each crumbles to dust once its spell is cast — no
 //   recharge and no resource pool.
@@ -286,18 +289,18 @@
 //   rather than the aggregate's own name.
 #let spell-scrolls(..scrolls) = {
   let entries = scrolls.pos().map(s => if type(s) == dictionary and "spell" in s {
-    (spell: s.spell, charges: s.at("count", default: 1))
+    (spell: s.spell, charges: s.at("count", default: 1), prefix: s.at("prefix", default: "Scroll of "))
   } else {
-    (spell: s, charges: 1)
+    (spell: s, charges: 1, prefix: "Scroll of ")
   })
   stowed(feature(
     "Spell Scrolls",
     kind: "magic-item",
     source: "Spell Scroll",
     consumable: true,
-    spells: entries,
+    spells: entries.map(e => (spell: e.spell, charges: e.charges)),
   ) + (inventory: entries.map(e =>
-    "Scroll of " + e.spell.name + if e.charges > 1 { " ×" + str(e.charges) } else { "" })))
+    e.prefix + e.spell.name + if e.charges > 1 { " ×" + str(e.charges) } else { "" })))
 }
 
 // - Source: DMG 2024 (not SRD), common wondrous item, requires Attunement.

@@ -504,19 +504,20 @@
   ))
 }
 
-// Item spells: one table per item. Single-use items (stored casts, Spell Scrolls) come first and travel as one unit; charged items (staffs) follow.
+// Item spells: one table per item, under an "Items" heading styled like the spell level headings. Single-use items (stored casts, Spell Scrolls) come first and travel as one unit; charged items (staffs) follow.
 #let _item-spells(c) = c.at("item-spells", default: ()).filter(item => item.spells.len() > 0)
 
 #let _item-spells-card(c) = {
   let items = _item-spells(c)
-  let keep = body => keep-together(body)
   let table = item => item-spell-table(item.name, item.spells, size: 7.5 * u, atomic-rows: true, stored: item.stored, consumable: item.consumable)
   let single = items.filter(item => item.stored or item.consumable)
   let charged = items.filter(item => not (item.stored or item.consumable))
-  _card-sections((
-    (single.len() > 0, keep(single.map(table).join(v(section-gap)))),
-    ..charged.map(item => (true, keep(table(item)))),
-  ))
+  let units = (if single.len() > 0 { (single.map(table).join(v(section-gap)),) } else { () }) + charged.map(table)
+  // The heading binds to the first unit, so it never strands at a card foot.
+  _card-sections(units.enumerate().map(((i, body)) => (
+    true,
+    keep-together(if i == 0 { sticky-head(section-head("Items"), body) } else { body }),
+  )))
 }
 
 // Backstory: the character's authored roleplay prose on its own card.

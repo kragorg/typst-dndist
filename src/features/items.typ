@@ -267,17 +267,23 @@
 //   trait only when it carries prose).
 // - `stowed(...)`: the aggregate lists under INVENTORY, not EQUIPPED — scrolls
 //   are pack cargo, and the spell table is live regardless.
-#let spell-scrolls(..scrolls) = stowed(feature(
-  "Spell Scrolls",
-  kind: "magic-item",
-  source: "Spell Scroll",
-  consumable: true,
-  spells: scrolls.pos().map(s => if type(s) == dictionary and "spell" in s {
+// - `inventory`: INVENTORY names each scroll ("Scroll of Goodberry ×2")
+//   rather than the aggregate's own name.
+#let spell-scrolls(..scrolls) = {
+  let entries = scrolls.pos().map(s => if type(s) == dictionary and "spell" in s {
     (spell: s.spell, charges: s.at("count", default: 1))
   } else {
     (spell: s, charges: 1)
-  }),
-))
+  })
+  stowed(feature(
+    "Spell Scrolls",
+    kind: "magic-item",
+    source: "Spell Scroll",
+    consumable: true,
+    spells: entries,
+  ) + (inventory: entries.map(e =>
+    "Scroll of " + e.spell.name + if e.charges > 1 { " ×" + str(e.charges) } else { "" })))
+}
 
 // - Source: DMG 2024 (not SRD), common wondrous item, requires Attunement.
 // - 1 use per dawn: forgo the d20, treat the attack roll as a 10.

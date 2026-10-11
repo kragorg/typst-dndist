@@ -951,20 +951,22 @@
   // - A bare gear feature is equipped (its effects apply); `carried(...)` marks the inert case (skipped by `flatten-features`, so nothing about it is live); `stowed(...)` gear stays live but lists under INVENTORY; the declared `equipment:` strings are inert by construction.
   // - Top-level features only; a nested magic-item child (the Rod's activated power) is a sub-feature of its item, separate from an item itself.
   // - Magic gear carries the `*` marker in both lists: any magic-item feature, or a weapon with a magic attack bonus.
+  // - A feature with an `inventory` list (Spell Scrolls) lists those entries in its place, one per held item.
   let gear-entry = f => {
     let magic = (f.at("kind", default: none) == "magic-item"
       or f.at("effects", default: ()).any(e => e.effect == "weapon" and e.at("bonus", default: 0) != 0))
-    f.name + if magic { "*" } else { "" }
+    let mark = if magic { "*" } else { "" }
+    f.at("inventory", default: (f.name,)).map(n => n + mark)
   }
   let is-gear = f => ("weapon", "armor", "shield", "magic-item").contains(f.at("kind", default: none))
   let equipped = char.features
     .filter(f => is-gear(f) and not f.at("carried", default: false)
       and not f.at("stowed", default: false))
-    .map(gear-entry)
+    .map(gear-entry).flatten()
   let inventory-gear = char.features
     .filter(f => is-gear(f)
       and (f.at("carried", default: false) or f.at("stowed", default: false)))
-    .map(gear-entry)
+    .map(gear-entry).flatten()
 
   // Monsters can be declared directly in character features (like gear/items) or via character(monsters: ...)
   let raw-monsters = (

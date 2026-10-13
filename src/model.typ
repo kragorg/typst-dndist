@@ -211,6 +211,12 @@
 // - Powers the Bugbear's Long-Limbed trait (+5 ft reach on melee attacks).
 #let eff-reach(value, source: none) = (effect: "reach", value: value, source: source)
 
+// Bonus to attack rolls made with Ranged weapons; stacks across sources.
+// - Applies to every attack line of a `kind: "ranged"` weapon; damage is unchanged.
+// - A Thrown melee weapon is not a Ranged weapon, so its line gains nothing.
+// - Powers the Archery Fighting Style feat (+2).
+#let eff-ranged-attack-bonus(value, source: none) = (effect: "ranged-attack-bonus", value: value, source: source)
+
 // Cunning Strike option (2024 Rogue, level 5): a non-damage rider added to a Sneak Attack hit for `cost` Sneak Attack dice.
 // - `cost`: a literal dice string ("1d6"); rendered with `fmt-dice`.
 // - `note`: markup content that describes the rider.

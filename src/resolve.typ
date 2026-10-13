@@ -601,14 +601,15 @@
 )
 
 // Build one computed attack line, shared by the unarmed strike and every weapon.
-// - Attack bonus = ability modifier + magic bonus, plus PB when proficient.
-#let _attack-line(name, ability, damage-dice, damage-type, range, properties, proficient, scores, pb, magic-bonus: 0, kind: "melee", thrown-range: none) = {
+// - Attack bonus = ability modifier + magic bonus + `attack-bonus` (Archery), plus PB when proficient.
+// - `attack-bonus` raises the attack roll only; the damage keeps the magic bonus alone.
+#let _attack-line(name, ability, damage-dice, damage-type, range, properties, proficient, scores, pb, magic-bonus: 0, attack-bonus: 0, kind: "melee", thrown-range: none) = {
   let amod = modifier(scores.at(ability))
   let dmg = _damage-string(damage-dice, ability, scores, magic-bonus)
   (
     name: name,
     ability: ability,
-    bonus: amod + if proficient { pb } else { 0 } + magic-bonus,
+    bonus: amod + if proficient { pb } else { 0 } + magic-bonus + attack-bonus,
     damage: dmg,
     damage-type: damage-type,
     range: range,
@@ -625,11 +626,12 @@
 // - Proficiency is necessary; the attack bonus is PB + that ability modifier + the magic bonus.
 // - Extra Radiant dice scale with level: +1d6 at 5, +2d6 at 11, +3d6 at 17.
 // - `dice` is the weapon's damage die in the grip the character wields it in (see `resolve-attacks`), since the cantrip attacks with that weapon.
-#let _true-strike-line(e, ability, scores, pb, level, properties, dice) = {
+// - `attack-bonus` is the weapon's ranged attack bonus (Archery): the cantrip still attacks with that Ranged weapon.
+#let _true-strike-line(e, ability, scores, pb, level, properties, dice, attack-bonus: 0) = {
   // Always proficient, thus `_attack-line` adds PB; the damage type is the cantrip's own.
   let line = _attack-line(
     e.name, ability, dice, "Radiant", e.range, properties, true, scores, pb,
-    magic-bonus: e.at("bonus", default: 0), kind: e.kind, thrown-range: e.thrown-range,
+    magic-bonus: e.at("bonus", default: 0), attack-bonus: attack-bonus, kind: e.kind, thrown-range: e.thrown-range,
   )
   let extra = if level >= 17 { "3d6" } else if level >= 11 { "2d6" } else if level >= 5 { "1d6" } else { none }
   line + (
@@ -660,7 +662,8 @@
 // - Booming Blade (`bb-note` = its authored rider prose): each melee weapon gets a line that reuses the weapon's own hit and damage, because Booming Blade makes a normal weapon attack.
 // - `bb-note` fills that line's Notes cell; the booming rider does no guaranteed on-hit damage, so it stays out of the Damage column.
 // - Shillelagh (`sh-ability` = its casting ability): each eligible weapon (Club, Quarterstaff) gets a line cast with that ability and a larger die (see `_shillelagh-line`).
-#let resolve-attacks(effects, scores, pb, weapon-profs, pact-blade-ability, level, ts-ability, mastered, bb-note: none, sh-ability: none, reach: 0) = {
+// - `ranged-bonus` (Archery) raises the attack bonus of every line of a `kind: "ranged"` weapon; a Thrown melee weapon is not a Ranged weapon and gains nothing.
+#let resolve-attacks(effects, scores, pb, weapon-profs, pact-blade-ability, level, ts-ability, mastered, bb-note: none, sh-ability: none, reach: 0, ranged-bonus: 0) = {
   let u = (name: "Unarmed Strike", ability: "str", damage: "1", damage-type: "Bludgeoning")
   for e in effects.filter(e => e.effect == "unarmed") {
     if e.damage != none { u.damage = e.damage }
@@ -715,12 +718,13 @@
     }
     // A melee attack gets the reach bonus (Bugbear Long-Limbed); a ranged attack, and a Thrown weapon's throw range, do not.
     let rng = if e.kind == "melee" { _apply-reach(e.range, reach) } else { e.range }
-    let wline = (.._attack-line(e.name, abil, dice, e.damage-type, rng, props, proficient, scores, pb, magic-bonus: magic, kind: e.kind, thrown-range: e.thrown-range), mastery: mastery, ..versatile-fields(abil))
+    let atk = if e.kind == "ranged" { ranged-bonus } else { 0 }
+    let wline = (.._attack-line(e.name, abil, dice, e.damage-type, rng, props, proficient, scores, pb, magic-bonus: magic, attack-bonus: atk, kind: e.kind, thrown-range: e.thrown-range), mastery: mastery, ..versatile-fields(abil))
     lines.push(wline)
     // True Strike works only with a proficient weapon worth at least 1 CP; the weapon carries that eligibility.
     // - The line is still an attack with that weapon, so its mastery property applies and shows the same.
     if ts-ability != none and proficient and e.at("true-strike", default: true) {
-      lines.push((.._true-strike-line(e, ts-ability, scores, pb, level, props, dice), mastery: mastery, ..versatile-fields(ts-ability)))
+      lines.push((.._true-strike-line(e, ts-ability, scores, pb, level, props, dice, attack-bonus: atk), mastery: mastery, ..versatile-fields(ts-ability)))
     }
     // Booming Blade: a normal melee weapon attack, with the same hit and damage as `wline`.
     // - Put the booming rider in the Notes cell.
@@ -915,12 +919,14 @@
   let mastered = effects.filter(e => e.effect == "weapon-mastery").map(e => e.weapons).flatten()
   // Total melee-reach bonus (in feet), stacking across sources.
   let reach = effects.filter(e => e.effect == "reach").fold(0, (a, e) => a + e.value)
+  // Total Ranged-weapon attack bonus (Archery), stacking across sources.
+  let ranged-bonus = effects.filter(e => e.effect == "ranged-attack-bonus").fold(0, (a, e) => a + e.value)
   let species = char.features.find(f => f.at("kind", default: none) == "species")
 
   // Weapon-attack cantrips (True Strike / Booming Blade) expand into per-weapon attack lines (see `_weapon-cantrip-inputs` / `resolve-attacks`).
   let wc = _weapon-cantrip-inputs(effects)
 
-  let attacks = resolve-attacks(effects, scores, pb, weapon-profs, pact-blade-ability, level, wc.ts-ability, mastered, bb-note: wc.bb-note, sh-ability: wc.sh-ability, reach: reach)
+  let attacks = resolve-attacks(effects, scores, pb, weapon-profs, pact-blade-ability, level, wc.ts-ability, mastered, bb-note: wc.bb-note, sh-ability: wc.sh-ability, reach: reach, ranged-bonus: ranged-bonus)
 
   // A feature that casts a spell from itself (a wand's Magic Action) declares `casts:`, and resolves to the same `_spell-detail` the spell tables use, under `cast`. The layouts' action note reads its range and damage from there instead of restating them as prose.
   // - The entry takes `eff-spellcasting`'s own `spells:` shape: a bare spell, or `(spell: s, slot: N)` to pin the cast level a charge buys.

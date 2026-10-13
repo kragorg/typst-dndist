@@ -31,6 +31,9 @@ the public API means a major version bump.
   a spell does (Cure Wounds heals 2d8 + modifier), as class spell tables do.
 - The Spell Scrolls table's Charges column is now Uses: one diamond per scroll
   held, to check off as each is cast.
+- Archery Fighting Style (`class.fighter(fighting-style: "Archery")`): +2 to
+  attack rolls with Ranged weapons, via the new `eff-ranged-attack-bonus`
+  effect. A Thrown melee weapon gains nothing, and damage is unchanged.
 
 ## [1.0.0] — 2026-08-04
 

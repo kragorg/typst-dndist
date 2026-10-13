@@ -15,7 +15,7 @@
   eff-ability, eff-ac-base, eff-ac-formula, eff-ac-bonus, eff-ac-set,
   eff-prof, eff-save-advantage, eff-check-advantage, eff-save-bonus, eff-resistance, eff-sense, eff-limited-use, eff-skill-rule, eff-skill-bonus, eff-stat, eff-spellcasting,
   eff-spellcasting-bonus, eff-weapon, eff-weapon-mastery, eff-pact-blade,
-  eff-extra-attack, eff-spell-damage-bonus, eff-reach, eff-cunning-strike,
+  eff-extra-attack, eff-spell-damage-bonus, eff-reach, eff-ranged-attack-bonus, eff-cunning-strike,
   eff-unarmed, eff-spell-any-slot,
 )
 #import "src/resolve.typ": resolve, modifier, prof-bonus

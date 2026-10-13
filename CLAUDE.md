@@ -601,6 +601,12 @@ Effects are tagged dicts the resolver folds (all `eff-*`):
   weapon's projectile range and any weapon's `thrown-range` are left
   untouched: reach extends what you swing, not what you loose or hurl.
   Powers the Bugbear's Long-Limbed trait (+5 ft reach on melee attacks).
+- `eff-ranged-attack-bonus(value)` --- a bonus to attack rolls with
+  **Ranged weapons**, stacking across sources. The resolver adds it to the
+  attack bonus of every line of a `kind: "ranged"` weapon (its True Strike
+  line included); damage is unchanged, and a Thrown melee weapon gains
+  nothing --- throwing it makes a ranged attack, but it is still a melee
+  weapon. Powers the Archery Fighting Style feat (+2).
 - `eff-cunning-strike(name, note, cost:, save-ability:, source:)` --- a
   Cunning Strike option (2024 Rogue, level 5): a non-damage rider added
   to a Sneak Attack hit by forgoing `cost` Sneak Attack dice (a dice
@@ -981,9 +987,9 @@ Short Rest), a chosen `fighting-style` (2024: **Fighting Styles are
 feats**, category "Fighting Style" --- so `_fighting-style` is a
 desc-less "Fighting Style" container class feature nesting the chosen
 style as a `kind: "feat"`, `source: "Fighting Style Feat"` feature; it
-flattens into the FEATS list tagged FIGHTING STYLE. Only Defense
-contributes a mechanical `eff-ac-bonus(1)`; extend `_fighting-styles`
-for more), and Extra Attack from level 5.
+flattens into the FEATS list tagged FIGHTING STYLE. Defense contributes
+an `eff-ac-bonus(1)` and Archery an `eff-ranged-attack-bonus(2)`; extend
+`_fighting-styles` for more), and Extra Attack from level 5.
 `bard(level, subclass, skills, expertise,   cantrips, spells)` is a full
 Cha caster (Spellcasting sub-feature + `_full-caster-slots`, Musical
 Instrument tool proficiency) plus Bardic Inspiration

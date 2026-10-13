@@ -1419,6 +1419,16 @@
 #assert.eq(kragor-defense.source, "Fighting Style Feat")
 #assert.eq(kragor-defense.via-name, "Fighting Style")
 #assert.eq(kragor-defense.class-source, "Fighter")
+// Archery: +2 to attack rolls with Ranged weapons only. A Thrown melee weapon
+// (Dagger) is not a Ranged weapon, and the bonus never reaches damage.
+#let archer = resolve(character(
+  abilities: (str: 10, dex: 16, con: 10, int: 10, wis: 10, cha: 10),
+  features: (class.fighter(level: 1, fighting-style: "Archery"), weapon.hand-crossbow, weapon.dagger),
+))
+#let archer-xbow = archer.attacks.find(a => a.name == "Hand Crossbow")
+#assert.eq(archer-xbow.bonus, 7)
+#assert.eq(archer-xbow.damage, "1d6+3")
+#assert.eq(archer.attacks.find(a => a.name == "Dagger").bonus, 5)
 #assert(kragor.traits.any(t => t.name == "Tough"))
 #assert(kragor.traits.any(t => t.name == "Clairvoyant Combatant"))
 // Ancestry stamping (flatten-features): a subclass feature knows its class; a

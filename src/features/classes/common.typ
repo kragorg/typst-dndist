@@ -1,4 +1,4 @@
-#import "../../model.typ": feature, eff-prof, eff-ac-formula, eff-ac-bonus, eff-spellcasting, eff-extra-attack, eff-weapon-mastery
+#import "../../model.typ": feature, eff-prof, eff-ac-formula, eff-ac-bonus, eff-ranged-attack-bonus, eff-spellcasting, eff-extra-attack, eff-weapon-mastery
 #import "../../data/abilities.typ": ability
 
 // --- Shared class helper functions -----------------------------------------
@@ -21,6 +21,10 @@
   "Defense": (
     effects: (eff-ac-bonus(1, source: "Defense"),),
     desc: [While you're wearing Light, Medium, or Heavy armor, you gain a $+1$ bonus to Armor Class.],
+  ),
+  "Archery": (
+    effects: (eff-ranged-attack-bonus(2, source: "Archery"),),
+    desc: [You gain a $+2$ bonus to attack rolls you make with Ranged weapons.],
   ),
 )
 

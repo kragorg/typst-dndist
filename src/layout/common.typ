@@ -812,9 +812,9 @@
 // - A kind absent from this table needs no note: its column says everything.
 // - Each symbol is fixed per kind, never sequential, so the same rule always reads with the same mark across every sheet.
 #let _recharge-notes = (
-  "long-short-regain": (symbol: [§], note: [Regain one expended use on a Short Rest.]),
+  "long-short-regain": (symbol: [§], note: [Regain one use on a Short Rest.]),
   // Escape the asterisk: a lone `*` in markup opens strong emphasis.
-  "dawn": (symbol: [\*], note: [Regain 1 expended charge at dawn.]),
+  "dawn": (symbol: [\*], note: [Regain one charge at dawn.]),
 )
 
 // The superscript footnote marker for a pool whose recharge carries one of the notes above.

@@ -331,11 +331,9 @@
     let dice-str = if is-beam { die } else { str(count) + die }
     dmg = dice-str + _signed(bonus)
     dmg-type = if dtype == "" or dtype == none { none } else { dtype }
-    // `damage-per-label: none` means the default label "per beam".
-    // - Label only a multi-beam spell that shows per-beam damage (Magic Missile → "per dart").
+    // - A multi-beam spell may name its per-beam unit with `damage-per-label` (Magic Missile → "per dart"); without one, no label (Eldritch Blast: the ×N count beside the name says it).
     if is-beam and count > 1 {
-      let label-raw = s.at("damage-per-label", default: none)
-      dmg-label = if label-raw != none { label-raw } else { "per beam" }
+      dmg-label = s.at("damage-per-label", default: none)
     }
   }
   // Effective cast level: the given slot (a warlock's pact slot) or the spell's own level.

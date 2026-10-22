@@ -711,7 +711,7 @@
 #let eb5 = rk5.spellcasting.first().spells-detail.find(s => s.name == "Eldritch Blast")
 #assert.eq(eb5.damage, "1d10+4")
 #assert.eq(eb5.damage-type, "Force")
-#assert.eq(eb5.damage-label, "per beam")
+#assert.eq(eb5.damage-label, none)
 
 // --- Pact of the Blade: melee + magic weapons use proficiency + Cha ----------
 // Warlock 4 (Cha 18 → +4, Str/Dex +0, PB +2), no martial-weapon proficiency of its own (Warlocks get simple only). Pact of the Blade makes every melee weapon and every magic weapon proficient and Cha-based, regardless of category or the

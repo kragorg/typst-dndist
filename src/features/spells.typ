@@ -622,6 +622,12 @@
   notes: [On a failed save the target is Charmed and Incapacitated while you reshape one of its memories (an event within the last 24 h, up to 10 min long). Ends if it takes damage.],
   scaling: [Reach further back: 7 days (6th), 30 days (7th), 1 year (8th), any time (9th).],
 )
+#let scrying = _spell(
+  "Scrying", 5, school: "Divination",
+  casting-time: "10 min", range: "Self", components: "V, S, M", material-cost: true,
+  duration: "10 min", concentration: true, save: "WIS",
+  notes: [See and hear a creature on your plane through an Invisible sensor within 10 ft of it, or a location you have seen. The save is modified by your knowledge of and connection to the target; on a success, it is immune for 24 hours.],
+)
 #let synaptic-static = _spell(
   "Synaptic Static", 5, school: "Enchantment",
   casting-time: "Action", range: "120 ft", area: (shape: "sphere", size: "20 ft"),

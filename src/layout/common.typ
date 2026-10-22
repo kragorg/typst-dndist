@@ -526,7 +526,7 @@
 }
 
 // The Spellcasting header: a table (only when there are sources) whose first column labels the sources and whose columns give the casting ability, its modifier, attack bonus, and save DC. The modifier is the source's own resolver-carried `modifier` — display reads this field directly, since `attack` may include item bonuses (Rod of the Pact Keeper).
-// Sources whose four displayed values all match share one row, their names joined by "/": a character with a species cantrip, two feat grants and a caster class (Elara) casts everything off one Charisma at one attack bonus and one DC, and four rows of identical numbers say that once each. Sources still differ where the numbers do — a Rod of the Pact Keeper scoped to "Warlock" splits attack and DC away from a feat's own, so those keep their own rows.
+// Sources whose four displayed values all match share one row, their names joined by "/": a character with a species cantrip, two feat grants and a caster class casts everything off one Charisma at one attack bonus and one DC, and four rows of identical numbers say that once each. Sources still differ where the numbers do — a Rod of the Pact Keeper scoped to "Warlock" splits attack and DC away from a feat's own, so those keep their own rows.
 // The merge is display-only. `c.spellcasting` stays per-source everywhere else: `spell-table` groups by it, `merge-slots` reads each source's slots, and `resolve-spellcasting` projects `eff-spell-any-slot` between sources.
 #let spellcasting-head(sources, size: 8 * u, source-label: "Spellcasting") = if sources.len() > 0 {
   // Group on the four displayed values, in first-occurrence order (`group-by`, shared with `trait-groups`).

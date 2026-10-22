@@ -260,7 +260,7 @@
   effects: (eff-ac-bonus(2, source: "Shield of Faith"),),
 )
 
-// --- Goro's spells ---------------------------------------------------------
+// --- Druid & Primal Order spells -------------------------------------------
 // Druid & Primal Order cantrips
 #let guidance = _spell(
   "Guidance", 0, school: "Divination",
@@ -422,7 +422,7 @@
   notes: [Issue a reasonable suggestion (no more than 25 words). On a failed save, target has the Charmed condition and follows it. Spell ends when the activity completes or you/allies deal damage to the target.],
 )
 
-// --- Bard spells (Elara) ---------------------------------------------------
+// --- Bard spells -----------------------------------------------------------
 #let vicious-mockery = _spell(
   "Vicious Mockery", 0, school: "Enchantment",
   casting-time: "Action", range: "60 ft", components: "V",
@@ -519,7 +519,7 @@
   notes: [$+5$ AC and no damage from _Magic Missile_ until SoYN.],
 )
 
-// --- Kragor's Warlock spells (3rd–5th level, cast with pact slots) ----------
+// --- Warlock spells (3rd–5th level) ----------------------------------------
 #let clairvoyance = _spell(
   "Clairvoyance", 3, school: "Divination",
   casting-time: "10 min", range: "1 mile", components: "V, S, M", material-cost: true,
@@ -642,7 +642,7 @@
   notes: [By thought, move a Huge or smaller creature (STR save, then Restrained) or object up to 30 ft. _Magic Action_: Repeat on each turn. Fine manipulation of objects.],
 )
 
-// --- Druid cantrips (Scarlet) ----------------------------------------------
+// --- Druid cantrips --------------------------------------------------------
 #let primal-savagery = _spell(
   "Primal Savagery", 0, school: "Transmutation",
   casting-time: "Action", range: "Self", components: "S",
@@ -660,7 +660,7 @@
   notes: [Attack with a Club or Quarterstaff using your spellcasting ability and a $d 8$ damage die. Force damage or the weapon's own type.],
 )
 
-// --- Druid 1st-level spells (Scarlet) ---------------------------------------
+// --- Druid 1st-level spells ------------------------------------------------
 #let animal-friendship = _spell(
   "Animal Friendship", 1, school: "Enchantment",
   casting-time: "Action", range: "30 ft", components: "V, S, M",
@@ -683,7 +683,7 @@
   damage-bonus: "casting-mod",
 )
 
-// --- Druid 2nd-level spells (Scarlet) ---------------------------------------
+// --- Druid 2nd-level spells ------------------------------------------------
 #let hold-person = _spell(
   "Hold Person", 2, school: "Enchantment",
   casting-time: "Action", range: "60 ft", components: "V, S, M",
@@ -753,7 +753,7 @@
   notes: [Up to six creatures of your choice in the Sphere.],
 )
 
-// --- Cleric cantrips (Therin) -----------------------------------------------
+// --- Cleric cantrips -------------------------------------------------------
 #let sacred-flame = _spell(
   "Sacred Flame", 0, school: "Evocation",
   casting-time: "Action", range: "60 ft", components: "V, S",
@@ -783,7 +783,7 @@
   notes: [Radiance erupts in a 5-ft Emanation, hitting each creature of your choice that you can see in it.],
 )
 
-// --- Cleric 1st-level spells (Therin) ---------------------------------------
+// --- Cleric 1st-level spells -----------------------------------------------
 #let bane = _spell(
   "Bane", 1, school: "Enchantment",
   casting-time: "Action", range: "30 ft", components: "V, S, M",
@@ -805,7 +805,7 @@
   scaling: [$+1d 6$/slot above 1st.],
 )
 
-// --- Cleric 2nd-level spells (Therin) ---------------------------------------
+// --- Cleric 2nd-level spells -----------------------------------------------
 // The 5 Hit Points are a maximum increase, not healing, thus they stay prose and the spell carries no healing tiers.
 #let aid = _spell(
   "Aid", 2, school: "Abjuration",
@@ -959,7 +959,7 @@
   notes: [Invisible, impassable, indestructible wall (dome/globe 10-ft radius, or ten 10×10-ft panels). Blocks ethereal travel.],
 )
 
-// --- Circle of the Stars & Goro's spells ------------------------------------
+// --- Circle of the Stars spells --------------------------------------------
 // Source: outside SRD 5.2.1 (Battle Familiar from Arcane Unleashed-style
 // 2024 rules expansion; Guiding Bolt is SRD 5.2.1).
 #let guiding-bolt = _spell(

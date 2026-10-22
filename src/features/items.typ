@@ -303,7 +303,7 @@
     e.prefix + e.spell.name + if e.charges > 1 { " ×" + str(e.charges) } else { "" })))
 }
 
-// - Source: DMG 2024 (not SRD), common wondrous item, requires Attunement.
+// - Source: DMG 2024 (not SRD), common wondrous item; no Attunement.
 // - 1 use per dawn: forgo the d20, treat the attack roll as a 10.
 #let clockwork-amulet = limited-use-feature(
   "Clockwork Amulet", 1,
@@ -311,7 +311,7 @@
   kind: "magic-item",
   source: "Magic Item",
   desc: [
-    This copper amulet of interlocking gears, humming with Mechanus magic, emits faint ticking and whirring. When you make an attack roll while wearing the amulet, you can forgo rolling the $d 20$ to get a 10 on the die. Once used, this property can't be used again until the next dawn (requires Attunement).
+    This copper amulet of interlocking gears, humming with Mechanus magic, emits faint ticking and whirring. When you make an attack roll while wearing the amulet, you can forgo rolling the $d 20$ to get a 10 on the die. Once used, this property can't be used again until the next dawn.
   ],
   notes: [Forgo the d20; treat one attack roll as a 10. Recharges at dawn.],
 )

@@ -670,10 +670,11 @@
 #let attack-table(attacks, attacks-per-action: 1, spells: (), size: 8 * u, atomic-rows: false) = if attacks.len() > 0 or spells.len() > 0 {
   let weapon-rows = attacks.map(a => (
     {
-      // A weapon-attack cantrip's line (True Strike / Booming Blade / Shillelagh) names the weapon, then the cantrip it is cast through — italic, the same mark a whole spell row wears, because casting that cantrip is what this row does.
+      // A weapon-attack cantrip's line (True Strike / Booming Blade / Shillelagh) names the weapon with a `‖` footmark; the page footer names the cantrip the attack is cast through (`pool-note-marker` anchor, read back by `recharge-footer`), which keeps the narrow ATTACK column to the weapon name.
       let via = a.at("via-spell", default: none)
       let eligible = attacks-per-action > 1 and a.at("extra-attack", default: true)
-      [#a.name#if via != none [ (#emph(via))]#if eligible [$thin times #attacks-per-action$]]
+      let mark = if via != none [#super[‖]#metadata((symbol: [‖], note: [Attack made by casting #emph(via).]))<pool-note-marker>]
+      [#a.name#mark#if eligible [$thin times #attacks-per-action$]]
     },
     _attack-range-cell(a),
     [#fmt-mod(a.bonus)],

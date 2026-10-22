@@ -871,27 +871,22 @@
 
 // The true page-bottom counterpart to `_recharge-mark` / `_pool-note-mark`: every
 // recharge note and per-pool note whose marker landed on this physical page,
-// deduped by kind (several pools can share one note — a Fighter/Druid has both
-// Second Wind and Wild Shape) and rendered in the table's own order so two notes
-// on one page keep a stable reading order.
+// in the order the markers appear, deduped (several pools can share one note —
+// a Fighter/Druid has both Second Wind and Wild Shape).
 // Mirrors `school-notes-footer`'s "ask what's on this page once it's known"
 // idiom — see that note for why a real footnote is unsafe here.
 #let recharge-footer(size) = context {
   let cur = here().page()
-  let kinds = query(<recharge-marker>).filter(m => m.location().page() == cur).map(m => m.value)
-  let present = _recharge-notes.pairs().filter(((k, n)) => kinds.contains(k))
-  let kind-parts = present.map(((k, n)) => [#super[#n.symbol] #n.note])
-  // Per-pool notes (`_pool-note-mark`) dedup by content: two pools restating
-  // one rule render one note.
-  let marks = query(<pool-note-marker>).filter(m => m.location().page() == cur)
+  let marks = query(selector(<recharge-marker>).or(<pool-note-marker>))
+    .filter(m => m.location().page() == cur)
   let notes = ()
   for m in marks {
-    if not notes.contains(m.value) { notes.push(m.value) }
+    // A recharge marker carries its kind; a pool marker carries its own (symbol, note).
+    let n = if type(m.value) == str { _recharge-notes.at(m.value) } else { m.value }
+    if not notes.contains(n) { notes.push(n) }
   }
-  let pool-parts = notes.map(n => [#super[#n.symbol] #n.note])
-  let parts = kind-parts + pool-parts
-  if parts.len() == 0 { return none }
-  text(font: body-font, size: size, parts.join(h(6 * u)))
+  if notes.len() == 0 { return none }
+  text(font: body-font, size: size, notes.map(n => [#super[#n.symbol] #n.note]).join(h(6 * u)))
 }
 
 // The resource tables' Uses cell (`resource-tables`, card): a row of empty diamonds to check off in play (the resource-tracking marker), with the derivation label ("PB", "DEX mod") as a tiny eyebrow inline-left of the diamonds when the count is derived — smaller than the diamonds so its presence keeps the row height identical (rows with and without a label stay the same height).

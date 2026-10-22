@@ -949,7 +949,7 @@
       if fits(s) and fits(l) {
         grid(columns: (1fr, 1fr), column-gutter: gutter, align: top, s, l)
       } else {
-        stack(spacing: 6 * u, s, l)
+        stack(spacing: section-gap, s, l)
       }
     })
   } else if s != none { s }

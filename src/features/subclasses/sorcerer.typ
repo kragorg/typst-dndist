@@ -23,7 +23,7 @@
     fs.push(limited-use-feature(
       "Tides of Chaos", 1,
       kind: "subclass-feature", source: "Wild Magic Sorcery",
-      note: [Regain one expended use by casting a Sorcerer spell with a spell slot; this roll is made on the Wild Magic Surge table.],
+      note: [Regain one use by casting a Sorcerer spell with a spell slot; this roll is made on the Wild Magic Surge table.],
       desc: [You can manipulate chaos itself to give yourself Advantage on one D20 Test before you roll the d20. Once you do so, you must cast a Sorcerer spell with a spell slot or finish a Long Rest before you can use this feature again. If you do cast a Sorcerer spell with a spell slot before you finish a Long Rest, you automatically roll on the Wild Magic Surge table.],
       notes: [Advantage on one d20 Test; casting a Sorcerer spell with a slot afterward rolls on the Wild Magic Surge table.],
     ))

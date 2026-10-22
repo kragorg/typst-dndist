@@ -941,8 +941,17 @@
   }
   let s = _table(short, "Short Rest")
   let l = _table(long, "Long Rest")
+  // Side by side only when neither table wraps a row at half width; otherwise the narrow columns break names word by word, so stack them.
   let body = if s != none and l != none {
-    grid(columns: (1fr, 1fr), column-gutter: gutter, align: top, s, l)
+    layout(region => {
+      let half = (region.width - gutter) / 2
+      let fits = t => measure(block(width: half, t)).height <= measure(block(width: region.width, t)).height
+      if fits(s) and fits(l) {
+        grid(columns: (1fr, 1fr), column-gutter: gutter, align: top, s, l)
+      } else {
+        stack(spacing: 6 * u, s, l)
+      }
+    })
   } else if s != none { s }
   else { l }
   keep-together(body)

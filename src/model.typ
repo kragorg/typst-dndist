@@ -100,8 +100,8 @@
 // - `recharge`: "long" | "short" | "short-or-long" | "long-short-regain" | "dawn".
 // - "long"/"short"/"short-or-long": regain all uses on the named rest.
 // - "long-short-regain": regain all uses on a Long Rest and one expended use on a Short Rest (Wild Shape, Second Wind).
-// - "dawn": regain 1 expended use each dawn, on no rest at all (a charged magic item).
-// - A pool that regains a *rolled* amount at dawn (a wand's 1d6+1) is not this kind: the note states a fixed 1, so that item keeps "long" and its own desc carries the dice.
+// - "dawn": regain expended uses each dawn, on no rest at all (a charged magic item). Without a `note`, the footnote states a fixed 1 charge.
+// - A pool that regains a *rolled* amount at dawn (a staff's 1d6) is still "dawn" but passes `note` with the dice; that note replaces the fixed one-charge footnote.
 // - The last two sort into the Long Rest column, which cannot state their partial refill; the layout footnotes each (see `_recharge-notes`).
 // - Display-only; no numeric resolver reads it.
 // - The count is still computed.

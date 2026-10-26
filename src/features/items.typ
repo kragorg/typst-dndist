@@ -382,7 +382,7 @@
       shillelagh: true,
       bonus: 2,
     ),
-    eff-limited-use("Staff of Power", 20, recharge: "long", note: [Regains $2d 8 + 4$ charges at dawn.]),
+    eff-limited-use("Staff of Power", 20, recharge: "dawn", note: [Regains $2d 8 + 4$ charges at dawn.]),
     eff-ac-bonus(2, source: "Staff of Power"),
     eff-save-bonus(2, source: "Staff of Power"),
     eff-spellcasting-bonus(attack: 2),

@@ -826,8 +826,10 @@
 // - `school-notes-footer` hits the same failure mode for the same reason; this uses the identical fix: an invisible metadata anchor, read back by the page's own footer via `query()` after layout settles, in place of Typst's footnote engine.
 // - A symbol rather than a digit: a footnote reference reads as none of the drawn-icon vocabulary shapes (circle = proficiency, diamond = resource tracking, hexagon = save advantage, triangle = upcast scaling).
 // - `school-notes-footer` assigns its own symbols from the sequence `*`, `†`, `‡`, ..., so `*` is shared with a school-synergy note. Only a character carrying both a dawn-recharge item and a school-synergy feature (Psychic Spells, Beguiling Magic) can land both notes on one page; move the school sequence to start at `†` if that ever happens.
+// - A "dawn" pool carrying its own `note` (a rolled refill: "Regains 1d6 charges at dawn") states its refill there, so the fixed one-charge note is dropped to avoid two contradictory marks.
 #let _recharge-mark(item) = {
   let n = _recharge-notes.at(item.recharge, default: none)
+  if item.recharge == "dawn" and item.at("note", default: none) != none { n = none }
   if n != none [#super[#n.symbol]#metadata(item.recharge)<recharge-marker>]
 }
 

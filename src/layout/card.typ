@@ -572,8 +572,11 @@
 
 // A tapered accent rule, thick at the left and pointed at the right: the
 // divider under each creature-card section head.
-#let _taper-rule = box(width: 100%, height: 1.6 * u,
+#let _taper-w = 1.6 * u
+#let _taper-rule = box(width: 100%, height: _taper-w,
   polygon(fill: accent, stroke: none, (0%, 0%), (100%, 50%), (0%, 100%)))
+// Gap between a creature-card section head and its tapered rule.
+#let _taper-gap = 2 * u
 
 // A creature card: one stat block in two columns.
 // - Left: the stat panel (AC/HP/Init/Speed strip, ability table, the
@@ -717,11 +720,11 @@
     sec-lines.push(sec-line("Languages", m.languages))
   }
 
-  // The panel's accent top edge pairs with the tapered rules on the right.
+  // The panel's accent top edge continues the first tapered rule on the right.
   let panel = block(
     width: 100%,
     fill: _monster-tint,
-    stroke: (top: 1.5 * u + accent),
+    stroke: (top: _taper-w + accent),
     radius: (bottom: 3 * u),
     inset: (x: 5 * u, top: 5 * u, bottom: 6 * u),
     stack(
@@ -744,7 +747,7 @@
     for (i, (title, entries)) in sections.enumerate() {
       if i > 0 { v(7 * u) }
       sticky-head(
-        stack(spacing: 2 * u, section-head(title), _taper-rule),
+        stack(spacing: _taper-gap, section-head(title), _taper-rule),
         stacked-lines(entries.map(e => text(font: body-font, size: 8 * u)[#text(weight: "bold")[#e.name.] #e.desc])),
         gap: 3.5 * u,
       )
@@ -755,12 +758,19 @@
     }
   }
 
-  grid(
-    columns: (1fr, 1.25fr),
-    column-gutter: 10 * u,
-    panel,
-    text-col,
-  )
+  // - The panel drops by the first section head plus its gap, so its top edge
+  //   (a stroke centred on the edge) shares the first rule's centre line.
+  context {
+    let drop = if sections.len() > 0 {
+      measure(section-head(sections.first().at(0))).height + _taper-gap + _taper-w / 2
+    } else { 0pt }
+    grid(
+      columns: (1fr, 1.25fr),
+      column-gutter: 10 * u,
+      pad(top: drop, panel),
+      text-col,
+    )
+  }
 }
 
 // A monster's identity line: size, type, alignment — the masthead subtitle.

@@ -190,7 +190,8 @@ renderers.
                             grouped by source under tiny eyebrow sub-headers, the
                             feats folded in as a Feats subsection (see the
                             source-grouping note); Gear card; Monster cards for
-                            Known Forms / summons (after gear);
+                            Known Forms / summons (after gear; one creature per
+                            card in two columns, scaled to fit);
                             a Backstory card when declared),
                             letter.typ (a fixed one-page core + a roleplay section
                             that flows over as many pages as it needs — 3 pages for

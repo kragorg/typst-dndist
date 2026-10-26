@@ -567,10 +567,24 @@
   }
 }
 
+// The creature card's stat panel fill: a pale wash of the rule colour.
+#let _monster-tint = rule-color.lighten(80%)
+
+// A tapered accent rule, thick at the left and pointed at the right: the
+// divider under each creature-card section head.
+#let _taper-rule = box(width: 100%, height: 1.6 * u,
+  polygon(fill: accent, stroke: none, (0%, 0%), (100%, 50%), (0%, 100%)))
+
+// A creature card: one stat block in two columns.
+// - Left: the stat panel (AC/HP/Init/Speed strip, ability table, the
+//   secondary lines).
+// - Right: Traits, Actions, Bonus Actions, Reactions, then the closing note.
+// - The grid row breaks across pages, so a long block spills onto a
+//   continuation card.
 #let _monster-card(m) = {
-  // Speed presentation. The stat cell carries the PRIMARY speed: the walk
-  // speed when the monster has one, else its main special speed with the mode
-  // named ("60 ft Swim" for a dolphin). The Speeds meta line lists every
+  // Speed presentation. The strip carries the PRIMARY speed: the walk speed
+  // when the monster has one, else its main special speed with the mode named
+  // under it ("60 ft", "Swim" for a dolphin). The Speeds line lists every
   // speed — the walk value first, then each special speed with its mode
   // capitalized and qualifiers restated: "40 ft; Fly 30 ft, hover
   // (Flyer only); Swim 30 ft".
@@ -604,10 +618,10 @@
   let walk = parsed.find(p => p.mode == none)
   let specials = parsed.filter(p => p.mode != none and p.value != "0 ft")
   // Primary: walk when present and non-zero, else the first special speed.
-  let speed-main = if walk != none and walk.value != "0 ft" { walk.value }
-    else if specials.len() > 0 { specials.first().value + " " + cap(specials.first().mode) }
-    else if walk != none { walk.value }
-    else { m.speed }
+  let prim = if walk != none and walk.value != "0 ft" { walk }
+    else if specials.len() > 0 { specials.first() }
+    else if walk != none { walk }
+    else { parsed.first() }
   // All speeds, walk first; shown whenever the monster has more than one.
   let speed-rest = if parsed.len() > 1 {
     let items = ()
@@ -617,173 +631,145 @@
     }
     items.join("; ")
   } else { none }
-  grid(
-    columns: 4 * (1fr,),
-    rows: 25 * u,
-    gutter: 2.5 * u,
-    stat-cell(str(m.ac), "AC", width: 100%),
-    stat-cell(
-      if m.hit-dice != none { [#bold-num(m.hp)#text(size: 6.5 * u, weight: "regular")[ (#m.hit-dice)]] } else { [#bold-num(m.hp)] },
-      "HP", width: 100%
-    ),
-    stat-cell(fmt-mod(m.initiative), "Init", width: 100%),
-    stat-cell(text(size: 7.5 * u, weight: "bold")[#speed-main], "Speed", width: 100%),
-  )
-  v(2.5 * u)
 
-  grid(
-    columns: 6 * (1fr,),
-    gutter: 2.5 * u,
-    ..ability-ids.map(id => {
-      let score = m.abilities.at(id, default: 10)
-      let mod = m.ability-mods.at(id, default: 0)
+  // The strip: four headline numbers, a label under each, then an optional
+  // hint row (the hit dice, the primary speed's mode). With hit dice the HP
+  // column sizes to them, so they stay on one line.
+  let big(v) = text(font: body-font, size: 13 * u, weight: "bold", fill: ink)[#num-value(v)]
+  let hint(v) = if v == none { [] } else { text(font: body-font, size: 6.5 * u, fill: ink)[#v] }
+  let strip = (
+    (big(m.ac), "AC", none),
+    (big(m.hp), "HP", if m.hit-dice != none { "(" + m.hit-dice + ")" }),
+    (big(fmt-mod(m.initiative)), "Init", none),
+    ([#big(bold-num(prim.value.split(" ").first()))#text(font: body-font, size: 7 * u)[ ft]], "Speed",
+      if prim.mode != none { cap(prim.mode) }),
+  )
+  let strip-grid = grid(
+    columns: (1fr, if m.hit-dice != none { auto } else { 1fr }, 1fr, 1fr),
+    align: center + horizon,
+    stroke: (x, y) => if x > 0 { (left: 0.5 * u + rule-color) },
+    inset: (x, y) => (x: if x == 1 { 4 * u } else { 1.5 * u }, y: 1 * u),
+    ..strip.map(c => c.at(0)),
+    ..strip.map(c => label(c.at(1), size: 5 * u, color: accent)),
+    ..if strip.any(c => c.at(2) != none) { strip.map(c => hint(c.at(2))) } else { () },
+  )
+
+  // The ability table: each row a white band on the tinted panel; a
+  // proficient save reads bold.
+  // - Two three-row groups (STR–CON, INT–CHA) side by side when both fit the
+  //   panel at natural width, else one six-row table.
+  let ab-head(s) = text(font: label-font, size: 4.5 * u, weight: "medium", fill: accent)[#s]
+  let ab-group(ids, col) = grid(
+    columns: (auto, col, col, col),
+    align: (left + horizon, center + horizon, center + horizon, center + horizon),
+    inset: (x, y) => if y == 0 { (x: 2 * u, bottom: 1.5 * u) } else { (x: 2 * u, y: 2.2 * u) },
+    row-gutter: 1.2 * u,
+    fill: (x, y) => if y > 0 { white },
+    [], [], ab-head("MOD"), ab-head("SAVE"),
+    ..ids.map(id => {
       let save = m.saves.at(id)
-      box(
-        width: 100%,
-        stroke: 0.5 * u + rule-color,
-        radius: 2 * u,
-        inset: (x: 2 * u, y: 3.5 * u),
-        align(center + horizon, stack(
-          spacing: 1.5 * u,
-          text(font: label-font, size: 5 * u, weight: "bold", fill: accent)[#upper(id)],
-          text(font: body-font, fill: ink)[#text(size: 7.5 * u)[#bold-num(score)] #text(size: 6 * u, weight: "regular")[(#fmt-mod(mod))]],
-          [
-            #text(font: label-font, size: 4.5 * u, weight: "regular", fill: accent, tracking: 0.4 * u)[SAVE ]
-            #text(font: body-font, size: 6 * u, weight: if save.proficient { "bold" } else { "regular" }, fill: ink)[#fmt-mod(save.bonus)]
-          ],
-        ))
+      (
+        text(font: label-font, size: 6 * u, weight: "bold", fill: accent, tracking: 0.4 * u)[#upper(id)],
+        text(font: body-font, size: 9 * u, weight: "bold", fill: ink)[#bold-num(m.abilities.at(id, default: 10))],
+        text(font: body-font, size: 8 * u, fill: ink)[#fmt-mod(m.ability-mods.at(id, default: 0))],
+        text(font: body-font, size: 8 * u, weight: if save.proficient { "bold" } else { "regular" }, fill: ink)[#fmt-mod(save.bonus)],
       )
-    })
+    }).flatten(),
   )
-  v(2 * u)
+  let ab-gutter = 4 * u
+  let abilities = layout(region => {
+    let (lo, hi) = (ability-ids.slice(0, 3), ability-ids.slice(3))
+    let half = calc.max(measure(ab-group(lo, auto)).width, measure(ab-group(hi, auto)).width)
+    if 2 * half + ab-gutter <= region.width {
+      grid(columns: (1fr, 1fr), column-gutter: ab-gutter, ab-group(lo, 1fr), ab-group(hi, 1fr))
+    } else {
+      ab-group(ability-ids, 1fr)
+    }
+  })
 
+  let sec-line(name, value) = [#eyebrow([#name: ], size: 5 * u)#text(font: body-font, size: 7.5 * u)[#value]]
   let sec-lines = ()
-  if speed-rest != none {
-    sec-lines.push([#eyebrow([Speeds: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#speed-rest]])
-  }
+  if speed-rest != none { sec-lines.push(sec-line("Speeds", speed-rest)) }
   if m.skills != none and m.skills.len() > 0 {
     let skill-strs = if type(m.skills) == dictionary {
       m.skills.pairs().map(((k, v)) => titly(k) + " " + fmt-mod(v))
     } else {
       m.skills.map(s => if type(s) == str { s } else { str(s) })
     }
-    sec-lines.push([#eyebrow([Skills: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#skill-strs.join(", ")]])
+    sec-lines.push(sec-line("Skills", skill-strs.join(", ")))
   }
   if m.vulnerabilities != none and m.vulnerabilities.len() > 0 {
-    sec-lines.push([#eyebrow([Damage Vulnerabilities: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#m.vulnerabilities.join(", ")]])
+    sec-lines.push(sec-line("Vulnerabilities", m.vulnerabilities.join(", ")))
   }
   if m.resistances != none and m.resistances.len() > 0 {
-    sec-lines.push([#eyebrow([Damage Resistances: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#m.resistances.join(", ")]])
+    sec-lines.push(sec-line("Resistances", m.resistances.join(", ")))
   }
   if m.immunities != none and m.immunities.len() > 0 {
-    sec-lines.push([#eyebrow([Damage Immunities: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#m.immunities.join(", ")]])
+    sec-lines.push(sec-line("Immunities", m.immunities.join(", ")))
   }
   if m.condition-immunities != none and m.condition-immunities.len() > 0 {
-    sec-lines.push([#eyebrow([Condition Immunities: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#m.condition-immunities.join(", ")]])
+    sec-lines.push(sec-line("Condition Immunities", m.condition-immunities.join(", ")))
   }
   if m.senses != none and (type(m.senses) == str or m.senses.len() > 0) {
-    let sense-str = if type(m.senses) == str { m.senses } else { m.senses.join(", ") }
-    sec-lines.push([#eyebrow([Senses: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#sense-str]])
+    sec-lines.push(sec-line("Senses", if type(m.senses) == str { m.senses } else { m.senses.join(", ") }))
   }
   if m.languages != none and m.languages != "" {
-    sec-lines.push([#eyebrow([Languages: ], size: 5 * u)#text(font: body-font, size: 7 * u)[#m.languages]])
-  }
-  if sec-lines.len() > 0 {
-    stacked-lines(sec-lines)
-    v(2 * u)
+    sec-lines.push(sec-line("Languages", m.languages))
   }
 
-  line(length: 100%, stroke: 0.4 * u + rule-color)
+  // The panel's accent top edge pairs with the tapered rules on the right.
+  let panel = block(
+    width: 100%,
+    fill: _monster-tint,
+    stroke: (top: 1.5 * u + accent),
+    radius: (bottom: 3 * u),
+    inset: (x: 5 * u, top: 5 * u, bottom: 6 * u),
+    stack(
+      spacing: 6 * u,
+      strip-grid,
+      abilities,
+      ..if sec-lines.len() > 0 { (stacked-lines(sec-lines),) } else { () },
+    ),
+  )
 
-  if m.traits.len() > 0 {
-    v(5 * u)
-    sticky-head(
-      section-head("Traits"),
-      stacked-lines(m.traits.map(t => [
-        #text(font: body-font, size: 7.5 * u)[#text(weight: "bold")[#t.name.] #t.desc]
-      ])),
-    )
+  let sections = (
+    ("Traits", m.traits),
+    ("Actions", m.actions),
+    ("Bonus Actions", m.bonus-actions),
+    ("Reactions", m.reactions),
+  ).filter(s => s.at(1).len() > 0)
+  let text-col = {
+    set par(justify: true)
+    set text(hyphenate: true)
+    for (i, (title, entries)) in sections.enumerate() {
+      if i > 0 { v(7 * u) }
+      sticky-head(
+        stack(spacing: 2 * u, section-head(title), _taper-rule),
+        stacked-lines(entries.map(e => text(font: body-font, size: 8 * u)[#text(weight: "bold")[#e.name.] #e.desc])),
+        gap: 3.5 * u,
+      )
+    }
+    if m.desc != none {
+      v(6 * u)
+      text(font: body-font, size: 7 * u, style: "italic")[#m.desc]
+    }
   }
 
-  if m.actions.len() > 0 {
-    v(if m.traits.len() > 0 { 6 * u } else { 5 * u })
-    sticky-head(
-      section-head("Actions"),
-      stacked-lines(m.actions.map(a => [
-        #text(font: body-font, size: 7.5 * u)[#text(weight: "bold")[#a.name.] #a.desc]
-      ])),
-    )
-  }
-
-  if m.bonus-actions.len() > 0 {
-    v(6 * u)
-    sticky-head(
-      section-head("Bonus Actions"),
-      stacked-lines(m.bonus-actions.map(ba => [
-        #text(font: body-font, size: 7.5 * u)[#text(weight: "bold")[#ba.name.] #ba.desc]
-      ])),
-    )
-  }
-
-  if m.reactions.len() > 0 {
-    v(6 * u)
-    sticky-head(
-      section-head("Reactions"),
-      stacked-lines(m.reactions.map(r => [
-        #text(font: body-font, size: 7.5 * u)[#text(weight: "bold")[#r.name.] #r.desc]
-      ])),
-    )
-  }
-  if m.desc != none {
-    v(5 * u)
-    text(font: body-font, size: 6.5 * u)[#m.desc]
-  }
+  grid(
+    columns: (1fr, 1.25fr),
+    column-gutter: 10 * u,
+    panel,
+    text-col,
+  )
 }
 
-// A monster's identity line: size, type, alignment — the single-card masthead
-// subtitle, shared with the packed-card column header.
+// A monster's identity line: size, type, alignment — the masthead subtitle.
 #let _monster-sub(m) = m.size + " " + m.creature-type + if m.alignment != none { ", " + m.alignment } else { "" }
 
 // A monster's CR/PB masthead note. A summon without a CR (`cr: none`) carries
 // neither: both numbers derive from the CR, and a spell summon has none.
 #let _monster-cr-note(m) = if m.cr != none { [CR #m.cr] } else { none }
 #let _monster-pb-note(m) = if m.cr != none { [PB #fmt-mod(m.pb)] } else { none }
-
-// A monster column: the stat block under its own compact header (name, type
-// line, CR/PB) for cards that pack two stat blocks side by side.
-#let _monster-column(m) = {
-  block(breakable: false, {
-    grid(
-      columns: (1fr, auto),
-      column-gutter: grid-gutter,
-      align: (left + bottom, right + bottom),
-      {
-        text(font: body-font, size: 10 * u, weight: "bold", fill: accent)[#m.name]
-        linebreak()
-        text(font: body-font, size: 6.5 * u, style: "italic")[#_monster-sub(m)]
-      },
-      if m.cr != none {
-        text(font: label-font, size: 5.5 * u, weight: "medium")[CR #m.cr, PB #fmt-mod(m.pb)]
-      },
-    )
-  })
-  v(4 * u)
-  line(length: 100%, stroke: 0.4 * u + rule-color)
-  v(4 * u)
-  _monster-card(m)
-}
-
-// Two stat blocks on one card, side by side, with a rule between them.
-// - The first column carries the separator as its right stroke, inset so its
-//   text keeps off the rule; the fit measurement charges both columns that
-//   width (see the deck's monster section).
-#let _monster-pair(a, b) = grid(
-  columns: (1fr, 1fr),
-  column-gutter: grid-gutter,
-  align: top,
-  box(width: 100%, stroke: (right: 0.4 * u + rule-color), inset: (right: 8 * u), _monster-column(a)),
-  _monster-column(b),
-)
 
 // --- Deck assembly ---------------------------------------------------------
 
@@ -875,38 +861,25 @@
   }
   if b.has-gear { pagebreak(); _card-marker(c.name, none, [Gear], none, numbered: false); _gear-card(c) }
   if c.monsters.len() > 0 {
-    // Monster stat blocks pack adaptively: two share one card when both fit
-    // measured side by side at half the card's body width (a summon beside a
-    // companion beast, the tiny Wild Shape forms); anything too tall for a
-    // column keeps one-per-card, spilling across pages as before.
-    // - On portrait decks each monster card is its own landscape page; on
+    // One creature per card: the two-column stat block needs the full card width.
+    // - On portrait decks each creature card is its own landscape page; on
     //   landscape decks it uses the page as set.
-    // - The whole section runs in one `context`: the fit decision reads
-    //   `measure`, which needs layout styles, and the pages it emits stay in
-    //   flow order.
+    // - Fit-to-card: each block renders at the largest step from 140% down
+    //   to 85% whose reflowed height fits the body. A block too tall even at
+    //   85% renders at 100% and spills onto a continuation card.
+    // - `measure` needs layout styles, so the section runs in one `context`.
     context {
-      let mpage-w = if is-portrait { landscape-w } else { L.width }
-      let mpage-h = if is-portrait { landscape-h } else { L.height }
-      let mmargin(e) = L.margin.at(e) + card-border.at(e) * (L.scale - 1)
-      let mbody-h = mpage-h - mmargin("top") - mmargin("bottom")
-      // Column a's inset shaves its width, so measure both columns there.
-      let col-w = (mpage-w - mmargin("left") - mmargin("right") - grid-gutter) / 2
-      let col-h(m) = measure(width: col-w - 8 * u, block(_monster-column(m))).height
-      // Fit-or-shrink: pair at natural size when both columns fit the body
-      // height, else scale the whole pair by just enough to make the taller
-      // column fit (a wider reflow layout is what a smaller type size buys).
-      // Never below 80% — under that the stat text turns to dust and the
-      // blocks fall back to one per card.
-      let pair-scale(a, b) = calc.min(1.0, (mbody-h - 4 * u) / calc.max(col-h(a), col-h(b)))
-
+      let mm(e) = L.margin.at(e) + card-border.at(e) * (L.scale - 1)
+      let body-w = (if is-portrait { landscape-w } else { L.width }) - mm("left") - mm("right")
+      let body-h = (if is-portrait { landscape-h } else { L.height }) - mm("top") - mm("bottom") - 2 * u
+      let steps = range(14, 8, step: -1).map(i => i / 10) + (0.85,)
+      let fitted(m) = {
+        let f = steps.find(f => measure(width: body-w / f, _monster-card(m)).height * f <= body-h)
+        if f == none { _monster-card(m) } else { at-scale(f, _monster-card(m)) }
+      }
       let mpage(body) = page(
         width: landscape-w, height: landscape-h,
-        margin: (
-          left: L.margin.at("left") + card-border.at("left") * (L.scale - 1),
-          right: L.margin.at("right") + card-border.at("right") * (L.scale - 1),
-          top: L.margin.at("top") + card-border.at("top") * (L.scale - 1),
-          bottom: L.margin.at("bottom") + card-border.at("bottom") * (L.scale - 1),
-        ),
+        margin: (left: mm("left"), right: mm("right"), top: mm("top"), bottom: mm("bottom")),
         fill: white,
         header-ascent: _header-gap,
         header: _running-head,
@@ -914,44 +887,9 @@
         footer: _page-footer,
         body,
       )
-      let single(m) = if is-portrait {
-        mpage[
-          #_card-marker(m.name, _monster-sub(m), _monster-cr-note(m), _monster-pb-note(m), numbered: false)
-          #_monster-card(m)
-        ]
-      } else {
-        pagebreak()
-        _card-marker(m.name, _monster-sub(m), _monster-cr-note(m), _monster-pb-note(m), numbered: false)
-        _monster-card(m)
-      }
-      let pair(a, b, f) = if is-portrait {
-        mpage[
-          #_card-marker("Creatures", none, none, none, numbered: false)
-          #if f == 1.0 { _monster-pair(a, b) } else {
-            std.scale(x: f * 100%, y: f * 100%, origin: top + left, reflow: true,
-              box(width: (2 * col-w) / f, _monster-pair(a, b)))
-          }
-        ]
-      } else {
-        pagebreak()
-        _card-marker("Creatures", none, none, none, numbered: false)
-        if f == 1.0 { _monster-pair(a, b) } else {
-          std.scale(x: f * 100%, y: f * 100%, origin: top + left, reflow: true,
-            box(width: (2 * col-w) / f, _monster-pair(a, b)))
-        }
-      }
-
-      let i = 0
-      while i < c.monsters.len() {
-        let m = c.monsters.at(i)
-        let nxt = if i + 1 < c.monsters.len() { c.monsters.at(i + 1) } else { none }
-        if nxt != none and pair-scale(m, nxt) >= 0.8 {
-          pair(m, nxt, pair-scale(m, nxt))
-          i += 2
-        } else {
-          single(m)
-          i += 1
-        }
+      for m in c.monsters {
+        let marker = _card-marker(m.name, _monster-sub(m), _monster-cr-note(m), _monster-pb-note(m), numbered: false)
+        if is-portrait { mpage[#marker#fitted(m)] } else { pagebreak(); marker; fitted(m) }
       }
     }
   }

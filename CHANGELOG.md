@@ -35,6 +35,14 @@ the public API means a major version bump.
   attack rolls with Ranged weapons, via the new `eff-ranged-attack-bonus`
   effect. A Thrown melee weapon gains nothing, and damage is unchanged.
 
+### Changed
+
+- Monster cards hold one creature each, in two columns: a tinted stat panel
+  (AC/HP/Init/Speed strip, ability table with saves, senses and other lines)
+  beside Traits/Actions/Bonus Actions/Reactions under tapered rules. Each
+  card scales its block (85%–140%) to fill the card. Two creatures no longer
+  share a card.
+
 ## [1.0.0] — 2026-08-04
 
 First public release.

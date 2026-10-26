@@ -835,13 +835,30 @@
 
 // The superscript marker for a pool carrying its own `note` — an extra regain
 // path its rest column cannot state (Tides of Chaos also regains a use when its
-// Sorcerer casts with a spell slot). Mirrors `_recharge-mark`'s metadata-anchor
-// mechanism (same stranded-footnote hazard, same fix); the anchor carries the
-// symbol and note text for `recharge-footer` to read back.
-// - `¶` is fixed for this note, never sequential, and collides with no other
-//   footnote symbol (`§` short-rest regain, `*` dawn / school-synergy).
+// Sorcerer casts with a spell slot; a wand's rolled dawn refill). Mirrors
+// `_recharge-mark`'s metadata-anchor mechanism (same stranded-footnote hazard,
+// same fix); the anchor carries the note text for `recharge-footer` to read back.
+// - Distinct notes on one page take `¶`, `¶¶`, `¶¶¶`, ... in order of first
+//   appearance; pools sharing an identical note share its mark. The anchor's
+//   `symbol: none` asks for this sequence (the `‖` weapon-cantrip anchor fixes
+//   its own symbol). The sequence collides with no other footnote symbol
+//   (`§` short-rest regain, `*` dawn / school-synergy, `†` AC, `‖` cantrip).
+#let _pool-note-symbol(i) = "¶" * (i + 1)
+#let _pool-notes-on-page(page) = {
+  let notes = ()
+  for m in query(<pool-note-marker>) {
+    if m.location().page() == page and m.value.symbol == none and not notes.contains(m.value.note) {
+      notes.push(m.value.note)
+    }
+  }
+  notes
+}
 #let _pool-note-mark(item) = if item.at("note", default: none) != none {
-  [#super[¶]#metadata((symbol: [¶], note: item.note))<pool-note-marker>]
+  let note = item.note
+  [#context {
+    let i = _pool-notes-on-page(here().page()).position(n => n == note)
+    super(_pool-note-symbol(if i == none { 0 } else { i }))
+  }#metadata((symbol: none, note: note))<pool-note-marker>]
 }
 
 // A resource pool's label, shared by both trackers — the card deck's `resource-tables` and the letter's `_limited-use-row` — so the two cannot drift.
@@ -882,10 +899,13 @@
   let cur = here().page()
   let marks = query(selector(<recharge-marker>).or(<pool-note-marker>))
     .filter(m => m.location().page() == cur)
+  let pool-notes = _pool-notes-on-page(cur)
   let notes = ()
   for m in marks {
-    // A recharge marker carries its kind; a pool marker carries its own (symbol, note).
-    let n = if type(m.value) == str { _recharge-notes.at(m.value) } else { m.value }
+    // A recharge marker carries its kind; a pool marker carries its note, and its own symbol unless it takes the `¶` sequence.
+    let n = if type(m.value) == str { _recharge-notes.at(m.value) } else if m.value.symbol == none {
+      (symbol: _pool-note-symbol(pool-notes.position(p => p == m.value.note)), note: m.value.note)
+    } else { m.value }
     if not notes.contains(n) { notes.push(n) }
   }
   if notes.len() == 0 { return none }

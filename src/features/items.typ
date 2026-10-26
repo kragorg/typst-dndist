@@ -157,6 +157,8 @@
 //   resource pool follows the name.
 #let wand-of-magic-missiles(name: "Wand of Magic Missiles") = limited-use-feature(
   name, 7,
+  recharge: "dawn",
+  note: [Regains $1d 6 + 1$ charges at dawn.],
   kind: "magic-item",
   source: "Magic Item",
   activation: "Action",
@@ -258,6 +260,8 @@
 // Source: DMG 2024.
 #let wand-of-magic-detection = limited-use-feature(
   "Wand of Magic Detection", 3,
+  recharge: "dawn",
+  note: [Regains $1d 3$ charges at dawn.],
   kind: "magic-item",
   source: "Magic Item",
   activation: "Action",

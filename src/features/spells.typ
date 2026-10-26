@@ -138,6 +138,12 @@
   damage: ((1, 1, "d6", "Piercing"), (5, 2, "d6", "Piercing"), (11, 3, "d6", "Piercing"), (17, 4, "d6", "Piercing")),
   notes: [Melee spell attack. On hit: pull Large or smaller target up to 10 ft closer.],
 )
+#let mending = _spell(
+  "Mending", 0, school: "Transmutation",
+  casting-time: "1 min", range: "Touch", components: "V, S, M",
+  duration: "Instantaneous",
+  notes: [Repair one break or tear up to 1 ft in an object, leaving no trace. Can't restore an item's magic.],
+)
 #let message = _spell(
   "Message", 0, school: "Transmutation",
   casting-time: "Action", range: "120 ft", components: "S, M",
@@ -366,6 +372,18 @@
   ),
   notes: [On fail: target uses Reaction to flee as far as possible. On success: half damage.],
   scaling: [$+1d 6$/slot above 1st.],
+)
+#let catapult = _spell(
+  "Catapult", 1, school: "Transmutation",
+  casting-time: "Action", range: "60 ft", components: "S",
+  duration: "Instantaneous", save: "DEX",
+  slot-damage: (
+    (1, 3, "d8", "Bludgeoning"), (2, 4, "d8", "Bludgeoning"), (3, 5, "d8", "Bludgeoning"),
+    (4, 6, "d8", "Bludgeoning"), (5, 7, "d8", "Bludgeoning"), (6, 8, "d8", "Bludgeoning"),
+    (7, 9, "d8", "Bludgeoning"), (8, 10, "d8", "Bludgeoning"), (9, 11, "d8", "Bludgeoning"),
+  ),
+  notes: [Fling an unattended 1–5 lb object up to 90 ft in a line. A creature in its path saves or is struck; object and target each take the damage.],
+  scaling: [$+1d 8$ and $+5$ lb max weight/slot above 1st.],
 )
 #let false-life = _spell(
   "False Life", 1, school: "Necromancy",

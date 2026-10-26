@@ -120,6 +120,15 @@
   abilities: abilities.pos(),
 )
 
+#let merchant(..abilities) = _background(
+  "Merchant",
+  (ability.con, ability.int, ability.cha),
+  skills: (skill.animal-handling, skill.persuasion),
+  tools: (tool.navigators-tools,),
+  origin-feat: feat.lucky,
+  abilities: abilities.pos(),
+)
+
 #let sage(..abilities, origin-feat: none) = _background(
   "Sage",
   (ability.con, ability.int, ability.wis),

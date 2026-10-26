@@ -3,8 +3,8 @@
 // - Do not give ability bonuses here: in 5.5e they come from the background.
 // - Import aliased: `#import "species.typ" as species`, then `species.human()`.
 // - SRD 5.2.1 species: Dragonborn, Dwarf, Elf, Gnome, Goliath, Halfling,
-//   Human, Orc, Tiefling. Tortle, Fairy, Bugbear, and Aasimar are non-SRD fan
-//   restatements of the 2024 rulebooks.
+//   Human, Orc, Tiefling. Tortle, Fairy, Bugbear, Aasimar, and Reborn are
+//   non-SRD fan restatements of the 2024 rulebooks.
 //
 // EVERY species is a function, including the ones that take no argument today.
 // - This catalog is the one place where the value-vs-function convention costs more than it conveys.
@@ -330,3 +330,35 @@
       notes: [$+2d 6$ against creatures that have not yet taken a turn.]),
   ),
 )
+
+// - Reborn: the 2024 restatement (Ravenloft: The Horrors Within).
+// - The player chooses the size, the Knowledge from a Past Life skill, and the
+//   Strange Endurance damage type (Cold, Necrotic, or Poison).
+// - Knowledge from a Past Life has Proficiency Bonus uses per Long Rest.
+#let reborn(size: "Medium", skill: "insight", resistance: "Necrotic") = {
+  assert(
+    resistance in ("Cold", "Necrotic", "Poison"),
+    message: "Reborn Strange Endurance resistance must be Cold, Necrotic, or Poison; got " + str(resistance),
+  )
+  feature(
+    "Reborn",
+    kind: "species",
+    source: "Species",
+    size: size,
+    creature-type: "Humanoid",
+    effects: (
+      eff-stat("speed", 30, kind: "set"),
+      eff-prof("skill", skill),
+    ),
+    features: (
+      _trait("Reborn", "Escaped Death", [You have Advantage on Death Saving Throws.],
+        effects: (eff-save-advantage([on Death Saving Throws], source: "Escaped Death"),)),
+      _trait("Reborn", "Everlasting", [You don't gain Exhaustion from dehydration, malnutrition, or suffocation. You don't need to sleep, and magic can't put you to sleep. You can finish a Long Rest in 4 hours spent in an inactive, motionless state, during which you retain consciousness.]),
+      _trait("Reborn", "Knowledge from a Past Life", [You have proficiency in the #_skill-name(skill) skill. When you fail an ability check, you can roll $1d 6$ and add the number rolled to the d20, possibly turning the failure into a success. You can do this a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest.],
+        effects: (eff-limited-use("Knowledge from a Past Life", ctx => ctx.pb, uses-label: "PB", source: "Reborn"),),
+        notes: [After failing an ability check, add $1d 6$ to the d20.]),
+      _trait("Reborn", "Strange Endurance", [You have Resistance to #resistance damage.],
+        effects: (eff-resistance(resistance, source: "Reborn"),)),
+    ),
+  )
+}

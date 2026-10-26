@@ -17,6 +17,7 @@
 // - Do not move either to a top-level `feature` namespace: that name shadows the public `feature()` constructor from model.typ.
 #import "classes/cleric.typ": cleric, divine-order-thaumaturge, divine-order-protector
 #import "classes/druid.typ": druid, primal-order-magician, primal-order-warden
+#import "classes/artificer.typ": artificer
 
 // --- Named class features (objects that contribute effects) ----------------
 

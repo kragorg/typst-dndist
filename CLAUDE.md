@@ -968,7 +968,10 @@ trait sub-features (Shell Defense splits into a parent,
 `activation: "Bonus Action"` --- see the effect/feature model note
 above); and `fairy(casting-ability)` --- a Small Fey whose Fairy Magic
 trait emits an `eff-spellcasting` (a species spellcasting source) for
-the Druidcraft cantrip, plus a display-only Flight trait. -
+the Druidcraft cantrip, plus a display-only Flight trait; and
+`reborn(size, skill, resistance)` --- the Knowledge from a Past Life
+skill plus a PB-uses $1d 6$ pool, Advantage on Death Saving Throws, and
+Strange Endurance resistance (Cold, Necrotic, or Poison). -
 `class.*(level, subclass, skills, expertise)` (functions) --- `_class`;
 PB source, hit die, proficiencies (incl. `tools`), and named
 sub-features (`jack-of-all-trades`, `unarmored-defense`,
@@ -985,6 +988,14 @@ style as a `kind: "feat"`, `source: "Fighting Style Feat"` feature; it
 flattens into the FEATS list tagged FIGHTING STYLE. Defense contributes
 an `eff-ac-bonus(1)` and Archery an `eff-ranged-attack-bonus(2)`; extend
 `_fighting-styles` for more), and Extra Attack from level 5.
+`artificer(level, subclass, skills, artisan-tool,   cantrips, spells)` is
+an Int half caster that rounds up (Eberron: Forge of the Artificer):
+`_artificer-slots` gives two 1st-level slots at level 1. It grants
+Thieves' and Tinker's Tools plus the chosen `artisan-tool`, folds
+Mending into its Spellcasting source, and adds Tinker's Magic (an
+`activation: "Action"` pool of `ctx => max(1, INT mod)` uses). Modelled
+through level 1: Replicate Magic Item (L2) and later are not in the
+catalog yet.
 `bard(level, subclass, skills, expertise,   cantrips, spells)` is a full
 Cha caster (Spellcasting sub-feature + `_full-caster-slots`, Musical
 Instrument tool proficiency) plus Bardic Inspiration
@@ -1151,7 +1162,8 @@ choices, so it takes `origin-feat:` like `sage`), entertainer,
 marked-wanderer, sage, genie-touched (Deception/Perception,
 Glassblower's Tools, Magic Initiate (Wizard)), criminal (Dex/Con/Int;
 Sleight of Hand/Stealth, Thieves' Tools, Alert), farmer (Str/Con/Wis;
-Animal Handling/Nature, Carpenter's Tools, Tough).
+Animal Handling/Nature, Carpenter's Tools, Tough), merchant
+(Con/Int/Cha; Animal Handling/Persuasion, Navigator's Tools, Lucky).
 `background.custom(name, abilities:, skills:, tools:, origin-feat:)`
 declares a **one-off background** (a homebrew/setting background used by
 a single character --- elara's Guide, the template's Faction Agent) in one

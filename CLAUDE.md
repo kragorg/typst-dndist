@@ -388,21 +388,19 @@ Effects are tagged dicts the resolver folds (all `eff-*`):
   `"long-short-regain"` is the 2024 partial-recharge pattern (Wild
   Shape, Second Wind) --- regain *all* uses on a Long Rest and *one*
   expended use on a Short Rest; `"dawn"` is a charged magic item
-  regaining **1** use each dawn, on no rest at all (Ring of
-  Comprehension). A pool regaining a *rolled* amount at dawn (a wand's
-  `1d6+1`) is deliberately **not** the `"dawn"` kind --- the note states
-  a fixed 1, so that item stays `"long"` and its own `desc` carries the
-  dice. Both sort into the **Long Rest** column (that column names the
+  regaining uses each dawn, on no rest at all. Without a pool `note`
+  the footnote states a fixed 1 charge (Ring of Comprehension); a pool
+  regaining a *rolled* amount (a wand's `1d6+1`) passes `note:` with
+  the dice, and that note replaces the one-charge footnote. Both sort
+  into the **Long Rest** column (that column names the
   recharge that refills the pool; the footnote adds what it leaves out),
-  and the layout renders that kind's superscript symbol on each such
-  pool's row with its note at the page bottom (see the resource-tables
-  note). **`_recharge-notes` (`common.typ`) is the one table mapping a
-  recharge kind to its fixed symbol and note text**, read by both
-  `_recharge-mark` (the row marker) and `recharge-footer` (the note); a
-  kind absent from it needs no note, because its column already says
-  everything. The two buckets are defined once as "short-rest
-  recoverable" and "everything else", so a new kind lands in Long Rest
-  with no layout change.
+  and the layout footnotes each such pool's row with its note at the
+  page bottom (see the page-footnote note). **`_recharge-notes`
+  (`common.typ`) is the one table mapping a recharge kind to its note
+  text**, read by `_recharge-mark`; a kind absent from it needs no note,
+  because its column already says everything. The two buckets are
+  defined once as "short-rest recoverable" and "everything else", so a
+  new kind lands in Long Rest with no layout change.
   **Deliberately no note/description field** --- the tracker is labelled
   by feature `name` alone; the feature's effect is already described in
   its traits/feats section, so repeating it here is noise. (A recharge
@@ -785,14 +783,10 @@ any derivation label inline-left of them, the pair travelling together
 inside one `keep-together` so neither bucket orphans across a card
 break; **when any pool carries a footnoted recharge kind** (`_recharge-notes`
 --- `long-short-regain` for Wild Shape and Second Wind, `dawn` for the
-Ring of Comprehension), that kind's superscript symbol
-(`_recharge-mark`, a fifth marker notation outside the
-circle/diamond/hexagon/triangle vocabulary, reading as a footnote
-reference and nothing else) marks each such pool's row via an invisible
-metadata anchor carrying the kind, and the page's own footer
-(`recharge-footer`) queries for those anchors and renders each distinct
-kind's note once --- regardless of how many pools on the page carry the
-same mark (a Fighter/Druid has both Second Wind and Wild Shape). This is
+Ring of Comprehension) or its own `note`, its row carries a page
+footnote (`page-note-mark`, see the page-footnote note below) ---
+regardless of how many pools on the page carry the same note, it is
+listed once (a Fighter/Druid has both Second Wind and Wild Shape). This is
 deliberately *not* a real Typst `#footnote`: nested inside
 `resource-tables`'s `keep-together` (the whole-group card-bump
 mechanism), Typst's measure/retry pass for a unit that doesn't fit the
@@ -800,7 +794,7 @@ current card can realize the footnote on the page the retry ran on while
 the marked row renders on the page before it --- reproduced directly as
 an "Actions (continued)" card with nothing on it but the stranded
 footnote; the school-synergy marker hit the identical failure mode for
-the identical reason (see `school-notes-footer`), hence the shared fix;
+the identical reason, hence the shared fix;
 the letter as a single narrow **Resources box** on the roleplay page
 (`limited-use-lines`, `single-column: true`, the box being too tight for
 two `sheet-table`s) that **stacks** the two labelled groups vertically
@@ -1484,34 +1478,25 @@ FEATS list's ORIGIN / FIGHTING STYLE tags (General stays untagged).
   Reaction notes to flag the same (see the informational-glyphs note).
   It reads as none of the other three (neither proficiency, nor
   tracking, nor save advantage), so it never collides with them. The
-  footnote symbol (`_recharge-mark`, `common.typ`) is a **fifth**
-  notation, sanctioned for exactly one meaning --- *this resource pool's
-  recharge column does not state the whole rule*: a superscript symbol
-  on the pool's row, the note rendered once at the page bottom by
-  `recharge-footer` when any such marker landed on that page. The symbol
-  is fixed **per recharge kind** in `_recharge-notes`, never sequential,
-  so the same rule always reads with the same mark: `§` for
-  `long-short-regain`, `*` for `dawn`. A
-  superscript symbol reads as a footnote reference and none of the four
-  shapes above, so it never collides with them. **Not a Typst native
-  `#footnote`** --- see the resource-tables note above and the
-  `school-notes-footer` note below for why (a real footnote realized
-  inside `keep-together` can strand its note on an otherwise-blank
-  continuation card, reproduced directly). **A spell-table row's
-  school-synergy marker reuses this same superscript-symbol reading, via
-  the identical query-based mechanism, but its own symbol sequence (`*`,
-  `†`, `‡`, ...) is assigned independently of `_recharge-notes`' fixed
-  symbols\*\* --- a Warlock with both a school-synergy note and a
-  `long-short-regain` pool can land both notes on the same page, and two
-  unrelated notes sharing a symbol would read as one run-on footnote,
-  which is why `§` sits outside that sequence. **`dawn`'s `*` does
-  overlap the sequence's first symbol**: only a character carrying both
-  a dawn-recharge item and a school-synergy feature (Psychic Spells,
-  Beguiling Magic) can land both notes on one page --- none does today.
-  Move the school sequence to start at `†` if one ever does.
-  See the `school-notes-footer` note below for why it isn't a Typst
-  footnote either, and for how it stays a true page-bottom note despite
-  that. Circles: skill/save/armor proficiency marks (`mark-*`,
+  footnote symbol (`page-note-mark`, `common.typ`) is a **fifth**
+  notation, meaning only *see the note at the foot of this page*. **Every
+  footnote on a page draws from one allocator**: recharge notes, a
+  pool's own note, the weapon-cantrip note, the AC-source note and
+  spell-school notes all anchor a `<page-note>` metadata carrying their
+  note text, and each page assigns `*`, `†`, `‡`, `§`, `¶`, `‖`, `**`,
+  ... to its distinct notes in order of first appearance
+  (`numbering("*", n)`); identical notes share a symbol. So two
+  different notes never share a symbol on one page, and a symbol has no
+  fixed meaning across pages --- each page's legend defines its own.
+  A superscript symbol reads as a footnote reference and none of the
+  four shapes above, so it never collides with them. **Not a Typst
+  native `#footnote`** --- see the resource-tables note above and the
+  page-footnote note below for why (a real footnote realized inside
+  `keep-together` can strand its note on an otherwise-blank
+  continuation card, reproduced directly). The block-local stat-note
+  marks under a monster card's AC/HP/Speed (`card.typ`) are a separate
+  sequence whose legend sits directly under the stat line on that card.
+  Circles: skill/save/armor proficiency marks (`mark-*`,
   `armor-training`). Diamonds: the `checkbox` --- shield flag, death
   saves, heroic inspiration, magic-item attunement, expended spell
   slots, and the **limited-use resource tracker** (`_uses-cell`,
@@ -2043,20 +2028,18 @@ FEATS list's ORIGIN / FIGHTING STYLE tags (General stays untagged).
     stray markup text --- *no error*, wrong value (leading-dot
     continuation only works inside code-mode parens/braces). Give a
     multi-line body a `{ … }` block.
-- **A spell's school-synergy note (`spell-schools`, above) is a true
-  page-bottom footer, but deliberately not a Typst `#footnote`.**
-  `_spell-name-cell` (`common.typ`) marks a matching spell with a plain
-  superscript symbol (from the same *, †, ‡, ... sequence Typst's own
-  footnotes use, assigned once per table via `numbering("*", n)` --- no
-  footnote counter involved) plus an invisible `<school-note-marker>`
-  metadata anchor carrying the note's name and symbol.
-  `school-notes-footer(size)` (`common.typ`) --- called from both
-  `card.typ`'s `_page-footer` and the letter's `set page(footer: …)`,
-  sharing the footer line with `page-number-footer` via a two-column
-  grid (note left-aligned, page number right-aligned, exactly as before
-  when there's no note) --- `query()`s every such anchor whose
-  `location().page()` is the* current\* page, dedupes by name (several
-  spells on one page can share a note), and renders it: the same "ask
+- **Page footnotes (school-synergy notes, recharge and pool notes, the
+  weapon-cantrip note, the AC-source note) are true page-bottom notes,
+  but deliberately not Typst `#footnote`s.** `page-note-mark(note)`
+  (`common.typ`) places a superscript symbol plus an invisible
+  `<page-note>` metadata anchor carrying the note.
+  `page-notes-footer(size)` --- called through `footer-line` from both
+  `card.typ`'s `_page-footer` and the letter's `set page(footer: …)`
+  (note left-aligned, page number right-aligned), and directly at the
+  bottom edge of the footer-less placard --- `query()`s every anchor
+  whose `location().page()` is the *current* page, dedupes identical
+  notes, and renders them with their per-page symbols; the marker
+  computes its own symbol from the same query. This is the same "ask
   what's on this page once layout has settled" idiom `_running-head`/
   `_page-footer` already use for the card masthead, so it's answered
   only after layout is final rather than during any in-progress
@@ -2200,7 +2183,7 @@ marking** (a feature's `spell-schools:` field --- Great Old One's
 Psychic Spells, College of Glamour's Beguiling Magic ---
 cross-referenced against every spell's `school` at layout time and
 footnoted with a true page-bottom, query-based footer, not a
-Typst-native footnote --- see the school-notes-footer note); **a
+Typst-native footnote --- see the page-footnote note); **a
 feat-granted spell that also casts with any spell slot the character
 has** (Magic Initiate, Fey Touched --- `eff-spell-any-slot`, projected
 into every other spellcasting source with slots regardless of how the

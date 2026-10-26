@@ -2,7 +2,7 @@
 // - Body text uses ETBembo. Headings and labels use Montserrat.
 
 #import "@preview/cuti:0.4.0": fakebold, regex-fakebold, fakesc
-#import "../resolve.typ": resolve, dedup-by
+#import "../resolve.typ": resolve
 #import "../data/abilities.typ": ability-names
 #import "../data/skills.typ": skill-list
 #import "../data/constants.typ": alignment-names
@@ -666,14 +666,49 @@
   else [#r · #t]
 }
 
+// Page footnotes: one allocator for every note whose legend sits at the foot of the page (or card).
+// - Each marker is an invisible `<page-note>` metadata anchor carrying its note; the page footer reads the anchors back via `query()` once layout settles.
+//   A real Typst `#footnote` is unsafe here: nested inside the card deck's `keep-together` units, its measure/retry pass can realize the footnote on a different card than the marked row (or swallow it outright).
+// - Symbols come from one sequence, `*`, `†`, `‡`, `§`, `¶`, `‖`, `**`, ..., assigned per page in order of first appearance.
+//   Distinct notes on a page always take distinct symbols; markers sharing an identical note share its symbol. A symbol carries no meaning beyond its own page's legend.
+// - A symbol rather than a digit: a footnote reference reads as none of the drawn-icon vocabulary shapes (circle = proficiency, diamond = resource tracking, hexagon = save advantage, triangle = upcast scaling).
+#let _page-notes(page) = {
+  let notes = ()
+  for m in query(<page-note>) {
+    if m.location().page() == page and not notes.contains(m.value) { notes.push(m.value) }
+  }
+  notes
+}
+#let _page-note-symbol(i) = numbering("*", i + 1)
+
+// The symbol `note` takes on the current page (context-dependent).
+#let page-note-symbol(note) = context {
+  let i = _page-notes(here().page()).position(n => n == note)
+  _page-note-symbol(if i == none { 0 } else { i })
+}
+
+// The superscript marker for `note`, plus its anchor. `size` shrinks the symbol (the spell table's marker).
+#let page-note-mark(note, size: none) = {
+  let sym = page-note-symbol(note)
+  [#super(if size == none { sym } else { text(size: size, sym) })#metadata(note)<page-note>]
+}
+
+// The legend line for the current page: every note anchored here, in symbol order. `none` on a page with no note.
+// - A page template's `footer:` is itself `context`-evaluated per page; this carries its own `context` for flow callers (the placard's bottom edge).
+#let page-notes-footer(size) = context {
+  let notes = _page-notes(here().page())
+  if notes.len() == 0 { return none }
+  text(font: body-font, size: size, notes.enumerate().map(((i, n)) => [#super(_page-note-symbol(i)) #n]).join(h(6 * u)))
+}
+
 // Attack table: Name / Range / Hit / Damage & Type / Notes. Weapons first (from `attacks`), then any actionable spells (from `spells` — resolved spells-detail dicts, routed here by casting time + attack/save in card.typ). A spell's Hit cell is its attack bonus ("+5") or its save ("INT 14"), mirroring the spell table's HIT/SAVE column; its Notes cell is `spell-action-note` (damage lives in the Damage column, so it drops from the note).
 #let attack-table(attacks, attacks-per-action: 1, spells: (), size: 8 * u, atomic-rows: false) = if attacks.len() > 0 or spells.len() > 0 {
   let weapon-rows = attacks.map(a => (
     {
-      // A weapon-attack cantrip's line (True Strike / Booming Blade / Shillelagh) names the weapon with a `‖` footmark; the page footer names the cantrip the attack is cast through (`pool-note-marker` anchor, read back by `recharge-footer`), which keeps the narrow ATTACK column to the weapon name.
+      // A weapon-attack cantrip's line (True Strike / Booming Blade / Shillelagh) footnotes the weapon name; the page footer names the cantrip the attack is cast through (`page-note-mark`), which keeps the narrow ATTACK column to the weapon name.
       let via = a.at("via-spell", default: none)
       let eligible = attacks-per-action > 1 and a.at("extra-attack", default: true)
-      let mark = if via != none [#super[‖]#metadata((symbol: [‖], note: [Attack made by casting #emph(via).]))<pool-note-marker>]
+      let mark = if via != none { page-note-mark([Attack made by casting #emph(via).]) }
       [#a.name#mark#if eligible [$thin times #attacks-per-action$]]
     },
     _attack-range-cell(a),
@@ -808,58 +843,24 @@
   (size / 2, 0 * u), (size, size / 2), (size / 2, size), (0 * u, size / 2),
 ))
 
-// Recharge kinds whose rest column cannot state the whole rule, each with its own fixed footnote symbol and note.
+// Recharge kinds whose rest column cannot state the whole rule, each with its note.
 // - Both sit in the Long Rest column: that column names the recharge that refills the pool, and each of these adds a partial refill on top of it.
 // - A kind absent from this table needs no note: its column says everything.
-// - Each symbol is fixed per kind, never sequential, so the same rule always reads with the same mark across every sheet.
 #let _recharge-notes = (
-  "long-short-regain": (symbol: [§], note: [Regain one use on a Short Rest.]),
-  // Escape the asterisk: a lone `*` in markup opens strong emphasis.
-  "dawn": (symbol: [\*], note: [Regain one charge at dawn.]),
+  "long-short-regain": [Regain one use on a Short Rest.],
+  "dawn": [Regain one charge at dawn.],
 )
 
-// The superscript footnote marker for a pool whose recharge carries one of the notes above.
-// - Returns `none` for every other pool, so callers attach it unconditionally.
-//
-// Uses a metadata anchor instead of a Typst `#footnote`.
-// - Nested inside the card deck's `resource-tables`, itself wrapped in `keep-together` (the whole-group card-bump mechanism), Typst's measure/retry pass for a unit that does not fit the current card can realize a real footnote on the page the retry ran on while the actual marked row renders on the page before it — an "Actions (continued)" card with only the stranded footnote on it.
-// - `school-notes-footer` hits the same failure mode for the same reason; this uses the identical fix: an invisible metadata anchor, read back by the page's own footer via `query()` after layout settles, in place of Typst's footnote engine.
-// - A symbol rather than a digit: a footnote reference reads as none of the drawn-icon vocabulary shapes (circle = proficiency, diamond = resource tracking, hexagon = save advantage, triangle = upcast scaling).
-// - `school-notes-footer` assigns its own symbols from the sequence `*`, `†`, `‡`, ..., so `*` is shared with a school-synergy note. Only a character carrying both a dawn-recharge item and a school-synergy feature (Psychic Spells, Beguiling Magic) can land both notes on one page; move the school sequence to start at `†` if that ever happens.
-// - A "dawn" pool carrying its own `note` (a rolled refill: "Regains 1d6 charges at dawn") states its refill there, so the fixed one-charge note is dropped to avoid two contradictory marks.
+// The footnote marker for a pool whose recharge carries one of the notes above; `none` for every other pool, so callers attach it unconditionally.
+// - A "dawn" pool carrying its own `note` (a rolled refill: "Regains 1d6 charges at dawn") states its refill there, so the fixed one-charge note is dropped.
 #let _recharge-mark(item) = {
   let n = _recharge-notes.at(item.recharge, default: none)
   if item.recharge == "dawn" and item.at("note", default: none) != none { n = none }
-  if n != none [#super[#n.symbol]#metadata(item.recharge)<recharge-marker>]
+  if n != none { page-note-mark(n) }
 }
 
-// The superscript marker for a pool carrying its own `note` — an extra regain
-// path its rest column cannot state (Tides of Chaos also regains a use when its
-// Sorcerer casts with a spell slot; a wand's rolled dawn refill). Mirrors
-// `_recharge-mark`'s metadata-anchor mechanism (same stranded-footnote hazard,
-// same fix); the anchor carries the note text for `recharge-footer` to read back.
-// - Distinct notes on one page take `¶`, `¶¶`, `¶¶¶`, ... in order of first
-//   appearance; pools sharing an identical note share its mark. The anchor's
-//   `symbol: none` asks for this sequence (the `‖` weapon-cantrip anchor fixes
-//   its own symbol). The sequence collides with no other footnote symbol
-//   (`§` short-rest regain, `*` dawn / school-synergy, `†` AC, `‖` cantrip).
-#let _pool-note-symbol(i) = "¶" * (i + 1)
-#let _pool-notes-on-page(page) = {
-  let notes = ()
-  for m in query(<pool-note-marker>) {
-    if m.location().page() == page and m.value.symbol == none and not notes.contains(m.value.note) {
-      notes.push(m.value.note)
-    }
-  }
-  notes
-}
-#let _pool-note-mark(item) = if item.at("note", default: none) != none {
-  let note = item.note
-  [#context {
-    let i = _pool-notes-on-page(here().page()).position(n => n == note)
-    super(_pool-note-symbol(if i == none { 0 } else { i }))
-  }#metadata((symbol: none, note: note))<pool-note-marker>]
-}
+// The footnote marker for a pool carrying its own `note` — an extra regain path its rest column cannot state (Tides of Chaos also regains a use when its Sorcerer casts with a spell slot; a wand's rolled dawn refill).
+#let _pool-note-mark(item) = if item.at("note", default: none) != none { page-note-mark(item.note) }
 
 // A resource pool's label, shared by both trackers — the card deck's `resource-tables` and the letter's `_limited-use-row` — so the two cannot drift.
 // - A pool that tracks a free cast is labelled by the spell, so it is italic like every other spell name on the sheet (`eff-limited-use`'s spell-object form sets the flag).
@@ -868,49 +869,9 @@
   #if item.at("spell", default: false) { emph(item.name) } else { item.name }#_recharge-mark(item)#_pool-note-mark(item)
 ]
 
-// The superscript marker beside an Armor Class won by a `pre-cast` effect —
-// the resolver's `ac-source` is set only there (the always-active free cast
-// from Magic Initiate, such as Mage Armor). Armor-worn AC needs no footnote.
-// Same metadata-anchor mechanism as `_recharge-mark` / `_pool-note-mark` (same stranded-footnote
-// hazard, same fix); `ac-note-footer` reads the anchors back.
-// - `†` is fixed for this note. It shares the school-synergy sequence's
-//   second symbol, but they never co-locate: the AC box lives on the letter's
-//   page 1 and the card deck's placard/core card, while school notes anchor
-//   to the spell tables on later pages/cards.
-#let _ac-note-mark(c) = if c.at("ac-source", default: none) != none {
-  [#super[†]#metadata((symbol: [†], note: emph(c.ac-source)))<ac-note-marker>]
-}
-
-// The page-bottom counterpart to `_ac-note-mark`: at most one AC note per
-// page (one AC box), rendered beside any other notes in the footer line.
-#let ac-note-footer(size) = context {
-  let marks = query(<ac-note-marker>).filter(m => m.location().page() == here().page())
-  if marks.len() == 0 { return none }
-  text(font: body-font, size: size, marks.map(m => [#super[#m.value.symbol] #m.value.note]).join(h(6 * u)))
-}
-
-// The true page-bottom counterpart to `_recharge-mark` / `_pool-note-mark`: every
-// recharge note and per-pool note whose marker landed on this physical page,
-// in the order the markers appear, deduped (several pools can share one note —
-// a Fighter/Druid has both Second Wind and Wild Shape).
-// Mirrors `school-notes-footer`'s "ask what's on this page once it's known"
-// idiom — see that note for why a real footnote is unsafe here.
-#let recharge-footer(size) = context {
-  let cur = here().page()
-  let marks = query(selector(<recharge-marker>).or(<pool-note-marker>))
-    .filter(m => m.location().page() == cur)
-  let pool-notes = _pool-notes-on-page(cur)
-  let notes = ()
-  for m in marks {
-    // A recharge marker carries its kind; a pool marker carries its note, and its own symbol unless it takes the `¶` sequence.
-    let n = if type(m.value) == str { _recharge-notes.at(m.value) } else if m.value.symbol == none {
-      (symbol: _pool-note-symbol(pool-notes.position(p => p == m.value.note)), note: m.value.note)
-    } else { m.value }
-    if not notes.contains(n) { notes.push(n) }
-  }
-  if notes.len() == 0 { return none }
-  text(font: body-font, size: size, notes.map(n => [#super[#n.symbol] #n.note]).join(h(6 * u)))
-}
+// The footnote marker beside an Armor Class won by a `pre-cast` effect — the resolver's `ac-source` is set only there (the always-active free cast from Magic Initiate, such as Mage Armor). Armor-worn AC needs no footnote.
+#let _ac-note(c) = emph(c.ac-source)
+#let _ac-note-mark(c) = if c.at("ac-source", default: none) != none { page-note-mark(_ac-note(c)) }
 
 // The resource tables' Uses cell (`resource-tables`, card): a row of empty diamonds to check off in play (the resource-tracking marker), with the derivation label ("PB", "DEX mod") as a tiny eyebrow inline-left of the diamonds when the count is derived — smaller than the diamonds so its presence keeps the row height identical (rows with and without a label stay the same height).
 #let _uses-cell(item, size) = {
@@ -942,7 +903,7 @@
 // When both buckets are non-empty the pair travels together inside one `keep-together` (side-by-side, the same 28pt gutter the tracker's columns use); a single non-empty bucket is wrapped the same way so its rows stay off a card break — resources are small trackers, they should stay together (and `keep-together`'s fallback still lets a genuinely card-tall table split between rows). Either way they bump intact to a continuation "Actions (continued)" card rather than landing at a foot.
 // - Items arrive pre-sorted (short-rest recoverable first, then scarcest-first, then alphabetical — see resolve.typ `resolve-limited-uses`), so each bucket keeps that order. Empty → nothing.
 //
-// A pool whose recharge the column cannot fully state (`long-short-regain`, `dawn`) sits in the Long Rest column and gets a superscript marker on its row — see `_recharge-mark` — with the note rendered by the page's own footer (`recharge-footer`), a metadata anchor instead of a real Typst footnote (unsafe inside this `keep-together` — see that function's note).
+// A pool whose recharge the column cannot fully state (`long-short-regain`, `dawn`) sits in the Long Rest column and gets a footnote marker on its row — see `_recharge-mark` / `page-note-mark`.
 #let resource-tables(items, size: 8 * u, gutter: 28 * u) = if items.len() > 0 {
   let (short, long) = recharge-buckets(items)
   let _table(bucket, title) = if bucket.len() > 0 {
@@ -999,32 +960,12 @@
     .map(t => (name: t.name, schools: t.spell-schools))
 }
 
-// The true page-bottom counterpart to `_spell-name-cell`'s marker.
-// - Queries every `<school-note-marker>` metadata anchor placed on this physical page (a `location().page()` filter, answered only once layout has settled — no measurement-pass ambiguity), dedupes by note name (several spells on one page can share a note), and renders "SYMBOL Name" pairs on one line.
-// - Returns `none` when the current page has no such marker, so callers can splice it into their own footer unconditionally.
-// - A page template's `footer:` is itself `context`-evaluated per page already, so this needs its own `context` only when called from plain flow content.
-#let school-notes-footer(size) = context {
-  let cur = here().page()
-  let marks = query(<school-note-marker>).filter(m => m.location().page() == cur)
-  if marks.len() == 0 { return none }
-  let notes = dedup-by(marks.map(m => m.value), n => n.name)
-  text(font: body-font, size: size)[#notes.map(n => [#super[#n.symbol] #n.name]).join([  ])]
-}
-
-// The page footer's one line, shared by both layouts: any note anchored to this page on the left, the page number on the right.
-// - Notes come from `school-notes-footer` / `recharge-footer` / `ac-note-footer`; all are `none` on a page carrying none.
-// - Two notes on one page join, thus each stays visible.
-// - With no note the page number renders alone, exactly as it did before there were notes.
-#let footer-line(page-number, note-size) = {
-  let parts = (school-notes-footer(note-size), recharge-footer(note-size), ac-note-footer(note-size)).filter(p => p != none)
-  if parts.len() == 0 { page-number } else {
-    grid(
-      columns: (1fr, auto),
-      align: (left + horizon, right + horizon),
-      parts.join([ ]), page-number,
-    )
-  }
-}
+// The page footer's one line, shared by both layouts: the page's footnote legend (`page-notes-footer`) on the left, the page number on the right.
+#let footer-line(page-number, note-size) = grid(
+  columns: (1fr, auto),
+  align: (left + horizon, right + horizon),
+  page-notes-footer(note-size), page-number,
+)
 
 // The union of every source's expendable slot table, as one level→count dict (feeds the slot diamonds — the card's level headings, the letter's Spell Slots box).
 #let merge-slots(spellcasting) = {
@@ -1053,15 +994,12 @@
 
 // SPELL name: grows the `auto` column to fit, but capped — past a max width the name wraps instead of pushing the other columns over. Cap is em-relative (scales with `size`); `measure` here inherits the cell's size, so the test is width-in-em: `Dissonant Whispers` (~8em) stays one line, `Tasha's Hideous Laughter` (~10.4em) breaks. The name cell is measured before the school-synergy marker (below) is appended, so the marker stays out of the wrap decision.
 //
-// `school-notes` (see `spell-school-notes`) and `note-symbols` (a note-name -> symbol map built once per table by `spell-table`, from the same *, †, ‡, ... sequence Typst's own footnotes use) drive the marker: a spell whose `school` matches a note gets that note's symbol as a plain superscript, plus an invisible `<school-note-marker>` metadata anchor carrying the note's name and symbol. Uses a metadata anchor instead of a real Typst `#footnote` — nested inside `spell-table`'s `keep-groups` per-level `keep-together`, a footnote gets mis-paginated or dropped outright (Typst's `measure()`/region-retry pass for a card-overflowing group can realize or silently swallow it) — the metadata anchor instead lets the true page footer look the note up after layout is finalized, via `query()` (see `school-notes-footer`), the same "ask what's on this page once it's known" idiom the card deck's own running header/footer already use.
-#let _spell-name-cell(s, size, school-notes: (), note-symbols: (:)) = {
+// `school-notes` (see `spell-school-notes`) drives the marker: a spell whose `school` matches a note gets a page footnote naming that note (`page-note-mark`; the legend is rendered by the page's own footer).
+#let _spell-name-cell(s, size, school-notes: ()) = {
   let cnt = s.at("count", default: none)
   let nm = text(weight: "medium")[#s.name#if cnt != none [$thin times #cnt$]]
   let note = school-notes.find(n => n.schools.contains(s.at("school", default: none)))
-  let marker = if note == none { [] } else {
-    let sym = note-symbols.at(note.name)
-    [#super(text(size: size * 0.75)[#sym])#metadata((name: note.name, symbol: sym))<school-note-marker>]
-  }
+  let marker = if note == none { [] } else { page-note-mark(note.name, size: size * 0.75) }
   // The wrap decision measures `nm` alone (the marker stays out of it), but the box that enforces the wrap — when triggered — wraps `nm` with the marker: a box is one atomic inline unit, so a marker appended outside it does not wrap along with the text inside — it sits beside the whole (now two-line-tall) box, vertically centered next to it instead of trailing the wrapped last word.
   context {
     let max-w = size * 9.2
@@ -1136,13 +1074,11 @@
 // - When `slots` (a level→count dict) is given, each level heading carries its slot diamonds right-justified across from it (cantrips have no slots, so none appear).
 // - `keep-groups` (set by the fixed-size card deck) wraps each level-group in `keep-together`, so a group bumps intact to the next card rather than orphaning a couple of rows; the page-flow letter leaves it off (splitting is fine there).
 //
-// `school-notes` (see `spell-school-notes`) marks any spell whose school matches — a Great Old One warlock's Enchantment/Illusion spells reading "*Psychic Spells", say — with a symbol drawn from Typst's own footnote sequence (*, †, ‡, ...), assigned once per table so the same note always carries the same symbol; the note text itself is rendered by the page template's true bottom-of-page footer (`school-notes-footer`), separate from here — see `_spell-name-cell` for why.
+// `school-notes` (see `spell-school-notes`) marks any spell whose school matches — a Great Old One warlock's Enchantment/Illusion spells footnoted "Psychic Spells", say — with a page footnote (see `_spell-name-cell`).
 #let spell-table(sources, size: 8 * u, keep-groups: false, atomic-rows: false, school-notes: ()) = {
   let all = all-spells(sources)
   if all.len() == 0 { return }
   let levels = all.map(s => s.cast-level).dedup().sorted()
-  let note-symbols = (:)
-  for (i, n) in school-notes.enumerate() { note-symbols.insert(n.name, numbering("*", i + 1)) }
 
   // One level group: its heading stacked directly onto its own table with a small, exact gap.
   let level-group(lv) = {
@@ -1155,7 +1091,7 @@
         (auto, auto, auto, auto, 1fr),
         ("Spell", "Range", "Hit/Save", "Comp", "Damage/Effect"),
         rows.map(s => (
-          _spell-name-cell(s, size, school-notes: school-notes, note-symbols: note-symbols),
+          _spell-name-cell(s, size, school-notes: school-notes),
           _spell-range-cell(s, size * 0.9),
           _spell-hit-cell(s),
           _spell-comp-cell(s),
@@ -1590,7 +1526,7 @@
 // - With `single-column: true` (the letter's narrow Resources box, too tight for two columns), the two labelled buckets stack vertically instead.
 // - Items arrive pre-sorted (scarcest first, then alphabetical), so each column keeps that order.
 //
-// A pool whose recharge the column cannot fully state (`long-short-regain`, `dawn`) sits in the Long Rest column and gets a superscript marker on its row — see `_recharge-mark` — with the note rendered by the page's own footer (`recharge-footer`).
+// A pool whose recharge the column cannot fully state (`long-short-regain`, `dawn`) sits in the Long Rest column and gets a footnote marker on its row — see `_recharge-mark` / `page-note-mark`.
 #let limited-use-lines(items, size: 8 * u, single-column: false) = {
   let (short, long) = recharge-buckets(items)
   if short.len() > 0 and long.len() > 0 {

@@ -207,13 +207,10 @@
   v(14 * u)
   align(center, _pl-stats(left-rows, right-rows, span: faction-span))
   v(0.7fr)
-  // The placard page is a fold-out cover with `footer: none` — no footer
-  // region for `ac-note-footer` to render into. The AC note therefore sits at
-  // the card's bottom edge, left-justified where a page footer would be, in
-  // place of the page footer the other AC sites use.
-  if c.at("ac-source", default: none) != none {
-    align(left, text(font: body-font, size: 6.5 * u, fill: ink)[#super[†] #emph(c.ac-source)])
-  }
+  // The placard page is a fold-out cover with `footer: none`, so its footnote
+  // legend (the AC note) sits at the card's bottom edge, left-justified where
+  // a page footer would be.
+  align(left, page-notes-footer(6.5 * u))
 }
 
 // Limited-use resource pools; spell slots (one row per level) join the Long Rest column, before the other pools.

@@ -960,7 +960,7 @@
 )
 
 // --- Circle of the Stars spells --------------------------------------------
-// Source: outside SRD 5.2.1 (Battle Familiar from Arcane Unleashed-style
+// Source: outside SRD 5.2.1 (Battle Familiar from the Arcana Unleashed
 // 2024 rules expansion; Guiding Bolt is SRD 5.2.1).
 #let guiding-bolt = _spell(
   "Guiding Bolt", 1, school: "Evocation",

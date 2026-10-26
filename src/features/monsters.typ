@@ -604,7 +604,7 @@
 // --- Spell summons -----------------------------------------------------------
 
 // - Source: outside SRD 5.2.1 — the Battle Familiar stat block, from the same
-//   Arcane Unleashed-style 2024 expansion as the spell in spells.typ. NOTICE
+//   Arcana Unleashed 2024 expansion as the spell in spells.typ. NOTICE
 //   records the entry.
 // - The spell's stat block, concretized for one casting: `level` is the spell
 //   slot used, `spell-attack` the summoner's spell attack modifier (Rend's
@@ -625,11 +625,11 @@
   abilities: (str: 16, dex: 16, con: 12, int: 8, wis: 13, cha: 10),
   immunities: (),
   condition-immunities: ("Charmed", "Frightened"),
-  senses: ("Passive Perception 11",),
+  senses: ("Darkvision 60 ft", "Passive Perception 11"),
   languages: "Understands the languages its summoner knows",
   cr: none,
   traits: (
-    (name: "Talented", desc: [The familiar adds #calc.floor(level / 2) to any ability check or saving throw it makes (half the spell's level, rounded down).]),
+    (name: "Talented", desc: [The familiar adds $+#calc.floor(level / 2)$ to any ability check or saving throw it makes.]),
     (name: "Flyby (Flyer Only)", desc: [The familiar doesn't provoke an Opportunity Attack when it flies out of an enemy's reach.]),
   ),
   actions: (
@@ -637,5 +637,5 @@
     (name: "Prowl (Stalker Only)", desc: [The familiar moves up to half its Speed without provoking Opportunity Attacks. At the end of this movement, it can take the Hide action.]),
     (name: "Rend", desc: [_Melee Attack Roll:_ #if spell-attack != none [$+#spell-attack$] else [Bonus equals your spell attack modifier], reach 5 ft. _Hit:_ #calc.floor(4.5 + 3 + level) ($1d 8 + #(3 + level)$) Force damage.]),
   ),
-  desc: [Summoned by the _Battle Familiar_ spell; it disappears when the spell ends, when it drops to 0 Hit Points, or when its summoner dies. Choose a form: _Brute_ has AC #(11 + level + 2) and #(30 + 5 * calc.max(level - 2, 0)) Hit Points; _Flyer_ flies and swims as its Speed shows; _Stalker_ has Prowl. With a slot above 2nd: AC +1, Hit Points +5, and one more Rend and Talented bonus per two slot levels.],
+  desc: [Summoned by the _Battle Familiar_ spell; it disappears when the spell ends, when it drops to 0 Hit Points, or when its summoner dies. Choose a form: _Brute_ has AC #(11 + level + 2) and #(30 + 5 * calc.max(level - 2, 0)) Hit Points; _Flyer_ flies and swims as its Speed shows; _Stalker_ has Prowl. With a slot above 2nd: AC +1, Hit Points +5, and Rend damage +1 per slot level, and one more Rend and Talented bonus per two slot levels.],
 )

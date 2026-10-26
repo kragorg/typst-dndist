@@ -109,6 +109,7 @@
     bonus-actions: m.at("bonus-actions", default: ()),
     reactions: m.at("reactions", default: ()),
     desc: m.at("desc", default: none),
+    stat-notes: m.at("stat-notes", default: (:)),
   )
 }
 

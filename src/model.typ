@@ -373,6 +373,8 @@
 // - `abilities`: base scores, e.g. (str: 12, dex: 15, con: 12, int: 3, wis: 12, cha: 6).
 // - `hp`: int or string, e.g. 11. `hit-dice`: e.g. "2d8 + 2".
 // - `traits`, `actions`, `bonus-actions`, `reactions`: lists of (name, desc) records.
+// - `stat-notes`: footnotes on the card's stat strip, keyed `ac`, `hp`,
+//   `init`, `speed` (content), e.g. a summon form's different AC.
 #let monster(
   name,
   size: "Medium",
@@ -399,6 +401,7 @@
   bonus-actions: (),
   reactions: (),
   desc: none,
+  stat-notes: (:),
   ..rest
 ) = (
   kind: "monster",
@@ -427,6 +430,7 @@
   bonus-actions: bonus-actions,
   reactions: reactions,
   desc: desc,
+  stat-notes: stat-notes,
   ..rest.named(),
 )
 

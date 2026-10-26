@@ -34,6 +34,9 @@ the public API means a major version bump.
 - Archery Fighting Style (`class.fighter(fighting-style: "Archery")`): +2 to
   attack rolls with Ranged weapons, via the new `eff-ranged-attack-bonus`
   effect. A Thrown melee weapon gains nothing, and damage is unchanged.
+- `monster(stat-notes: (ac: …, hp: …, init: …, speed: …))`: footnotes on a
+  creature card's AC/HP/Init/Speed numbers. The Battle Familiar uses them for
+  the Brute's AC and Hit Points and the Flyer's fly speed.
 
 ### Changed
 

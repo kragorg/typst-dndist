@@ -638,15 +638,24 @@
   // The strip: four headline numbers, a label under each, then an optional
   // hint row (the hit dice, the primary speed's mode). With hit dice the HP
   // column sizes to them, so they stay on one line.
+  // - A `stat-notes` entry marks its number with a symbol (*, †, §, ¶ in
+  //   strip order; ETBembo lacks ‡); the notes close the panel.
+  let note-keys = ("ac", "hp", "init", "speed").filter(k => k in m.stat-notes)
+  let note-sym = (:)
+  for (i, k) in note-keys.enumerate() { note-sym.insert(k, ("*", "†", "§", "¶").at(i)) }
+  let mark(k) = if k in note-sym {
+    text(font: body-font, size: 13 * u, weight: "regular", fill: accent)[#super(note-sym.at(k))]
+  }
   let big(v) = text(font: body-font, size: 13 * u, weight: "bold", fill: ink)[#num-value(v)]
   let hint(v) = if v == none { [] } else { text(font: body-font, size: 6.5 * u, fill: ink)[#v] }
   let strip = (
-    (big(m.ac), "AC", none),
-    (big(m.hp), "HP", if m.hit-dice != none { "(" + m.hit-dice + ")" }),
-    (big(fmt-mod(m.initiative)), "Init", none),
-    ([#big(bold-num(prim.value.split(" ").first()))#text(font: body-font, size: 7 * u)[ ft]], "Speed",
+    ([#big(m.ac)#mark("ac")], "AC", none),
+    ([#big(m.hp)#mark("hp")], "HP", if m.hit-dice != none { "(" + m.hit-dice + ")" }),
+    ([#big(fmt-mod(m.initiative))#mark("init")], "Init", none),
+    ([#big(bold-num(prim.value.split(" ").first()))#text(font: body-font, size: 7 * u)[ ft]#mark("speed")], "Speed",
       if prim.mode != none { cap(prim.mode) }),
   )
+  let stat-notes = note-keys.map(k => text(font: body-font, size: 7 * u, fill: ink)[#text(fill: accent)[#super(note-sym.at(k))]#m.stat-notes.at(k)])
   let strip-grid = grid(
     columns: (1fr, if m.hit-dice != none { auto } else { 1fr }, 1fr, 1fr),
     align: center + horizon,
@@ -732,6 +741,7 @@
       strip-grid,
       abilities,
       ..if sec-lines.len() > 0 { (stacked-lines(sec-lines),) } else { () },
+      ..if stat-notes.len() > 0 { (stacked-lines(stat-notes),) } else { () },
     ),
   )
 

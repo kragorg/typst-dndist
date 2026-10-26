@@ -611,8 +611,9 @@
 //   attack bonus). Both are the caster's numbers, passed by the character file.
 // - The form choice stays visible in the block: variant details keep their
 //   "X Only" markers, so one card serves a Brute, Flyer, or Stalker cast. The
-//   AC/HP cells carry the Flyer/Stalker values; the Brute values and the
-//   higher-slot scaling sit in the closing note (`desc`).
+//   AC/HP/Speed cells carry the shared values; `stat-notes` footnote the
+//   Brute AC/HP and the Flyer's fly speed. The closing note (`desc`) holds
+//   the higher-slot scaling.
 // - No CR: a spell summon has no challenge rating, so `cr: none` keeps the
 //   card's CR/PB masthead note off (see the card layout's monster notes).
 #let battle-familiar(level: 2, spell-attack: none) = monster(
@@ -621,7 +622,7 @@
   ac: 11 + level,
   hp: 20 + 5 * calc.max(level - 2, 0),
   hit-dice: none,
-  speed: "40 ft, fly 30 ft (hover; Flyer only), swim 30 ft",
+  speed: "40 ft, swim 30 ft",
   abilities: (str: 16, dex: 16, con: 12, int: 8, wis: 13, cha: 10),
   immunities: (),
   condition-immunities: ("Charmed", "Frightened"),
@@ -637,5 +638,10 @@
     (name: "Prowl (Stalker Only)", desc: [The familiar moves up to half its Speed without provoking Opportunity Attacks. At the end of this movement, it can take the Hide action.]),
     (name: "Rend", desc: [_Melee Attack Roll:_ #if spell-attack != none [$+#spell-attack$] else [Bonus equals your spell attack modifier], reach 5 ft. _Hit:_ #calc.floor(4.5 + 3 + level) ($1d 8 + #(3 + level)$) Force damage.]),
   ),
-  desc: [Summoned by the _Battle Familiar_ spell; it disappears when the spell ends, when it drops to 0 Hit Points, or when its summoner dies. Choose a form: _Brute_ has AC #(11 + level + 2) and #(30 + 5 * calc.max(level - 2, 0)) Hit Points; _Flyer_ flies and swims as its Speed shows; _Stalker_ has Prowl. With a slot above 2nd: AC +1, Hit Points +5, and Rend damage +1 per slot level, and one more Rend and Talented bonus per two slot levels.],
+  stat-notes: (
+    ac: [Brute: AC #(11 + level + 2)],
+    hp: [Brute: #(30 + 5 * calc.max(level - 2, 0)) HP],
+    speed: [Flyer: Fly 30 ft (hover)],
+  ),
+  desc: [Summoned by the _Battle Familiar_ spell; it disappears when the spell ends, when it drops to 0 Hit Points, or when its summoner dies. Choose a form when casting: Brute, Flyer, or Stalker. With a slot above 2nd: AC +1, Hit Points +5, and Rend damage +1 per slot level, and one more Rend and Talented bonus per two slot levels.],
 )

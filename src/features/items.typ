@@ -341,7 +341,7 @@
       shillelagh: true,
       bonus: 2,
     ),
-    eff-limited-use("Staff of the Woodlands", 6, recharge: "long"),
+    eff-limited-use("Staff of the Woodlands", 6, recharge: "dawn", note: [Regains $1d 6$ charges at dawn.]),
     eff-spellcasting-bonus(attack: 2),
   ),
   spells: (

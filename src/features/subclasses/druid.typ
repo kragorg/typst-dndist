@@ -65,9 +65,9 @@
       "Star Map", "Circle of the Stars",
       cantrips: (spell.guidance,),
       spells: (spell.guiding-bolt,),
-      effects: (eff-limited-use(spell.guiding-bolt, 3, recharge: "long", source: "Circle of the Stars"),),
-      desc: [You've created a star chart, a Tiny object usable as a Spellcasting Focus for your Druid spells. While holding it, you have _Guidance_ and _Guiding Bolt_ prepared, and can cast _Guiding Bolt_ without expending a spell slot $3$ times per Long Rest. If you lose the map, a 1-hour ceremony during a Short or Long Rest magically creates a replacement and destroys the previous map.],
-      notes: [Cast _Guiding Bolt_ without a slot (3/Long Rest).],
+      effects: (eff-limited-use(spell.guiding-bolt, ctx => calc.max(1, ctx.ability-mods.wis), uses-label: "WIS mod", recharge: "long", source: "Circle of the Stars"),),
+      desc: ctx => [You've created a star chart, a Tiny object usable as a Spellcasting Focus for your Druid spells. While holding it, you have _Guidance_ and _Guiding Bolt_ prepared, and can cast _Guiding Bolt_ without expending a spell slot a number of times equal to your Wisdom modifier (minimum once; currently $#calc.max(1, ctx.ability-mods.wis)$) per Long Rest. If you lose the map, a 1-hour ceremony during a Short or Long Rest magically creates a replacement and destroys the previous map.],
+      notes: ctx => [Cast _Guiding Bolt_ without a slot (#calc.max(1, ctx.ability-mods.wis)/Long Rest).],
     ))
     fs.push(_sub-feature(
       "Starry Form", "Circle of the Stars",

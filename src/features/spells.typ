@@ -721,6 +721,12 @@
   notes: [5-ft radius, 40-ft high Cylinder of Dim Light, damage once per turn when it appears, is moved, creature enters or ends its turn in area. Save: half damage. On a failed save, a shape-shifted creature reverts and can't shape-shift while in the Cylinder. _Magic Action_: move Cylinder 60 ft.],
   scaling: [$+1d 10$/slot above 2nd.],
 )
+#let beast-sense = _spell(
+  "Beast Sense", 2, school: "Divination",
+  casting-time: "Action", range: "Touch", components: "S",
+  duration: "1 hour", concentration: true, ritual: true,
+  notes: [Perceive through a willing Beast's senses as well as your own, benefiting from its special senses.],
+)
 #let pass-without-trace = _spell(
   "Pass without Trace", 2, school: "Abjuration",
   casting-time: "Action", range: "Self", area: (shape: "emanation", size: "30 ft"),
@@ -769,6 +775,15 @@
   healing: ((5, 5, "d8"), (6, 6, "d8"), (7, 7, "d8"), (8, 8, "d8"), (9, 9, "d8")),
   damage-bonus: "casting-mod",
   notes: [Up to six creatures of your choice in the Sphere.],
+)
+
+// - The spirit's element picks the damage type, thus the dice stay in the notes.
+#let conjure-elemental = _spell(
+  "Conjure Elemental", 5, school: "Conjuration",
+  casting-time: "Action", range: "60 ft", components: "V, S",
+  duration: "10 min", concentration: true, save: "DEX",
+  notes: [A Large intangible spirit: air (Lightning), earth (Thunder), fire (Fire), or water (Cold). A creature entering its space or starting its turn within 5 ft: $8d 8$ and Restrained on a failed save (only one Restrained at a time); it repeats the save each turn, taking $4d 8$ on a fail.],
+  scaling: [$+1d 8$/slot above 5th.],
 )
 
 // --- Cleric cantrips -------------------------------------------------------

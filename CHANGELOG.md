@@ -11,6 +11,14 @@ the public API means a major version bump.
 
 ### Added
 
+- `feat.conjuration-adept(abil, casting-ability: auto)`: the table spells
+  (Entangle → Conjure Elemental) join the slotted spellcasting sources once a
+  slot of their level exists.
+- `eff-spell-any-slot(..., at-slot: n)`: gate a projected spell on the
+  character having a slot of level `n`.
+- `item.headband-of-intellect`, via the new `eff-ability` kind `min` (raise to
+  at least a value, never lower).
+- `spell.conjure-elemental`, `spell.beast-sense`.
 - Dimension-based layout names: `6x4` (default card), `6x4L` (large card at 115%), `5x8` (portrait card), `5x8L` (portrait card at 115%), `8x5` (8in × 5in landscape at 125%), and `8.5x11` (letter sheet).
 - A layout registry (`src/layout/layouts.typ`) and the design unit `u`: every
   layout is one entry (page geometry, scale, margin decomposition), and every

@@ -20,7 +20,8 @@
 #let id-of-or-none(ref) = if ref == none { none } else { id-of(ref) }
 
 // Ability score contribution.
-// - `kind`: "base" | "background" | "bonus" add; "set" forces a fixed final score (highest precedence).
+// - `kind`: "base" | "background" | "bonus" add; "set" forces a fixed final score (highest precedence);
+//   "min" raises the final score to at least `value` and never lowers it (Headband of Intellect).
 // - The additive kinds are tags only; the resolver folds them identically.
 #let eff-ability(which, value, kind: "bonus") = (
   effect: "ability", which: id-of(which), kind: kind, value: value,
@@ -286,12 +287,15 @@
 // - The cast behaves like any other prepared spell of that source, not like a pinned one.
 // - `at-level`: total character level at which the projection joins (Fairy Magic's
 //   _Faerie Fire_ at 3rd, _Enlarge/Reduce_ at 5th); `none` = ungated.
-#let eff-spell-any-slot(spell, ability, source, at-level: none) = (
+// - `at-slot`: the projection joins only once the character has a spell slot of this
+//   level in any source (Conjuration Adept's table); `none` = ungated.
+#let eff-spell-any-slot(spell, ability, source, at-level: none, at-slot: none) = (
   effect: "spell-any-slot",
   spell: spell,
   ability: id-of(ability),
   source: source,
   at-level: at-level,
+  at-slot: at-slot,
 )
 
 // Number of attacks per Attack action (Extra Attack).

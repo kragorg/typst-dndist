@@ -303,7 +303,8 @@ new such feature is added.
 Effects are tagged dicts the resolver folds (all `eff-*`):
 
 - `eff-ability(which, value, kind)` --- kind `base`/`background`/`bonus`
-  add; `set` forces a fixed score.
+  add; `set` forces a fixed score; `min` raises the score to at least
+  `value` and never lowers it (`headband-of-intellect`).
 - `eff-ac-base(base, cap, source)` --- armor base + Dex cap
   (`none`=unlimited/light, `2`=medium, `0`=heavy).
 - `eff-ac-formula(base, abilities, source)` --- alternate unarmored base
@@ -472,7 +473,7 @@ Effects are tagged dicts the resolver folds (all `eff-*`):
   spell tables (each detail entry also carries the source's
   `save-dc`/`attack-bonus`, so a spell's HIT/SAVE cell reads `+5` or
   `WIS 14`).
-- `eff-spell-any-slot(spell, ability, source)` --- a feat-granted spell
+- `eff-spell-any-slot(spell, ability, source, at-level, at-slot)` --- a feat-granted spell
   that, per its own rule text, can ALSO be cast using any spell slot the
   character has (Magic Initiate, Fey Touched), on top of the feat's own
   free once-per-Long-Rest cast (still a separate `eff-limited-use` pool
@@ -1178,6 +1179,8 @@ silent-movement half changes no value and stays prose),
 `goggles-of-night` (an `eff-sense` Darkvision 60 ft --- the resolver's
 dedupe already keeps the longest range, so the item's "+60 ft on existing
 Darkvision" half stays prose),
+`headband-of-intellect` (an `eff-ability` of kind `min` 19, so a score
+already 19 or higher is unchanged),
 `ring-of-resistance(damage-type)` (displays as "Ring of <Type> Resistance";
 one `eff-resistance` of that type; no Attunement in the 2024 DMG),
 `sentinel-shield` (a Shield *and* a magic item, so it carries both halves
@@ -1332,7 +1335,11 @@ its own, the Invisible hand --- see the catalog-prose rule in the
 two notes cannot drift; a nested "Telekinetic Shove"
 child carries `activation: "Bonus Action"`, same parent/child split as
 Shell Defense above),
-`magic-initiate(class, casting-ability, cantrips, spell)`, and
+`magic-initiate(class, casting-ability, cantrips, spell)`,
+`conjuration-adept(abil, casting-ability)` (`+1` to Int/Wis/Cha plus one
+`eff-spell-any-slot` per table spell, gated by `at-slot` so each joins
+only once the character has a slot of its level; Persistent Conjuration
+is prose), and
 `fey-touched(abil, casting-ability, chosen-spell)` --- `+1` to `abil`
 plus an `eff-spellcasting` source for Misty Step and the chosen
 1st-level Divination/Enchantment spell, each with an `eff-limited-use`

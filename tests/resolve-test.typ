@@ -56,6 +56,21 @@
   resolve-abilities((str: 10), (eff-ability("str", 2), eff-ability("str", 18, kind: "set"))).str,
   18,
 )
+// A "min" floor raises a low score but never lowers a higher one (Headband of Intellect).
+#assert.eq(resolve-abilities((int: 8), (eff-ability("int", 19, kind: "min"),)).int, 19)
+#assert.eq(resolve-abilities((int: 18), (eff-ability("int", 2), eff-ability("int", 19, kind: "min"))).int, 20)
+
+// Conjuration Adept: a table spell joins only once a slot of its level exists.
+// Druid 3 has 2nd-level slots: Entangle and Misty Step, not Conjure Animals.
+#let adept = resolve(character(
+  abilities: (str: 10, dex: 10, con: 10, int: 10, wis: 16, cha: 10),
+  features: (class.druid(level: 3), feat.conjuration-adept(ability.wis)),
+))
+#let adept-spells = adept.spellcasting.find(s => s.source == "Druid").spells-detail.map(s => s.name)
+#assert(adept-spells.contains("Entangle"))
+#assert(adept-spells.contains("Misty Step"))
+#assert(not adept-spells.contains("Conjure Animals"))
+#assert.eq(adept.abilities.wis, 17)
 
 // --- Full character: bard 4 (PB 2), Jack of All Trades ---------------------
 #let elara = character(

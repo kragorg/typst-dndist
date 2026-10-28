@@ -162,14 +162,19 @@
 
 // Compute the final ability scores: base plus all additive contributions.
 // - A "set" effect forces a fixed value.
+// - A "min" effect raises the score to at least its value; a higher score is kept.
 #let resolve-abilities(base, effects) = {
   let scores = (:)
   for id in ability-ids {
     let v = base.at(id, default: 10)
     let forced = none
+    let floor = none
     for e in effects.filter(e => e.effect == "ability" and e.which == id) {
-      if e.kind == "set" { forced = e.value } else { v += e.value }
+      if e.kind == "set" { forced = e.value }
+      else if e.kind == "min" { floor = if floor == none { e.value } else { calc.max(floor, e.value) } }
+      else { v += e.value }
     }
+    if floor != none { v = calc.max(v, floor) }
     scores.insert(id, if forced != none { forced } else { v })
   }
   scores
@@ -493,9 +498,12 @@
   //   First Ones). Background/origin-feat spells have no class-source and keep
   //   the feat's own numbers.
   // A feat- or species-granted spell can also be cast with any spell slot the character has (Magic Initiate, Fey Touched, Fairy Magic).
+  // - `at-slot` gates on the highest slot level any source has (Conjuration Adept).
+  let max-slot = sources.map(s => s.slots.pairs().filter(((k, n)) => n > 0).map(((k, n)) => int(k)).fold(0, calc.max)).fold(0, calc.max)
   let any-slot = effects.filter(e => e.effect == "spell-any-slot").filter(e => {
     let gate = e.at("at-level", default: none)
-    gate == none or level >= gate
+    let slot-gate = e.at("at-slot", default: none)
+    (gate == none or level >= gate) and (slot-gate == none or max-slot >= slot-gate)
   })
   if any-slot.len() == 0 { sources } else {
     sources.map(src => {

@@ -145,6 +145,33 @@
   )
 }
 
+// - A General feat (Arcana Unleashed): `abil` is Intelligence, Wisdom, or Charisma.
+// - Each table spell is always prepared once the character has a slot of its level: `eff-spell-any-slot` with `at-slot` projects it into every slotted source (resolve.typ).
+// - The rule names no casting ability for these spells; it defaults to the boosted ability.
+#let conjuration-adept(abil, casting-ability: auto) = {
+  assert(
+    ("int", "wis", "cha").contains(id-of(abil)),
+    message: "Conjuration Adept increases Intelligence, Wisdom, or Charisma",
+  )
+  let casting-ability = if casting-ability == auto { abil } else { casting-ability }
+  let name = "Conjuration Adept"
+  let table = (
+    (1, spell.entangle), (2, spell.misty-step), (3, spell.conjure-animals),
+    (4, spell.dimension-door), (5, spell.conjure-elemental),
+  )
+  feature(
+    name,
+    kind: "feat",
+    source: "Feat",
+    effects: (eff-ability(abil, 1),)
+      + table.map(((slot, s)) => eff-spell-any-slot(s, casting-ability, name, at-slot: slot)),
+    desc: ctx => {
+      let mod = ctx.ability-mods.at(id-of(abil))
+      [$+1$ to #ability.at(id-of(abil)).name. Always prepared once you have a slot of its level: _Entangle_ (1st), _Misty Step_ (2nd), _Conjure Animals_ (3rd), _Dimension Door_ (4th), _Conjure Elemental_ (5th). Persistent Conjuration: while Concentrating on a Conjuration spell, $+#mod$ to Constitution saves to keep that Concentration.]
+    },
+  )
+}
+
 // - Choose a spell list, a casting ability (Int/Wis/Cha), two cantrips, and one 1st-level spell.
 // - The feat grants one spellcasting source.
 // - `eff-spell-any-slot` projects the 1st-level spell into every other spellcasting source (resolve.typ).

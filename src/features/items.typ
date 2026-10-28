@@ -3,7 +3,7 @@
 // - Armor and shields come from SRD 5.2.1. Each magic item cites its own
 //   source; NOTICE records which entries are SRD and which are not.
 
-#import "../model.typ": feature, limited-use-feature, stowed, eff-ac-base, eff-ac-bonus, eff-check-advantage, eff-prof, eff-resistance, eff-save-bonus, eff-sense, eff-spellcasting-bonus, eff-weapon, eff-limited-use
+#import "../model.typ": feature, limited-use-feature, stowed, eff-ability, eff-ac-base, eff-ac-bonus, eff-check-advantage, eff-prof, eff-resistance, eff-save-bonus, eff-sense, eff-spellcasting-bonus, eff-weapon, eff-limited-use
 #import "../data/abilities.typ": ability
 #import "../data/constants.typ": armor-table, armor-dex-cap
 #import "../data/skills.typ": skill
@@ -131,6 +131,16 @@
   source: "Goggles of Night",
   effects: (eff-sense("Darkvision", range: "60 ft", source: "Goggles of Night"),),
   desc: [While wearing these dark lenses, you have Darkvision out to 60 ft. If you already have Darkvision, the goggles increase its range by 60 ft.],
+)
+
+// - Source: DMG 2024, uncommon, requires attunement.
+// - "No effect at 19 or higher" is the `min` ability kind: it raises to 19 and never lowers.
+#let headband-of-intellect = feature(
+  "Headband of Intellect",
+  kind: "magic-item",
+  source: "Headband of Intellect",
+  effects: (eff-ability(ability.int, 19, kind: "min"),),
+  desc: [Your Intelligence is 19 while you wear this headband. It has no effect on you if your Intelligence is 19 or higher without it.],
 )
 
 // - The +2 AC applies only with no armor and no shield.

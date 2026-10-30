@@ -2,7 +2,7 @@
 // - A background can nest a feat as its origin feat.
 // - Import aliased: `#import "feats.typ" as feat`.
 
-#import "../model.typ": feature, eff-ability, eff-prof, eff-spellcasting, eff-stat, eff-limited-use, eff-spell-any-slot, id-of
+#import "../model.typ": feature, eff-ability, eff-prof, eff-spellcasting, eff-stat, eff-limited-use, eff-spell-any-slot, eff-save-advantage, id-of
 #import "../data/abilities.typ": ability
 #import "../data/tools.typ": tool
 #import "spells.typ" as spell
@@ -169,6 +169,36 @@
       let mod = ctx.ability-mods.at(id-of(abil))
       [$+1$ to #ability.at(id-of(abil)).name. Always prepared once you have a slot of its level: _Entangle_ (1st), _Misty Step_ (2nd), _Conjure Animals_ (3rd), _Dimension Door_ (4th), _Conjure Elemental_ (5th). Persistent Conjuration: while Concentrating on a Conjuration spell, $+#mod$ to Constitution saves to keep that Concentration.]
     },
+  )
+}
+
+// - A General feat: `abil` is Intelligence, Wisdom, or Charisma.
+// - Concentration is a save advantage, so the Saving Throws footnote states it.
+// - Reactive Spell is a nested feature, so it goes in the card deck's Reaction table.
+#let war-caster(abil) = {
+  assert(
+    ("int", "wis", "cha").contains(id-of(abil)),
+    message: "War Caster increases Intelligence, Wisdom, or Charisma",
+  )
+  feature(
+    "War Caster",
+    kind: "feat",
+    source: "Feat",
+    effects: (
+      eff-ability(abil, 1),
+      eff-save-advantage([on Constitution saves to maintain Concentration], source: "War Caster"),
+    ),
+    desc: [$+1$ to #ability.at(id-of(abil)).name. You have Advantage on Constitution saving throws to maintain Concentration. You can perform the Somatic components of spells even when you have weapons or a Shield in one or both hands.],
+    features: (
+      feature(
+        "Reactive Spell",
+        kind: "feat",
+        source: "Feat",
+        activation: "Reaction",
+        desc: [When a creature provokes an Opportunity Attack from you by leaving your reach, you can take a Reaction to cast a spell at the creature rather than making an Opportunity Attack. The spell must have a casting time of one action and must target only that creature.],
+        notes: [Instead of an Opportunity Attack, cast a one-action spell that targets only the provoking creature.],
+      ),
+    ),
   )
 }
 

@@ -14,6 +14,9 @@ the public API means a major version bump.
 - `feat.conjuration-adept(abil, casting-ability: auto)`: the table spells
   (Entangle → Conjure Elemental) join the slotted spellcasting sources once a
   slot of their level exists.
+- `feat.war-caster(abil)`: `+1` to Int/Wis/Cha, Advantage on Constitution
+  saves to maintain Concentration (Saving Throws footnote), and a nested
+  Reactive Spell reaction.
 - `eff-spell-any-slot(..., at-slot: n)`: gate a projected spell on the
   character having a slot of level `n`.
 - `item.headband-of-intellect`, via the new `eff-ability` kind `min` (raise to

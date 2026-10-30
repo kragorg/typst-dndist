@@ -1339,7 +1339,10 @@ Shell Defense above),
 `conjuration-adept(abil, casting-ability)` (`+1` to Int/Wis/Cha plus one
 `eff-spell-any-slot` per table spell, gated by `at-slot` so each joins
 only once the character has a slot of its level; Persistent Conjuration
-is prose), and
+is prose), `war-caster(abil)` (a **General** feat --- `+1` to
+Int/Wis/Cha and an `eff-save-advantage` for Concentration saves on the
+passive parent, a "Reactive Spell" child at `activation: "Reaction"`),
+and
 `fey-touched(abil, casting-ability, chosen-spell)` --- `+1` to `abil`
 plus an `eff-spellcasting` source for Misty Step and the chosen
 1st-level Divination/Enchantment spell, each with an `eff-limited-use`

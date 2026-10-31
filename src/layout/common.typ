@@ -130,6 +130,8 @@
 #let ink = rgb("#2b2b2b")
 #let accent = rgb("#7a1f2b")
 #let rule-color = rgb("#b8b0a8")
+// The stat-panel fill, shared by the creature cards' stat panel and the core card's boxes: a pale wash of the rule colour.
+#let panel-tint = rule-color.lighten(80%)
 
 // Render a math source string (digits, the die "d", the operators + - / and spaces) as one Euler math equation.
 // - Synthesises bold for the digits and letters only, and only when the surrounding context is bold.
@@ -243,11 +245,12 @@
 // A boxed value with a label underneath: the building block for the stats strip.
 // - `height: 100%` stretches the box to the tallest cell in its grid row, so the whole strip reads at one height.
 // - `center + horizon` centres the value and label in the stretched box.
+// - Drawn as a `panel-tint` box, the creature stat panel's fill, like `ability-cell`.
 // - Mirrors the letter layout's `stat-box`.
 #let stat-cell(value, name, width: auto, big: false) = box(
   width: width, height: 100%,
   inset: (x: 3 * u, y: 3 * u),
-  stroke: 0.5 * u + rule-color,
+  fill: panel-tint,
   radius: 2 * u,
 )[
   #set align(center + horizon)
@@ -301,10 +304,11 @@
 // One ability column: big score, modifier underneath, save below that.
 // - The score takes the prominent slot at `card-stat-size`, reading as one tier with AC and HP; the modifier sits beneath it in the secondary size.
 // - The two need no SCORE/MOD labels (the letter's rail carries them): the modifier always shows its sign, the score never does.
+// - Drawn as a `panel-tint` box, the creature stat panel's fill, like `stat-cell`.
 #let ability-cell(id, score, mod, save) = box(
   width: 100%,
   inset: (x: 2 * u, y: 3 * u),
-  stroke: 0.5 * u + rule-color,
+  fill: panel-tint,
   radius: 2 * u,
 )[
   #set align(center)
@@ -1555,8 +1559,8 @@
 // The Defenses & Senses footnote, rendered beneath the saves on both layouts.
 // Three kinds of entry share the block's wrapping rhythm (one `stacked-lines` call, so the gap between entries is uniform across all kinds):
 // - Conditional save advantages — an `adv-badge()` hexagon followed by the authored prose stating exactly when the advantage applies (the prose carries any "on Constitution saves..." wording itself; no ability parsing).
-// - Damage responses — one plain-text line per kind (Resistance / Immunity / Vulnerability), the label followed by its damage types joined by ", ".
-// - Senses (Darkvision, Blindsight, ...) — the sense name followed by its range ("60 ft") in plain body text.
+// - Damage responses — one line per kind (Resistance / Immunity / Vulnerability): an accent `eyebrow` lead (the card's proficiency-line label, sized 5 : 6.5 against the body) followed by its damage types joined by ", ".
+// - Senses (Darkvision, Blindsight, ...) — the same accent `eyebrow` lead carrying the sense name, followed by its range ("60 ft") in body text; a sense without a range shows the bare lead.
 // Order: save advantages first, then resistances (both are defenses — they sit closest to the saves they annotate), then senses. Only the badged advantages carry a marker glyph; resistances and senses are separate from proficiency and tracking, so none of the circle/diamond/hexagon vocabulary applies to them.
 // Callers guard on a non-empty combined list; this renders nothing when all `()`.
 #let _resist-labels = (resistance: "Resistance", immunity: "Immunity", vulnerability: "Vulnerability")
@@ -1565,10 +1569,10 @@
     + ("resistance", "immunity", "vulnerability").map(k => {
         let types = resistances.filter(r => r.kind == k).map(r => r.type)
         if types.len() > 0 {
-          text(font: body-font, size: size)[#_resist-labels.at(k): #types.join(", ")]
+          [#eyebrow([#_resist-labels.at(k): ], size: size * 10 / 13)#text(font: body-font, size: size)[#types.join(", ")]]
         }
       }).filter(x => x != none)
-    + senses.map(s => text(font: body-font, size: size)[#s.name#if s.range != none [ #s.range]]),
+    + senses.map(s => [#eyebrow(if s.range != none [#s.name: ] else [#s.name], size: size * 10 / 13)#if s.range != none { text(font: body-font, size: size, s.range) }]),
 )
 
 // Whether a resolved character has anything for the Defenses & Senses block — the guard both layouts share (the block renders only when non-empty).

@@ -349,7 +349,8 @@ Effects are tagged dicts the resolver folds (all `eff-*`):
   stack --- Darkvision 120 ft supersedes Darkvision 60 ft; range parsed
   from its leading integer, rangeless = 0). Both layouts list it in the
   same Defenses & Senses footnote as the save advantages, senses
-  **last** (after the advantages and resistances --- see the marker
+  **last** as an accent eyebrow lead plus range (`DARKVISION: 60 ft`;
+  a rangeless sense shows the bare lead) (after the advantages and resistances --- see the marker
   note). Emitted by the species Darkvision traits (Orc 120 ft, Bugbear
   60 ft) alongside their display prose.
 - `eff-resistance(damage-type, kind, source)` --- a **damage response**:
@@ -357,8 +358,9 @@ Effects are tagged dicts the resolver folds (all `eff-*`):
   a `damage-type` string (`"Fire"`). Display-only like
   `eff-save-advantage` (never touches a number). The resolver collects
   it into a flat `resistances` list, **deduped by (kind, type)**. Both
-  layouts list it in the Defenses & Senses footnote, one plain-text line
-  per kind (`Resistance: Fire, Cold`), placed **after the save
+  layouts list it in the Defenses & Senses footnote, one line per kind
+  led by an accent eyebrow label (`RESISTANCE: Fire, Cold`, styled like
+  the card's proficiency lines), placed **after the save
   advantages and before the senses** (both are defenses; see the marker
   note). No feature emits one yet --- the plumbing is ready for the
   first that does.
@@ -1546,18 +1548,21 @@ FEATS list's ORIGIN / FIGHTING STYLE tags (General stays untagged).
   That footnote (`character-notes`, `common.typ`) holds three kinds of
   entry in one `stacked-lines` block --- the **badged save advantages**
   first (they sit closest to the saves they annotate), then the **damage
-  responses** (one plain-text line per kind ---
-  `Resistance: Fire, Cold`), then the **senses** (each = the sense
-  name + its range in plain body text) --- the last two carry *no*
+  responses** (one line per kind, an accent eyebrow lead like the card's
+  proficiency lines --- `RESISTANCE: Fire, Cold`), then the **senses** (the same
+  eyebrow lead naming the sense, then its range --- `DARKVISION: 60 ft`) --- the last two carry *no*
   marker glyph (neither proficiency nor tracking) --- rendered *beneath
   the saves* under a "Defenses & Senses" header shown **only when there
   are senses, resistances, or advantages**: the card's bottom footer is
   a two-column split --- the box on the left, proficiency training
   (Armor/Weapons/Tools/Languages) on the right. **Both columns are
   headed by a `_foot-head` eyebrow** (`card.typ`: DEFENSES & SENSES /
-  TRAINING & PROFICIENCIES) --- bold + `tracking: 0.6pt` accent,
+  TRAINING & PROFICIENCIES) --- bold + `tracking: 0.6pt` accent, over
+  the creature cards' solid accent rule (`_head-rule`),
   mirroring the letter's `_framed-title`, so the header out-ranks the
-  plainer item labels beneath it. The per-line `_prof-line` labels
+  plainer item labels beneath it. (The core card's ability and stat boxes
+  likewise take the creature stat panel's `panel-tint` fill, unstroked,
+  `common.typ`.) The per-line `_prof-line` labels
   (ARMOR:/WEAPONS:/...) sit a step down --- **regular weight, a touch
   smaller (5pt), still accent** --- the tier-2/tier-1 distinction is
   weight+tracking+size, **never colour** (no greyed/muted labels;

@@ -99,10 +99,20 @@
   footer-line(page-number-footer(n, total, size: 5.5 * u), 5 * u)
 }
 
-// A footer section header: the tier-1 eyebrow above the Defenses & Senses and Training blocks. It mirrors the letter's `_framed-title`.
+// A solid accent rule: the divider under each creature-card section head and core-card footer head. The creature stat panel's top edge is the same weight.
+#let _rule-w = 1.6 * u
+#let _head-rule = box(width: 100%, height: _rule-w, fill: accent)
+// Gap between a section head and its rule.
+#let _head-rule-gap = 2 * u
+
+// A footer section header: the tier-1 eyebrow above the Defenses & Senses and Training blocks, over a rule as a creature card's section heads are. It mirrors the letter's `_framed-title`.
 // - Bold and tracked, so it out-ranks the plainer item labels below it.
 // - The hierarchy is weight and tracking, separate from colour. Both stay accent.
-#let _foot-head(title) = eyebrow(title, size: 5.5 * u, weight: "bold", tracking: 0.6 * u)
+#let _foot-head(title) = stack(
+  spacing: _head-rule-gap,
+  eyebrow(title, size: 5.5 * u, weight: "bold", tracking: 0.6 * u),
+  _head-rule,
+)
 
 // A proficiency line: a quiet accent label plus the comma-joined value.
 // - Regular weight, a touch smaller than `_foot-head`, so it reads as tier-2.
@@ -240,7 +250,7 @@
       columns: 3 * (1fr,),
       rows: (28 * u, 28 * u),
       gutter: 3 * u,
-      stat-cell([#str(c.ac)#_ac-note-mark(c)], "Armor Class", big: true, width: 100%),
+      stat-cell([#bold-num(c.ac)#_ac-note-mark(c)], "Armor Class", big: true, width: 100%),
       stat-cell(hp-cell, "Hit Points", big: true, width: 100%),
       stat-cell(fmt-mod(c.initiative), "Initiative", width: 100%),
       stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft#if c.at("fly-speed", default: none) != none [, Fly #bold-num(c.at("fly-speed")) ft]]], "Speed", width: 100%),
@@ -313,7 +323,7 @@
       columns: 6 * (1fr,),
       rows: 32 * u,
       gutter: 3 * u,
-      stat-cell([#str(c.ac)#_ac-note-mark(c)], "AC", big: true, width: 100%),
+      stat-cell([#bold-num(c.ac)#_ac-note-mark(c)], "AC", big: true, width: 100%),
       stat-cell(hp-cell, "HP", big: true, width: 100%),
       stat-cell(fmt-mod(c.initiative), "Init", width: 100%),
       stat-cell([#bold-num(c.speed)#text(size: 8 * u)[ ft#if c.at("fly-speed", default: none) != none [, Fly #bold-num(c.at("fly-speed")) ft]]], "Speed", width: 100%),
@@ -564,17 +574,6 @@
   }
 }
 
-// The creature card's stat panel fill: a pale wash of the rule colour.
-#let _monster-tint = rule-color.lighten(80%)
-
-// A tapered accent rule, thick at the left and pointed at the right: the
-// divider under each creature-card section head.
-#let _taper-w = 1.6 * u
-#let _taper-rule = box(width: 100%, height: _taper-w,
-  polygon(fill: accent, stroke: none, (0%, 0%), (100%, 50%), (0%, 100%)))
-// Gap between a creature-card section head and its tapered rule.
-#let _taper-gap = 2 * u
-
 // A creature card: one stat block in two columns.
 // - Left: the stat panel (AC/HP/Init/Speed strip, ability table, the
 //   secondary lines).
@@ -729,8 +728,8 @@
   // The panel's accent top edge continues the first tapered rule on the right.
   let panel = block(
     width: 100%,
-    fill: _monster-tint,
-    stroke: (top: _taper-w + accent),
+    fill: panel-tint,
+    stroke: (top: _rule-w + accent),
     radius: (bottom: 3 * u),
     inset: (x: 5 * u, top: 5 * u, bottom: 6 * u),
     stack(
@@ -754,7 +753,7 @@
     for (i, (title, entries)) in sections.enumerate() {
       if i > 0 { v(7 * u) }
       sticky-head(
-        stack(spacing: _taper-gap, section-head(title), _taper-rule),
+        stack(spacing: _head-rule-gap, section-head(title), _head-rule),
         stacked-lines(entries.map(e => text(font: body-font, size: 8 * u)[#text(weight: "bold")[#e.name.] #e.desc])),
         gap: 3.5 * u,
       )
@@ -769,7 +768,7 @@
   //   (a stroke centred on the edge) shares the first rule's centre line.
   context {
     let drop = if sections.len() > 0 {
-      measure(section-head(sections.first().at(0))).height + _taper-gap + _taper-w / 2
+      measure(section-head(sections.first().at(0))).height + _head-rule-gap + _rule-w / 2
     } else { 0pt }
     grid(
       columns: (1fr, 1.25fr),
